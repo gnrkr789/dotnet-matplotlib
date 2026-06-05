@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/samples/">
+    <Project Path="samples/Gallery/Gallery.fsproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Matplotlib.Backends/Matplotlib.Backends.fsproj" />
+    <Project Path="src/Matplotlib.Domain/Matplotlib.Domain.fsproj" />
+    <Project Path="src/Matplotlib/Matplotlib.fsproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Matplotlib.Tests/Matplotlib.Tests.fsproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Lint-only shim. FSharpLint 0.24.2 bundles an Ionide.ProjInfo/MSBuild that
+    cannot yet crack net10.0 projects (it fails to load System.Runtime 10.0.0.0).
+    This project links every library source file into a single net8.0 assembly
+    so FSharpLint can crack + semantically analyse the real sources.
+    It is NOT part of the solution and is never shipped.
+    See LINTING.md.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <RootNamespace>Matplotlib.LintShim</RootNamespace>
+    <AssemblyName>Matplotlib.LintShim</AssemblyName>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Domain (compile order matters) -->
+    <Compile Include="../../src/Matplotlib.Domain/Primitives/Point2D.fs" />
+    <Compile Include="../../src/Matplotlib.Domain/Primitives/Size.fs" />
+    <Compile Include="../../src/Matplotlib.Domain/Primitives/Interval.fs" />
+    <Compile Include="../../src/Matplotlib.Domain/Primitives/BBox.fs" />
+    <Compile Include="../../src/Matplotlib.Domain/Primitives/Color.fs" />
+    <Compile Include="../../src/Matplotlib.Domain/Primitives/ColorData.fs" />
+    <Compile Include="../../src/Matplotlib.Domain/Primitives/ColorResolver.fs" />
+    <Compile Include="../../src/Matplotlib.Domain/Transforms/Transform.fs" />
+    <Compile Include="../../src/Matplotlib.Domain/Transforms/Affine2D.fs" />
+    <Compile Include="../../src/Matplotlib.Domain/Transforms/Transforms.fs" />
+    <Compile Include="../../src/Matplotlib.Domain/Ticking/Locators.fs" />
+    <Compile Include="../../src/Matplotlib.Domain/Ticking/Formatters.fs" />
+    <Compile Include="../../src/Matplotlib.Domain/Scales/Scale.fs" />
+    <Compile Include="../../src/Matplotlib.Domain/Style/Styles.fs" />
+    <Compile Include="../../src/Matplotlib.Domain/Rendering/Path.fs" />
+    <Compile Include="../../src/Matplotlib.Domain/Rendering/Renderer.fs" />
+    <Compile Include="../../src/Matplotlib.Domain/Artists/Artist.fs" />
+    <Compile Include="../../src/Matplotlib.Domain/Artists/Line2D.fs" />
+    <Compile Include="../../src/Matplotlib.Domain/Artists/Text.fs" />
+    <Compile Include="../../src/Matplotlib.Domain/Artists/Spine.fs" />
+    <Compile Include="../../src/Matplotlib.Domain/Axis.fs" />
+    <Compile Include="../../src/Matplotlib.Domain/Axes.fs" />
+    <Compile Include="../../src/Matplotlib.Domain/Figure.fs" />
+    <!-- Backends -->
+    <Compile Include="../../src/Matplotlib.Backends/Svg/SvgRenderer.fs" />
+    <Compile Include="../../src/Matplotlib.Backends/FigureCanvas.fs" />
+    <!-- Facade -->
+    <Compile Include="../../src/Matplotlib/Pyplot.fs" />
+  </ItemGroup>
+
+</Project>

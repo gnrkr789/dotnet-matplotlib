@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Matplotlib.Backends</RootNamespace>
+    <AssemblyName>Matplotlib.Backends</AssemblyName>
+    <Description>Rendering backends (infrastructure) for dotnet-matplotlib: concrete IRenderer implementations such as the pure-managed SVG backend, and the FigureCanvas output adapter.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Svg/SvgRenderer.fs" />
+    <Compile Include="FigureCanvas.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Matplotlib.Domain\Matplotlib.Domain.fsproj" />
+  </ItemGroup>
+
+</Project>
