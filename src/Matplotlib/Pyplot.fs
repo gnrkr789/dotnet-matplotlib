@@ -172,6 +172,10 @@ type Pyplot() =
     /// <summary>Set the y view limits of the current axes.</summary>
     member this.YLim(lower: float, upper: float) = this.EnsureAxes().SetYLim(lower, upper)
 
+    /// <summary>Display a 2D array as a colormapped image (Matplotlib's <c>plt.imshow</c>).</summary>
+    member this.Imshow(data: float[,], ?cmap: string, ?vmin: float, ?vmax: float) : AxesImage =
+        this.EnsureAxes().Imshow(data, ?cmap = cmap, ?vmin = vmin, ?vmax = vmax)
+
     /// <summary>Set the x-axis scale (<c>"linear"</c> / <c>"log"</c>).</summary>
     member this.XScale(name: string) = this.EnsureAxes().SetXScale name
 

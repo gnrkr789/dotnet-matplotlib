@@ -215,6 +215,7 @@ type Axes(rc: RcParams) =
     let lines = ResizeArray<Line2D>()
     let patches = ResizeArray<Patch>()
     let collections = ResizeArray<Collection>()
+    let images = ResizeArray<AxesImage>()
     let overlays = ResizeArray<Artist>()
     let stickyX = ResizeArray<float>()
     let stickyY = ResizeArray<float>()
@@ -282,6 +283,30 @@ type Axes(rc: RcParams) =
 
     /// <summary>The drawn collections (bulk line/polygon sets).</summary>
     member _.Collections = collections
+
+    /// <summary>The displayed images.</summary>
+    member _.Images = images
+
+    /// <summary>Display a 2D array as a colormapped image (Matplotlib's <c>imshow</c>).</summary>
+    member this.Imshow(data: float[,], ?cmap: string, ?vmin: float, ?vmax: float) : AxesImage =
+        let rows = Array2D.length1 data
+        let cols = Array2D.length2 data
+
+        let flat =
+            [|
+                for i in 0 .. rows - 1 do
+                    for j in 0 .. cols - 1 -> data[i, j]
+            |]
+
+        let lo = defaultArg vmin (Array.min flat)
+        let hi = defaultArg vmax (Array.max flat)
+        let colormap = Colormap.byName (defaultArg cmap "viridis")
+        let image = AxesImage(data, colormap, Normalize(lo, hi))
+        images.Add image
+        // origin 'upper': row 0 at top, so the y-axis is inverted.
+        this.SetXLim(-0.5, float cols - 0.5)
+        this.SetYLim(float rows - 0.5, -0.5)
+        image
 
     /// <summary>Add a collection and rescale to include it (Matplotlib's <c>add_collection</c>).</summary>
     member this.AddCollection(collection: Collection) : Collection =
@@ -706,6 +731,11 @@ type Axes(rc: RcParams) =
                 ctx.Renderer.DrawPath(gc, Path.polyline [ { X = b.X0; Y = y }; { X = b.X1; Y = y } ], None)
 
     member private this.DrawData(ctx: AxesDrawContext) =
+        // Images (zorder 0) sit beneath everything else.
+        for image in images do
+            image.Transform <- ctx.TransData
+            image.Draw ctx.Renderer
+
         // Patches (zorder 1) are drawn beneath lines (zorder 2).
         for patch in patches do
             patch.Transform <- ctx.TransData
