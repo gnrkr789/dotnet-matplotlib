@@ -62,9 +62,18 @@ type MarkerStyle =
     | Point
     | Square
     | Diamond
+    | ThinDiamond
     | TriangleUp
+    | TriangleDown
+    | TriangleLeft
+    | TriangleRight
+    | Pentagon
+    | Hexagon
+    | Star
     | Plus
     | Cross
+    | VLine
+    | HLine
 
 /// <summary>Where the step occurs relative to the data points in a step plot.</summary>
 /// <remarks>Ported from Matplotlib's <c>step</c> <c>where</c> argument / drawstyle.</remarks>
@@ -72,6 +81,19 @@ type StepWhere =
     | Pre
     | Post
     | Mid
+
+/// <summary>Legend placement within the Axes.</summary>
+/// <remarks>Ported from Matplotlib's legend <c>loc</c> strings.</remarks>
+type LegendLoc =
+    | UpperRight
+    | UpperLeft
+    | LowerLeft
+    | LowerRight
+    | UpperCenter
+    | LowerCenter
+    | CenterLeft
+    | CenterRight
+    | Center
 
 /// <summary>Parsers from Matplotlib's short string codes to style values.</summary>
 [<RequireQualifiedAccess>]
@@ -103,9 +125,19 @@ module Styles =
         | "." -> Point
         | "s" -> Square
         | "D" -> Diamond
+        | "d" -> ThinDiamond
         | "^" -> TriangleUp
+        | "v" -> TriangleDown
+        | "<" -> TriangleLeft
+        | ">" -> TriangleRight
+        | "p" -> Pentagon
+        | "h"
+        | "H" -> Hexagon
+        | "*" -> Star
         | "+" -> Plus
         | "x" -> Cross
+        | "|" -> VLine
+        | "_" -> HLine
         | other -> failwith $"Unknown marker '{other}'."
 
     /// <summary>Parse a Matplotlib step <c>where</c> code (<c>pre</c>, <c>post</c>, <c>mid</c>).</summary>
@@ -115,6 +147,21 @@ module Styles =
         | "post" -> Post
         | "mid" -> Mid
         | other -> failwith $"Unknown step where '{other}'."
+
+    /// <summary>Parse a Matplotlib legend <c>loc</c> string (<c>best</c> maps to upper right).</summary>
+    let parseLegendLoc (code: string) : LegendLoc =
+        match code with
+        | "best"
+        | "upper right" -> UpperRight
+        | "upper left" -> UpperLeft
+        | "lower left" -> LowerLeft
+        | "lower right" -> LowerRight
+        | "upper center" -> UpperCenter
+        | "lower center" -> LowerCenter
+        | "center left" -> CenterLeft
+        | "center right" -> CenterRight
+        | "center" -> Center
+        | other -> failwith $"Unknown legend loc '{other}'."
 
 /// <summary>
 /// Cycles through the property-cycle colors (Matplotlib's <c>axes.prop_cycle</c>).

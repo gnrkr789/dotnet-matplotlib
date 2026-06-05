@@ -18,8 +18,8 @@ Status: ✅ done · 🚧 in progress · ⬜ planned.
 ## Phase 2 — Plot types & styling breadth
 - ✅ `scatter`, `bar`/`barh` (sticky baseline), `fill_between`, `step`, `errorbar`, `stem`
 - 🚧 Patches: `Rectangle` ✅, `Circle` ✅, `Polygon` ✅; `PathPatch`, `Collection`s ⬜
-- ⬜ Markers: full marker set from `markers.py`
-- 🚧 Legend (basic box ✅); layout engine, `Annotation` ⬜
+- ✅ Markers: full set (circle, point, square, diamond, thin-diamond, triangles ▲▼◀▶, pentagon, hexagon, star, +, x, |, _)
+- 🚧 Legend: box ✅, `loc` ✅; auto-best placement, `Annotation` ⬜
 - 🚧 Grid ✅; minor ticks ✅; tick params (direction ✅, rest ⬜); spine visibility ✅
 - 🚧 `subplots` ✅, `GridSpec` ✅ (wspace/hspace); constrained/tight layout ⬜
 

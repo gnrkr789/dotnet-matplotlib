@@ -106,6 +106,23 @@ let private renderStem (outDir: string) =
     plt.Savefig path
     printfn "wrote %s" path
 
+let private renderMarkers (outDir: string) =
+    let plt = Pyplot()
+    let xs = [| for i in 0..9 -> float i |]
+    let series = [ "o", "C0"; "s", "C1"; "^", "C2"; "*", "C3"; "D", "C4"; "p", "C5" ]
+
+    series
+    |> List.iteri (fun i (marker, color) ->
+        let ys = xs |> Array.map (fun x -> x + float (i * 2))
+        plt.Scatter(xs, ys, color = color, marker = marker, label = marker) |> ignore)
+
+    plt.Title "dotnet-matplotlib: markers"
+    plt.XLabel "x"
+    plt.Legend "upper left"
+    let path = Path.Combine(outDir, "markers.svg")
+    plt.Savefig path
+    printfn "wrote %s" path
+
 [<EntryPoint>]
 let main argv =
     let outDir = if argv.Length > 0 then argv[0] else "out"
@@ -117,4 +134,5 @@ let main argv =
     renderStep outDir
     renderErrorbar outDir
     renderStem outDir
+    renderMarkers outDir
     0
