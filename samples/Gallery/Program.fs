@@ -238,11 +238,38 @@ let private renderContour (outDir: string) =
     plt.Savefig path
     printfn "wrote %s" path
 
+let private renderCategoricalBar (outDir: string) =
+    let plt = Pyplot()
+
+    plt.Bar([| "alpha"; "beta"; "gamma"; "delta" |], [| 4.0; 7.0; 3.0; 6.0 |], color = "C0")
+    |> ignore
+
+    plt.Title "dotnet-matplotlib: categorical bar"
+    plt.YLabel "value"
+    let path = Path.Combine(outDir, "category.svg")
+    plt.Savefig path
+    printfn "wrote %s" path
+
+let private renderDates (outDir: string) =
+    let plt = Pyplot()
+    let dates = [| for d in 0..36 -> DateTime(2024, 1, 1).AddDays(float d * 10.0) |]
+    let ys = dates |> Array.mapi (fun i _ -> sin (float i / 3.0) + float i * 0.1)
+    plt.PlotDate(dates, ys, color = "C1", label = "series") |> ignore
+    plt.Title "dotnet-matplotlib: dates"
+    plt.XLabel "date"
+    plt.Legend()
+    plt.TightLayout()
+    let path = Path.Combine(outDir, "dates.svg")
+    plt.Savefig path
+    printfn "wrote %s" path
+
 [<EntryPoint>]
 let main argv =
     let outDir = if argv.Length > 0 then argv[0] else "out"
     Directory.CreateDirectory outDir |> ignore
     renderContour outDir
+    renderCategoricalBar outDir
+    renderDates outDir
     renderSine outDir
     renderScatter outDir
     renderBar outDir

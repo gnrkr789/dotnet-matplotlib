@@ -60,6 +60,7 @@ and is not part of this repository (it is git-ignored).
 | 2026-06-06 | 11 | `figure.colorbar` | `Domain/Figure.Colorbar` + `Pyplot.Colorbar` | gradient axes + value scale on the right; Axes gains XTicksVisible / YTickSide |
 | 2026-06-06 | 12 | `axes.pcolormesh`, `axes.contour` | `Domain/Artists/Image` (cell edges), `Domain/Axes` (`marchingSquares`) | quad mesh (origin lower) + iso-line contours |
 | 2026-06-06 | 13 | `scale.SymmetricalLogScale`, `scale.LogitScale` | `Domain/Scales/Scale` | symlog (linear near 0, log beyond) + logit scales, locators |
+| 2026-06-06 | 14 | `ticker.FixedLocator/FixedFormatter`, `dates.DateFormatter`, `category` | `Domain/Ticking`, `Domain/Axis` (overrides), `Domain/Axes` | categorical axis (`SetXCategories`) + date axis (`PlotDate`, OADate); per-axis locator/formatter overrides |
 
 Known deviations (to refine in later sprints):
 - `errorbar` draws the error lines only; caps (`capsize`) are not yet rendered

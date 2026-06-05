@@ -1,5 +1,6 @@
 namespace Matplotlib
 
+open System
 open Matplotlib.Domain
 open Matplotlib.Domain.Primitives
 open Matplotlib.Domain.Style
@@ -94,6 +95,14 @@ type Pyplot() =
         let colorOpt = color |> Option.map (fun s -> ColorResolver.Default.Resolve s)
         ax.Bar(x, height, ?width = width, ?bottom = bottom, ?color = colorOpt, ?label = label)
 
+    /// <summary>Bar chart over named categories (Matplotlib's <c>plt.bar</c> with string labels).</summary>
+    member this.Bar(categories: string[], heights: float[], ?color: string, ?label: string) : Rectangle[] =
+        let ax = this.EnsureAxes()
+        let colorOpt = color |> Option.map (fun s -> ColorResolver.Default.Resolve s)
+        let rects = ax.Bar(Array.init categories.Length float, heights, ?color = colorOpt, ?label = label)
+        ax.SetXCategories categories
+        rects
+
     /// <summary>Draw a horizontal bar chart (Matplotlib's <c>plt.barh</c>).</summary>
     member this.BarH
         (y: float[], width: float[], ?height: float, ?left: float[], ?color: string, ?label: string)
@@ -186,6 +195,15 @@ type Pyplot() =
     /// <summary>Draw contour lines of a 2D field (Matplotlib's <c>plt.contour</c>).</summary>
     member this.Contour(data: float[,], ?levels: float[], ?cmap: string) : float[] =
         this.EnsureAxes().Contour(data, ?levels = levels, ?cmap = cmap)
+
+    /// <summary>Plot y versus dates with a date-formatted x axis (Matplotlib's <c>plt.plot_date</c>).</summary>
+    member this.PlotDate(dates: DateTime[], ys: float[], ?format: string, ?color: string, ?label: string) : Line2D =
+        let ax = this.EnsureAxes()
+        let colorOpt = color |> Option.map (fun s -> ColorResolver.Default.Resolve s)
+        ax.PlotDate(dates, ys, ?format = format, ?color = colorOpt, ?label = label)
+
+    /// <summary>Label the x axis with categories at integer positions.</summary>
+    member this.XCategories(categories: string[]) = this.EnsureAxes().SetXCategories categories
 
     /// <summary>Set the x-axis scale (<c>"linear"</c> / <c>"log"</c>).</summary>
     member this.XScale(name: string) = this.EnsureAxes().SetXScale name

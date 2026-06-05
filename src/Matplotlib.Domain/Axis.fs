@@ -1,5 +1,6 @@
 namespace Matplotlib.Domain
 
+open Matplotlib.Domain.Ticking
 open Matplotlib.Domain.Scales
 
 /// <summary>Which of the two Cartesian axes an <see cref="Axis"/> represents.</summary>
@@ -26,3 +27,9 @@ type Axis(orientation: AxisOrientation) =
 
     /// <summary>Whether to draw grid lines for this axis.</summary>
     member val ShowGrid = false with get, set
+
+    /// <summary>Optional tick locator override (falls back to the scale's locator).</summary>
+    member val MajorLocator: ITickLocator option = None with get, set
+
+    /// <summary>Optional tick formatter override (falls back to the scale's formatter).</summary>
+    member val MajorFormatter: ITickFormatter option = None with get, set
