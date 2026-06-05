@@ -34,8 +34,8 @@ module PatchTests =
         let ax = Axes()
         ax.Bar([| 0.0; 1.0; 2.0 |], [| 1.0; 2.0; 3.0 |]) |> ignore
         Assert.Equal(3, ax.Patches.Count)
-        // y range covers baseline 0 to tallest bar 3 (plus margins)
-        Assert.True(ax.YLim.Lower < 0.0)
+        // baseline 0 is sticky (no bottom margin); the top gets a margin
+        assertClose 0.0 ax.YLim.Lower
         Assert.True(ax.YLim.Upper > 3.0)
 
     [<Fact>]

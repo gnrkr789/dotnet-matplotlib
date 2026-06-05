@@ -34,6 +34,61 @@ module internal AxesLayout =
                 Upper = hi + 0.05 * range
             }
 
+    /// <summary>
+    /// Expand a data range by the default margin, but keep a "sticky" edge
+    /// (e.g. a bar baseline) exactly at the limit with no margin on that side.
+    /// </summary>
+    /// <remarks>Ported from Matplotlib's <c>Artist.sticky_edges</c> autoscale handling.</remarks>
+    let marginExpandSticky (sticky: float seq) (lo: float) (hi: float) : Interval =
+        let range = hi - lo
+
+        if range = 0.0 then
+            marginExpand lo hi
+        else
+            let isSticky (v: float) = sticky |> Seq.exists (fun s -> abs (s - v) <= 1e-9 * (1.0 + abs v))
+
+            {
+                Lower = if isSticky lo then lo else lo - 0.05 * range
+                Upper = if isSticky hi then hi else hi + 0.05 * range
+            }
+
+    /// <summary>Expand <c>(x, y)</c> into the vertices of a step plot.</summary>
+    /// <remarks>Ported from Matplotlib's stepped drawstyles (pre/post/mid).</remarks>
+    let stepPoints (where: StepWhere) (x: float[]) (y: float[]) : float[] * float[] =
+        if x.Length = 0 then
+            [||], [||]
+        else
+            let xs = ResizeArray<float>()
+            let ys = ResizeArray<float>()
+            xs.Add x[0]
+            ys.Add y[0]
+
+            match where with
+            | Pre ->
+                for i in 1 .. x.Length - 1 do
+                    xs.Add x[i - 1]
+                    ys.Add y[i]
+                    xs.Add x[i]
+                    ys.Add y[i]
+            | Post ->
+                for i in 1 .. x.Length - 1 do
+                    xs.Add x[i]
+                    ys.Add y[i - 1]
+                    xs.Add x[i]
+                    ys.Add y[i]
+            | Mid ->
+                for i in 1 .. x.Length - 1 do
+                    let m = (x[i - 1] + x[i]) / 2.0
+                    xs.Add m
+                    ys.Add y[i - 1]
+                    xs.Add m
+                    ys.Add y[i]
+
+                xs.Add x[x.Length - 1]
+                ys.Add y[x.Length - 1]
+
+            xs.ToArray(), ys.ToArray()
+
     /// <summary>Number of tick bins for an axis of the given pixel length.</summary>
     let tickBins (lengthPx: float) (labelSizePts: float) (factor: float) (pt2px: float) : int =
         let sizePx = labelSizePts * factor * pt2px
@@ -70,6 +125,8 @@ type Axes(rc: RcParams) =
 
     let lines = ResizeArray<Line2D>()
     let patches = ResizeArray<Patch>()
+    let stickyX = ResizeArray<float>()
+    let stickyY = ResizeArray<float>()
     let cycler = PropertyCycler.CreateDefault()
 
     /// <summary>Create an Axes with the default <c>rcParams</c>.</summary>
@@ -165,6 +222,9 @@ type Axes(rc: RcParams) =
         for rect in rects do
             patches.Add rect
 
+        for bm in bottoms do
+            stickyY.Add bm // bars stick to their baseline (no y margin there)
+
         this.Autoscale()
         rects
 
@@ -186,6 +246,9 @@ type Axes(rc: RcParams) =
 
         for rect in rects do
             patches.Add rect
+
+        for l in lefts do
+            stickyX.Add l // horizontal bars stick to their baseline (no x margin there)
 
         this.Autoscale()
         rects
@@ -212,6 +275,55 @@ type Axes(rc: RcParams) =
         patches.Add polygon
         this.Autoscale()
         polygon
+
+    /// <summary>Draw a step plot (Matplotlib's <c>step</c>, default <c>where = pre</c>).</summary>
+    member this.Step
+        (x: float[], y: float[], ?where: StepWhere, ?color: Color, ?lineStyle: LineStyle, ?label: string)
+        : Line2D =
+        let sx, sy = AxesLayout.stepPoints (defaultArg where Pre) x y
+        this.Plot(sx, sy, ?color = color, ?lineStyle = lineStyle, ?label = label)
+
+    /// <summary>Draw a line with x and/or y error bars (Matplotlib's <c>errorbar</c>).</summary>
+    member this.Errorbar
+        (
+            x: float[],
+            y: float[],
+            ?yerr: float[],
+            ?xerr: float[],
+            ?color: Color,
+            ?marker: MarkerStyle,
+            ?lineStyle: LineStyle,
+            ?label: string
+        ) : Line2D =
+        let col = defaultArg color (cycler.Next())
+        let main = Line2D(x, y)
+        main.Color <- col
+        main.LineStyle <- defaultArg lineStyle Solid
+        main.Marker <- defaultArg marker NoMarker
+        main.LineWidth <- rc.LinesLineWidth
+        main.Label <- defaultArg label ""
+        lines.Add main
+
+        let addBar (xs: float[]) (ys: float[]) =
+            let bar = Line2D(xs, ys)
+            bar.Color <- col
+            bar.LineWidth <- rc.LinesLineWidth
+            lines.Add bar
+
+        match yerr with
+        | Some err ->
+            for i in 0 .. x.Length - 1 do
+                addBar [| x[i]; x[i] |] [| y[i] - err[i]; y[i] + err[i] |]
+        | None -> ()
+
+        match xerr with
+        | Some err ->
+            for i in 0 .. x.Length - 1 do
+                addBar [| x[i] - err[i]; x[i] + err[i] |] [| y[i]; y[i] |]
+        | None -> ()
+
+        this.Autoscale()
+        main
 
     /// <summary>Set the X view limits explicitly (disables x autoscale).</summary>
     member this.SetXLim(lower: float, upper: float) =
@@ -248,10 +360,10 @@ type Axes(rc: RcParams) =
         let ys = Array.append lineYs patchYs |> finite
 
         if this.XLimAuto && xs.Length > 0 then
-            this.XLim <- AxesLayout.marginExpand (Array.min xs) (Array.max xs)
+            this.XLim <- AxesLayout.marginExpandSticky stickyX (Array.min xs) (Array.max xs)
 
         if this.YLimAuto && ys.Length > 0 then
-            this.YLim <- AxesLayout.marginExpand (Array.min ys) (Array.max ys)
+            this.YLim <- AxesLayout.marginExpandSticky stickyY (Array.min ys) (Array.max ys)
 
     member private this.BuildContext(renderer: IRenderer) : AxesDrawContext =
         let canvas = renderer.CanvasSizePx
