@@ -23,6 +23,7 @@
     <Compile Include="LogScaleTests.fs" />
     <Compile Include="ColormapImageTests.fs" />
     <Compile Include="MeshContourTests.fs" />
+    <Compile Include="CategoryDateTests.fs" />
     <Compile Include="SubplotTests.fs" />
     <Compile Include="RenderingTests.fs" />
   </ItemGroup>

@@ -178,6 +178,15 @@ type MaxNLocator(?nbins: int, ?steps: float[], ?integer: bool, ?minNTicks: int) 
             let vmin, vmax = TickMath.nonsingular view.Lower view.Upper 1e-13 1e-14
             this.RawTicks(vmin, vmax)
 
+/// <summary>Places ticks at an explicit set of positions (within the view).</summary>
+/// <remarks>Ported from <c>matplotlib.ticker.FixedLocator</c>.</remarks>
+type FixedLocator(positions: float[]) =
+
+    interface ITickLocator with
+        member _.TickValues(view: Interval) : float[] =
+            positions
+            |> Array.filter (fun v -> v >= view.Min - 1e-9 && v <= view.Max + 1e-9)
+
 /// <summary>Factory functions for tick locators.</summary>
 [<RequireQualifiedAccess>]
 module TickLocator =

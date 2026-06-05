@@ -51,6 +51,30 @@ type ScalarFormatter() =
                     let rounded = Math.Round(v, decimals) + 0.0
                     rounded.ToString("F" + string decimals, CultureInfo.InvariantCulture))
 
+/// <summary>Labels ticks from a fixed list, indexed by the (rounded) tick position.</summary>
+/// <remarks>Ported from <c>matplotlib.ticker.FixedFormatter</c> (used for categories).</remarks>
+type FixedFormatter(labels: string[]) =
+
+    interface ITickFormatter with
+        member _.FormatTicks(locs: float[]) : string[] =
+            locs
+            |> Array.map (fun v ->
+                let i = int (Math.Round v)
+                if i >= 0 && i < labels.Length then labels[i] else "")
+
+/// <summary>Formats tick values (OLE Automation date numbers) as dates.</summary>
+/// <remarks>Ported from <c>matplotlib.dates.DateFormatter</c> (numeric-day formatting).</remarks>
+type DateFormatter(format: string) =
+
+    interface ITickFormatter with
+        member _.FormatTicks(locs: float[]) : string[] =
+            locs
+            |> Array.map (fun v ->
+                try
+                    DateTime.FromOADate(v).ToString(format, CultureInfo.InvariantCulture)
+                with _ ->
+                    "")
+
 /// <summary>Factory functions for tick formatters.</summary>
 [<RequireQualifiedAccess>]
 module TickFormatter =

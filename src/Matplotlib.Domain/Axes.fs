@@ -3,6 +3,7 @@ namespace Matplotlib.Domain
 open System
 open Matplotlib.Domain.Primitives
 open Matplotlib.Domain.Transforms
+open Matplotlib.Domain.Ticking
 open Matplotlib.Domain.Scales
 open Matplotlib.Domain.Style
 open Matplotlib.Domain.Rendering
@@ -698,6 +699,25 @@ type Axes(rc: RcParams) =
         this.YAxis.Scale <- Scale.byName name
         this.Autoscale()
 
+    /// <summary>Fix the X tick positions and labels (Matplotlib's <c>set_xticks</c>+labels).</summary>
+    member this.SetXTickLabels(positions: float[], labels: string[]) =
+        this.XAxis.MajorLocator <- Some(FixedLocator positions :> ITickLocator)
+        this.XAxis.MajorFormatter <- Some(FixedFormatter labels :> ITickFormatter)
+
+    /// <summary>Label the X axis with categories at integer positions 0..n-1.</summary>
+    /// <remarks>Ported from <c>matplotlib.category</c> (string-to-index mapping).</remarks>
+    member this.SetXCategories(categories: string[]) =
+        this.SetXTickLabels(Array.init categories.Length float, categories)
+        this.SetXLim(-0.5, float categories.Length - 0.5)
+
+    /// <summary>Plot y versus dates, formatting the x axis as dates.</summary>
+    /// <remarks>Ported from <c>matplotlib.axes.Axes.plot_date</c> (OADate numbering).</remarks>
+    member this.PlotDate(dates: DateTime[], ys: float[], ?format: string, ?color: Color, ?label: string) : Line2D =
+        let xs = dates |> Array.map (fun d -> d.ToOADate())
+        let line = this.Plot(xs, ys, ?color = color, ?label = label)
+        this.XAxis.MajorFormatter <- Some(DateFormatter(defaultArg format "yyyy-MM-dd") :> ITickFormatter)
+        line
+
     /// <summary>Enable grid lines on both axes.</summary>
     member this.Grid(visible: bool) =
         this.XAxis.ShowGrid <- visible
@@ -772,13 +792,12 @@ type Axes(rc: RcParams) =
         let nbinsX = AxesLayout.tickBins (abs box.Width) rc.TickLabelSize 3.0 pt2px
         let nbinsY = AxesLayout.tickBins (abs box.Height) rc.TickLabelSize 2.0 pt2px
 
-        let xTicks =
-            (xScale.CreateLocator nbinsX).TickValues xView
-            |> Array.filter (AxesLayout.inView xView)
-
-        let yTicks =
-            (yScale.CreateLocator nbinsY).TickValues yView
-            |> Array.filter (AxesLayout.inView yView)
+        let xLocator = defaultArg this.XAxis.MajorLocator (xScale.CreateLocator nbinsX)
+        let yLocator = defaultArg this.YAxis.MajorLocator (yScale.CreateLocator nbinsY)
+        let xFormatter = defaultArg this.XAxis.MajorFormatter (xScale.CreateFormatter())
+        let yFormatter = defaultArg this.YAxis.MajorFormatter (yScale.CreateFormatter())
+        let xTicks = xLocator.TickValues xView |> Array.filter (AxesLayout.inView xView)
+        let yTicks = yLocator.TickValues yView |> Array.filter (AxesLayout.inView yView)
 
         let minorOf (scale: IScale) (ticks: float[]) (view: Interval) =
             if not this.MinorTicksEnabled then [||]
@@ -794,9 +813,9 @@ type Axes(rc: RcParams) =
             XView = xView
             YView = yView
             XTicks = xTicks
-            XLabels = (xScale.CreateFormatter()).FormatTicks xTicks
+            XLabels = xFormatter.FormatTicks xTicks
             YTicks = yTicks
-            YLabels = (yScale.CreateFormatter()).FormatTicks yTicks
+            YLabels = yFormatter.FormatTicks yTicks
             XMinor = minorOf xScale xTicks xView
             YMinor = minorOf yScale yTicks yView
         }
