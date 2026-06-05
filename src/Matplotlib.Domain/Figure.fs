@@ -3,6 +3,7 @@ namespace Matplotlib.Domain
 open Matplotlib.Domain.Primitives
 open Matplotlib.Domain.Style
 open Matplotlib.Domain.Rendering
+open Matplotlib.Domain.Artists
 
 /// <summary>
 /// The top-level container holding one or more <see cref="Axes"/>. Owns the
@@ -206,6 +207,45 @@ type Figure(rc: RcParams) =
         | None ->
             if axesList.Count = 1 then
                 place axesList[0] gl gb gr gt
+
+    /// <summary>
+    /// Add a colorbar for an image: shrink its parent axes and add a thin axes
+    /// showing the colormap gradient with a value scale on the right.
+    /// </summary>
+    /// <remarks>Ported from <c>matplotlib.figure.Figure.colorbar</c> (vertical, right).</remarks>
+    member _.Colorbar(image: AxesImage, ?ax: Axes) : Axes =
+        let parent =
+            match ax with
+            | Some a -> a
+            | None ->
+                axesList
+                |> Seq.tryFind (fun a -> a.Images.Contains image)
+                |> Option.defaultValue axesList[0]
+
+        let p = parent.Position
+        let cbWidth = 0.04
+        let gap = 0.02
+        parent.Position <- BBox.fromExtents p.X0 p.Y0 (p.X1 - cbWidth - gap) p.Y1
+
+        let cax = Axes(rc)
+        cax.Position <- BBox.fromExtents (p.X1 - cbWidth) p.Y0 p.X1 p.Y1
+        cax.XTicksVisible <- false
+        cax.YTickSide <- "right"
+        let vmin = image.Norm.VMin
+        let vmax = image.Norm.VMax
+        cax.SetXLim(0.0, 1.0)
+        cax.SetYLim(vmin, vmax)
+        let n = 256
+
+        for k in 0 .. n - 1 do
+            let y0 = vmin + float k / float n * (vmax - vmin)
+            let y1 = vmin + float (k + 1) / float n * (vmax - vmin)
+            let rect = Rectangle(0.0, y0, 1.0, y1 - y0)
+            rect.FaceColor <- image.Colormap.Apply(image.Norm.Normalize((y0 + y1) / 2.0))
+            cax.Patches.Add rect
+
+        axesList.Add cax
+        cax
 
     /// <summary>Render the figure background and every Axes onto the renderer.</summary>
     member this.Draw(renderer: IRenderer) =

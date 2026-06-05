@@ -211,7 +211,8 @@ let private renderImshow (outDir: string) =
             let y = float i / float n * 6.0
             sin x * cos y)
 
-    plt.Imshow(data, cmap = "viridis") |> ignore
+    let img = plt.Imshow(data, cmap = "viridis")
+    plt.Colorbar img |> ignore
     plt.Title "dotnet-matplotlib: imshow (viridis)"
     plt.XLabel "column"
     plt.YLabel "row"

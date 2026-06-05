@@ -27,7 +27,7 @@ Status: ✅ done · 🚧 in progress · ⬜ planned.
 - 🚧 `LogScale` ✅ (decade locator/formatter, log minor ticks); `SymlogScale`, `LogitScale` ⬜
 - ⬜ Date axis (`dates.py`) + locators/formatters
 - ⬜ Categorical axis (`category.py`)
-- 🚧 Colormaps: `viridis` ✅ (+ gray/jet/hot), `Normalize` ✅; more `_cm*` maps, `colorbar` ⬜
+- 🚧 Colormaps: `viridis` ✅ (+ gray/jet/hot), `Normalize` ✅, `colorbar` ✅; more `_cm*` maps ⬜
 - 🚧 `imshow` ✅; `pcolormesh`, `contour`/`contourf` ⬜
 
 ## Phase 4 — Backends & fidelity
