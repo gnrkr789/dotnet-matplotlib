@@ -42,10 +42,14 @@ and is not part of this repository (it is git-ignored).
 | 2026-06-05 | 2 | `patches.Patch/Rectangle/Polygon/Circle` | `Domain/Artists/Patch` | filled shapes (zorder 1) |
 | 2026-06-05 | 2 | `axes.Axes.bar/barh/fill_between` | `Domain/Axes` + `Matplotlib/Pyplot` | bar charts & filled regions |
 | 2026-06-05 | 2 | `figure.Figure.subplots`, `GridSpec` | `Domain/Figure.Subplots` + `Pyplot.Subplots` | subplot grid layout |
+| 2026-06-05 | 3 | `Artist.sticky_edges` autoscale handling | `Domain/Axes` (`marginExpandSticky`) | bars stick to their baseline |
+| 2026-06-05 | 3 | `axes.Axes.step` (pre/post/mid drawstyles) | `Domain/Axes.Step` + `Pyplot.Step` | step plots |
+| 2026-06-05 | 3 | `axes.Axes.errorbar` | `Domain/Axes.Errorbar` + `Pyplot.Errorbar` | x/y error bars |
 
 Known deviations (to refine in later sprints):
-- Bar/fill_between autoscaling uses simple 5% margins; Matplotlib's
-  `sticky_edges` (bars/areas sticking exactly to the baseline) is not yet
-  implemented, so a small margin appears below a `0` baseline.
+- `errorbar` draws the error lines only; caps (`capsize`) are not yet rendered
+  (Matplotlib's default `errorbar.capsize` is also `0`, i.e. no caps).
+- `fill_between` autoscaling uses simple 5% margins (Matplotlib does not apply
+  sticky edges to `fill_between` by default either).
 
 (Append a row per slice.)

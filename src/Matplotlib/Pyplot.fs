@@ -109,6 +109,25 @@ type Pyplot() =
         let colorOpt = color |> Option.map (fun s -> ColorResolver.Default.Resolve s)
         ax.FillBetween(x, y1, ?y2 = y2, ?color = colorOpt, ?alpha = alpha, ?label = label)
 
+    /// <summary>Draw a step plot (Matplotlib's <c>plt.step</c>).</summary>
+    member this.Step
+        (x: float[], y: float[], ?where: string, ?color: string, ?lineStyle: string, ?label: string)
+        : Line2D =
+        let ax = this.EnsureAxes()
+        let colorOpt = color |> Option.map (fun s -> ColorResolver.Default.Resolve s)
+        let whereOpt = where |> Option.map Styles.parseStepWhere
+        let lineStyleOpt = lineStyle |> Option.map Styles.parseLineStyle
+        ax.Step(x, y, ?where = whereOpt, ?color = colorOpt, ?lineStyle = lineStyleOpt, ?label = label)
+
+    /// <summary>Draw a line with error bars (Matplotlib's <c>plt.errorbar</c>).</summary>
+    member this.Errorbar
+        (x: float[], y: float[], ?yerr: float[], ?xerr: float[], ?color: string, ?marker: string, ?label: string)
+        : Line2D =
+        let ax = this.EnsureAxes()
+        let colorOpt = color |> Option.map (fun s -> ColorResolver.Default.Resolve s)
+        let markerOpt = marker |> Option.map Styles.parseMarker
+        ax.Errorbar(x, y, ?yerr = yerr, ?xerr = xerr, ?color = colorOpt, ?marker = markerOpt, ?label = label)
+
     /// <summary>Create a grid of subplots (Matplotlib's <c>plt.subplots</c>).</summary>
     member this.Subplots(?nrows: int, ?ncols: int, ?width: float, ?height: float, ?dpi: float) : Figure * Axes[,] =
         let fig = this.Figure(?width = width, ?height = height, ?dpi = dpi)

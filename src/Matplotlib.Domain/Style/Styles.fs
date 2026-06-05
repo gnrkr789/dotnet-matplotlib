@@ -66,6 +66,13 @@ type MarkerStyle =
     | Plus
     | Cross
 
+/// <summary>Where the step occurs relative to the data points in a step plot.</summary>
+/// <remarks>Ported from Matplotlib's <c>step</c> <c>where</c> argument / drawstyle.</remarks>
+type StepWhere =
+    | Pre
+    | Post
+    | Mid
+
 /// <summary>Parsers from Matplotlib's short string codes to style values.</summary>
 [<RequireQualifiedAccess>]
 module Styles =
@@ -100,6 +107,14 @@ module Styles =
         | "+" -> Plus
         | "x" -> Cross
         | other -> failwith $"Unknown marker '{other}'."
+
+    /// <summary>Parse a Matplotlib step <c>where</c> code (<c>pre</c>, <c>post</c>, <c>mid</c>).</summary>
+    let parseStepWhere (code: string) : StepWhere =
+        match code with
+        | "pre" -> Pre
+        | "post" -> Post
+        | "mid" -> Mid
+        | other -> failwith $"Unknown step where '{other}'."
 
 /// <summary>
 /// Cycles through the property-cycle colors (Matplotlib's <c>axes.prop_cycle</c>).

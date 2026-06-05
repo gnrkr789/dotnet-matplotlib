@@ -61,6 +61,35 @@ let private renderFillBetween (outDir: string) =
     plt.Savefig path
     printfn "wrote %s" path
 
+let private renderStep (outDir: string) =
+    let plt = Pyplot()
+    let xs = [| 0.0; 1.0; 2.0; 3.0; 4.0; 5.0 |]
+    let ys = [| 1.0; 3.0; 2.0; 4.0; 3.0; 5.0 |]
+    plt.Step(xs, ys, where = "mid", color = "C2", label = "level") |> ignore
+    plt.Title "dotnet-matplotlib: step"
+    plt.XLabel "x"
+    plt.Legend()
+    let path = Path.Combine(outDir, "step.svg")
+    plt.Savefig path
+    printfn "wrote %s" path
+
+let private renderErrorbar (outDir: string) =
+    let plt = Pyplot()
+    let xs = [| 1.0; 2.0; 3.0; 4.0; 5.0 |]
+    let ys = xs |> Array.map (fun x -> x * 1.5 + 1.0)
+    let yerr = [| 0.5; 0.8; 0.4; 0.9; 0.6 |]
+
+    plt.Errorbar(xs, ys, yerr = yerr, color = "C3", marker = "o", label = "measured")
+    |> ignore
+
+    plt.Title "dotnet-matplotlib: errorbar"
+    plt.XLabel "x"
+    plt.YLabel "y"
+    plt.Legend()
+    let path = Path.Combine(outDir, "errorbar.svg")
+    plt.Savefig path
+    printfn "wrote %s" path
+
 [<EntryPoint>]
 let main argv =
     let outDir = if argv.Length > 0 then argv[0] else "out"
@@ -69,4 +98,6 @@ let main argv =
     renderScatter outDir
     renderBar outDir
     renderFillBetween outDir
+    renderStep outDir
+    renderErrorbar outDir
     0

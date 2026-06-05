@@ -16,7 +16,7 @@ Status: ✅ done · 🚧 in progress · ⬜ planned.
 - ✅ Facade: `Pyplot` (`Plot`, `Title`, `XLabel`, `YLabel`, `Legend`, `Savefig`)
 
 ## Phase 2 — Plot types & styling breadth
-- 🚧 `scatter` ✅, `bar`/`barh` ✅, `fill_between` ✅; `step`, `stem`, `errorbar` ⬜
+- 🚧 `scatter` ✅, `bar`/`barh` ✅ (sticky baseline), `fill_between` ✅, `step` ✅, `errorbar` ✅; `stem` ⬜
 - 🚧 Patches: `Rectangle` ✅, `Circle` ✅, `Polygon` ✅; `PathPatch`, `Collection`s ⬜
 - ⬜ Markers: full marker set from `markers.py`
 - 🚧 Legend (basic box ✅); layout engine, `Annotation` ⬜
