@@ -47,6 +47,33 @@ plt.Legend()
 plt.Savefig "hello.svg"
 ```
 
+## Interactive window
+
+Besides saving files, figures can be shown in a live window — the equivalent of
+Matplotlib's `plt.show()`. This is an **opt-in, Windows-only** backend (WinForms +
+GDI+) that lives in `Matplotlib.Gui`, so the default SVG path stays free of any
+native/UI dependency.
+
+```fsharp
+open Matplotlib
+open Matplotlib.Gui   // adds plt.Show()
+
+let plt = Pyplot()
+plt.Plot([| 0.0; 1.0; 2.0; 3.0 |], [| 0.0; 1.0; 4.0; 9.0 |], color = "C0") |> ignore
+plt.Title "Hello, window"
+plt.Show()            // opens a window and blocks until it is closed; resizes re-layout
+```
+
+Try it: `dotnet run --project samples/GuiDemo` (requires the Windows Desktop SDK).
+
+To render non-Latin text (e.g. Korean), set the default font family before
+plotting — the equivalent of Matplotlib's `rcParams["font.family"]`. It applies to
+both the SVG and window backends:
+
+```fsharp
+plt.FontFamily <- "맑은 고딕"   // Malgun Gothic
+```
+
 ## Features
 
 Line / scatter / bar / barh / fill_between / step / errorbar / stem, the full

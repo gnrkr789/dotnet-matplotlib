@@ -62,6 +62,8 @@ and is not part of this repository (it is git-ignored).
 | 2026-06-06 | 13 | `scale.SymmetricalLogScale`, `scale.LogitScale` | `Domain/Scales/Scale` | symlog (linear near 0, log beyond) + logit scales, locators |
 | 2026-06-06 | 14 | `ticker.FixedLocator/FixedFormatter`, `dates.DateFormatter`, `category` | `Domain/Ticking`, `Domain/Axis` (overrides), `Domain/Axes` | categorical axis (`SetXCategories`) + date axis (`PlotDate`, OADate); per-axis locator/formatter overrides |
 | 2026-06-06 | 15 | `axes.contourf` | `Domain/Axes.Contourf` + `Pyplot.Contourf` | banded filled contours (cell quantization) |
+| 2026-06-06 | 16 | `pyplot.show`, interactive figure window | `Matplotlib.Gui` (`GdiRenderer`, `PlotWindow`, `Pyplot.Show`) | opt-in Windows GDI+/WinForms window; live resize re-layout (not on the default zero-dependency path) |
+| 2026-06-06 | 16 | `rcParams["font.family"]` | `RcParams.FontFamily`, `Pyplot.FontFamily` | configurable default font family for all text (e.g. `"맑은 고딕"`); honored by SVG + GDI backends |
 
 Known deviations (to refine in later sprints):
 - `errorbar` draws the error lines only; caps (`capsize`) are not yet rendered

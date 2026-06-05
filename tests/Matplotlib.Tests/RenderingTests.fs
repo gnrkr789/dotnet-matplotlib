@@ -30,6 +30,24 @@ module RenderingTests =
         Assert.Contains("demo", svg)
 
     [<Fact>]
+    let ``FontFamily setting flows into rendered text`` () =
+        let plt = Pyplot()
+        plt.FontFamily <- "맑은 고딕"
+        plt.Plot([| 0.0; 1.0 |], [| 0.0; 1.0 |]) |> ignore
+        plt.Title "제목"
+        let svg = plt.ToSvg()
+        Assert.Contains("font-family=\"맑은 고딕\"", svg)
+        // and never falls back to the generic family for the configured text
+        Assert.DoesNotContain("font-family=\"sans-serif\"", svg)
+
+    [<Fact>]
+    let ``Default font family is sans-serif`` () =
+        let plt = Pyplot()
+        plt.Plot([| 0.0; 1.0 |], [| 0.0; 1.0 |]) |> ignore
+        plt.Title "demo"
+        Assert.Contains("font-family=\"sans-serif\"", plt.ToSvg())
+
+    [<Fact>]
     let ``Figure pixel size honors dpi`` () =
         let fig = Figure()
         fig.SizeInches <- { Width = 6.4; Height = 4.8 }

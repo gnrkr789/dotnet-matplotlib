@@ -31,6 +31,8 @@ Status: ✅ done · 🚧 in progress · ⬜ planned.
 - ✅ `imshow`, `pcolormesh`, `contour` (marching squares), `contourf` (banded)
 
 ## Phase 4 — Backends & fidelity
+- 🚧 Interactive GUI window (opt-in, Windows: WinForms + GDI+): `Matplotlib.Gui`
+  (`GdiRenderer`, `PlotWindow`, `plt.Show()`) — live on-screen raster + resize re-layout
 - ⬜ Raster backend (Agg-equivalent, pure-managed or opt-in native) → PNG
 - ⬜ Font metrics (AFM/TrueType) for exact text layout
 - ⬜ Mathtext subset; hatching; clipping; alpha compositing

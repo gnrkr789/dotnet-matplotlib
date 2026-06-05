@@ -202,6 +202,7 @@ type RcParams =
         AxesLineWidth: float
         LinesLineWidth: float
         FontSize: float
+        FontFamily: string
         TickMajorSize: float
         TickMajorWidth: float
         TickMinorSize: float
@@ -234,6 +235,7 @@ type RcParams =
             AxesLineWidth = 0.8
             LinesLineWidth = 1.5
             FontSize = 10.0
+            FontFamily = "sans-serif"
             TickMajorSize = 3.5
             TickMajorWidth = 0.8
             TickMinorSize = 2.0

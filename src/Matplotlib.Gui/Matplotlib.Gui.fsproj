@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Opt-in, Windows-only interactive GUI backend (WinForms + GDI+).
+    Kept out of the solution / CI matrix because it targets net10.0-windows;
+    build it explicitly on Windows: dotnet build src/Matplotlib.Gui.
+  -->
+  <PropertyGroup>
+    <RootNamespace>Matplotlib.Gui</RootNamespace>
+    <AssemblyName>Matplotlib.Gui</AssemblyName>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="GdiRenderer.fs" />
+    <Compile Include="PlotWindow.fs" />
+    <Compile Include="Gui.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Matplotlib\Matplotlib.fsproj" />
+    <ProjectReference Include="..\Matplotlib.Domain\Matplotlib.Domain.fsproj" />
+  </ItemGroup>
+
+</Project>
