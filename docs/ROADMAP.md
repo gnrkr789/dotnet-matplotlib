@@ -33,7 +33,8 @@ Status: ✅ done · 🚧 in progress · ⬜ planned.
 ## Phase 4 — Backends & fidelity
 - 🚧 Interactive GUI window (opt-in, Windows: WinForms + GDI+): `Matplotlib.Gui`
   (`GdiRenderer`, `PlotWindow`, `plt.Show()`) — live on-screen raster + resize re-layout
-- ⬜ Raster backend (Agg-equivalent, pure-managed or opt-in native) → PNG
+- 🚧 Raster backend → PNG: opt-in GDI+ export ✅ (`Raster.savePng` / `plt.SavePng`,
+  Windows); pure-managed cross-platform rasterizer + PNG encoder ⬜
 - ⬜ Font metrics (AFM/TrueType) for exact text layout
 - ⬜ Mathtext subset; hatching; clipping; alpha compositing
 - ⬜ PDF backend

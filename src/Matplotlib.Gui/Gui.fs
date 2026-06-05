@@ -43,3 +43,9 @@ module PyplotGuiExtensions =
         /// is closed (Matplotlib's <c>plt.show()</c>).
         /// </summary>
         member this.Show() : unit = Gui.show (this.CurrentFigure())
+
+        /// <summary>
+        /// Render the current figure to a raster <c>PNG</c> file via the GDI+
+        /// backend (Matplotlib's <c>plt.savefig("…​.png")</c>).
+        /// </summary>
+        member this.SavePng(path: string) : unit = Raster.savePng path (this.CurrentFigure())

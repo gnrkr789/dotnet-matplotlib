@@ -16,6 +16,7 @@
   <ItemGroup>
     <Compile Include="GdiRenderer.fs" />
     <Compile Include="PlotWindow.fs" />
+    <Compile Include="RasterExport.fs" />
     <Compile Include="Gui.fs" />
   </ItemGroup>
 

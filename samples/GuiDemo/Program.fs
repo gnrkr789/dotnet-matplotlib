@@ -9,7 +9,7 @@ open Matplotlib.Gui
 /// exactly as one would with Matplotlib's <c>plt.show()</c>.
 /// </summary>
 [<EntryPoint; STAThread>]
-let main _argv =
+let main argv =
     let plt = Pyplot()
 
     // Set the default font to Malgun Gothic so Korean labels render correctly.
@@ -36,6 +36,12 @@ let main _argv =
     plt.Grid true
     plt.Legend(loc = "upper right")
 
-    // Blocks until the user closes the window, like Matplotlib's plt.show().
-    plt.Show()
+    match argv with
+    | [| "png"; path |] ->
+        // Headless raster export, like plt.savefig("out.png").
+        plt.SavePng path
+    | _ ->
+        // Blocks until the user closes the window, like Matplotlib's plt.show().
+        plt.Show()
+
     0

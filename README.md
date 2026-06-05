@@ -74,6 +74,14 @@ both the SVG and window backends:
 plt.FontFamily <- "맑은 고딕"   // Malgun Gothic
 ```
 
+The same backend can also export a raster **PNG** (the opt-in counterpart of the
+default SVG writer):
+
+```fsharp
+open Matplotlib.Gui
+plt.SavePng "plot.png"          // GDI+ raster export (Windows)
+```
+
 ## Features
 
 Line / scatter / bar / barh / fill_between / step / errorbar / stem, the full
