@@ -41,7 +41,8 @@ Status: ✅ done · 🚧 in progress · ⬜ planned.
 - ✅ TrueType font loading (`Domain/Text/TrueTypeFont`, `Backends/Text/FontManager`):
   pure-managed `glyf` parser (cmap 4/12, simple + composite glyphs) → raster text
 - ⬜ Mathtext subset; hatching; clipping; alpha compositing
-- ⬜ PDF backend
+- ✅ PDF backend (`Matplotlib.Backends.Pdf`, `FigureCanvas.SavePdf`): pure-managed
+  PDF 1.4 (paths, Helvetica text, alpha via ExtGState)
 
 ## Phase 5 — Ecosystem parity
 - ⬜ `3D` (mplot3d), `streamplot`, `quiver`, `hist2d`, `boxplot`, `violinplot`

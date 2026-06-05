@@ -305,11 +305,11 @@ type Pyplot() =
     /// </summary>
     member this.Savefig(path: string) =
         let canvas = FigureCanvas(this.CurrentFigure())
+        let ext (e: string) = path.EndsWith(e, System.StringComparison.OrdinalIgnoreCase)
 
-        if path.EndsWith(".png", System.StringComparison.OrdinalIgnoreCase) then
-            canvas.SavePng path
-        else
-            canvas.SaveSvg path
+        if ext ".png" then canvas.SavePng path
+        elif ext ".pdf" then canvas.SavePdf path
+        else canvas.SaveSvg path
 
     /// <summary>A fresh, independent pyplot state.</summary>
     static member Instance = Pyplot()

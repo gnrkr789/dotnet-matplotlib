@@ -28,6 +28,7 @@
     <Compile Include="RenderingTests.fs" />
     <Compile Include="RasterTests.fs" />
     <Compile Include="TrueTypeTests.fs" />
+    <Compile Include="PdfTests.fs" />
   </ItemGroup>
 
   <ItemGroup>

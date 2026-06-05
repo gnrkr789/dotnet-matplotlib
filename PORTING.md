@@ -67,6 +67,7 @@ and is not part of this repository (it is git-ignored).
 | 2026-06-06 | 17 | `FigureCanvasAgg.print_png` (raster → PNG) | `Matplotlib.Gui` (`Raster.toBitmap`/`savePng`, `Pyplot.SavePng`) | opt-in GDI+ raster export to PNG (Windows); reuses `GdiRenderer`. Pure-managed cross-platform rasterizer still on the roadmap |
 | 2026-06-06 | 18 | `backend_agg` + PNG output (pure-managed) | `Matplotlib.Backends.Raster` (`PngEncoder`, `RasterImage`, `RasterRenderer`); `FigureCanvas.RenderToPng`/`SavePng` | cross-platform PNG with zero native deps: managed PNG encoder (`ZLibStream` + CRC-32), even-odd polygon fill, thick-line stroke (round joins), supersampled anti-aliasing |
 | 2026-06-06 | 19 | `font_manager` + FreeType glyph loading (TrueType) | `Domain/Text/TrueTypeFont` (pure parser), `Backends/Text/FontManager` (I/O) | pure-managed TTF reader (cmap 4/12, simple + composite glyphs, quadratic flattening); raster backend now renders anti-aliased text via glyph outlines; `Pyplot.Savefig` writes PNG for `.png` paths |
+| 2026-06-06 | 20 | `backend_pdf` | `Matplotlib.Backends.Pdf.PdfRenderer`, `FigureCanvas.RenderToPdf`/`SavePdf` | pure-managed single-page PDF 1.4 writer: path operators, standard Helvetica text, alpha via `ExtGState`, xref table; `Pyplot.Savefig` writes PDF for `.pdf` paths |
 
 Known deviations (to refine in later sprints):
 - `errorbar` draws the error lines only; caps (`capsize`) are not yet rendered

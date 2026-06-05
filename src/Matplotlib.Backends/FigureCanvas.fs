@@ -5,6 +5,7 @@ open Matplotlib.Domain
 open Matplotlib.Domain.Primitives
 open Matplotlib.Backends.Svg
 open Matplotlib.Backends.Raster
+open Matplotlib.Backends.Pdf
 
 /// <summary>
 /// Connects a <see cref="Figure"/> to a concrete backend and produces output.
@@ -57,3 +58,18 @@ type FigureCanvas(figure: Figure) =
             Directory.CreateDirectory directory |> ignore
 
         File.WriteAllBytes(path, this.RenderToPng(?scale = scale))
+
+    /// <summary>Render the figure to PDF bytes (pure-managed vector backend).</summary>
+    member _.RenderToPdf() : byte[] =
+        let renderer = PdfRenderer(figure.PixelSize, figure.Dpi)
+        figure.Draw renderer
+        renderer.GetPdf()
+
+    /// <summary>Render the figure and write it to a PDF file.</summary>
+    member this.SavePdf(path: string) =
+        let directory = Path.GetDirectoryName(Path.GetFullPath path)
+
+        if not (Directory.Exists directory) then
+            Directory.CreateDirectory directory |> ignore
+
+        File.WriteAllBytes(path, this.RenderToPdf())
