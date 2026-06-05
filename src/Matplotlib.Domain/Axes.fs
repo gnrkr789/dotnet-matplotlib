@@ -89,6 +89,56 @@ module internal AxesLayout =
 
             xs.ToArray(), ys.ToArray()
 
+    /// <summary>Floored modulo (result has the sign of the divisor, like Python's <c>%</c>).</summary>
+    let private flooredMod (x: float) (m: float) = ((x % m) + m) % m
+
+    /// <summary>
+    /// Minor tick locations between the given major ticks within the view.
+    /// </summary>
+    /// <remarks>
+    /// Ported from <c>matplotlib.ticker.AutoMinorLocator</c>: the major interval
+    /// is split into 5 sub-intervals when its mantissa is 1/2.5/5/10, else 4.
+    /// </remarks>
+    let minorTicks (majors: float[]) (view: Interval) : float[] =
+        if majors.Length < 2 then
+            [||]
+        else
+            let majorStep = abs (majors[1] - majors[0])
+
+            if majorStep <= 0.0 then
+                [||]
+            else
+                let mantissa = 10.0 ** flooredMod (log10 majorStep) 1.0
+
+                let ndivs =
+                    if [ 1.0; 2.5; 5.0; 10.0 ] |> List.exists (fun v -> abs (mantissa - v) < 1e-6) then
+                        5
+                    else
+                        4
+
+                let minorStep = majorStep / float ndivs
+                let lo = view.Min
+                let hi = view.Max
+                let t0 = majors[0]
+                let kStart = int (floor ((lo - t0) / minorStep)) - 1
+                let kEnd = int (ceil ((hi - t0) / minorStep)) + 1
+
+                [ for k in kStart..kEnd -> t0 + float k * minorStep ]
+                |> List.filter (fun v -> v >= lo - 1e-9 && v <= hi + 1e-9)
+                |> List.filter (fun v -> not (majors |> Array.exists (fun m -> abs (m - v) < minorStep * 1e-6)))
+                |> List.toArray
+
+    /// <summary>
+    /// The two coordinates of a tick mark along the axis-normal direction,
+    /// given the spine <paramref name="baseline"/>, tick <paramref name="length"/>
+    /// (px) and direction (<c>in</c> / <c>out</c> / <c>inout</c>).
+    /// </summary>
+    let tickEndpoints (baseline: float) (length: float) (direction: string) : float * float =
+        match direction with
+        | "in" -> baseline, baseline + length
+        | "inout" -> baseline - length, baseline + length
+        | _ -> baseline, baseline - length
+
     /// <summary>Number of tick bins for an axis of the given pixel length.</summary>
     let tickBins (lengthPx: float) (labelSizePts: float) (factor: float) (pt2px: float) : int =
         let sizePx = labelSizePts * factor * pt2px
@@ -114,6 +164,8 @@ type internal AxesDrawContext =
         XLabels: string[]
         YTicks: float[]
         YLabels: string[]
+        XMinor: float[]
+        YMinor: float[]
     }
 
 /// <summary>
@@ -161,6 +213,24 @@ type Axes(rc: RcParams) =
 
     /// <summary>Whether to draw the legend.</summary>
     member val ShowLegend = false with get, set
+
+    /// <summary>Whether minor ticks are drawn.</summary>
+    member val MinorTicksEnabled = false with get, set
+
+    /// <summary>Tick direction: <c>out</c> (default), <c>in</c> or <c>inout</c>.</summary>
+    member val TickDirection = "out" with get, set
+
+    /// <summary>Whether the top spine is drawn.</summary>
+    member val SpineTop = true with get, set
+
+    /// <summary>Whether the bottom spine is drawn.</summary>
+    member val SpineBottom = true with get, set
+
+    /// <summary>Whether the left spine is drawn.</summary>
+    member val SpineLeft = true with get, set
+
+    /// <summary>Whether the right spine is drawn.</summary>
+    member val SpineRight = true with get, set
 
     /// <summary>The plotted lines.</summary>
     member _.Lines = lines
@@ -325,6 +395,51 @@ type Axes(rc: RcParams) =
         this.Autoscale()
         main
 
+    /// <summary>Draw a stem plot: vertical stems from a baseline to each point.</summary>
+    /// <remarks>Ported from <c>matplotlib.axes.Axes.stem</c>.</remarks>
+    member this.Stem(x: float[], y: float[], ?bottom: float, ?color: Color, ?label: string) : Line2D =
+        let col = defaultArg color (cycler.Next())
+        let bot = defaultArg bottom 0.0
+
+        for i in 0 .. x.Length - 1 do
+            let stem = Line2D([| x[i]; x[i] |], [| bot; y[i] |])
+            stem.Color <- col
+            stem.LineWidth <- rc.LinesLineWidth
+            lines.Add stem
+
+        if x.Length > 0 then
+            let baseLine = Line2D([| Array.min x; Array.max x |], [| bot; bot |])
+            baseLine.Color <- col
+            baseLine.LineWidth <- rc.AxesLineWidth
+            lines.Add baseLine
+
+        let markerLine = Line2D(x, y)
+        markerLine.LineStyle <- NoLine
+        markerLine.Marker <- MarkerStyle.Circle
+        markerLine.Color <- col
+        markerLine.Label <- defaultArg label ""
+        lines.Add markerLine
+        this.Autoscale()
+        markerLine
+
+    /// <summary>Enable minor ticks on both axes (Matplotlib's <c>minorticks_on</c>).</summary>
+    member this.MinorTicksOn() = this.MinorTicksEnabled <- true
+
+    /// <summary>Disable minor ticks on both axes (Matplotlib's <c>minorticks_off</c>).</summary>
+    member this.MinorTicksOff() = this.MinorTicksEnabled <- false
+
+    /// <summary>Adjust tick appearance (Matplotlib's <c>tick_params</c>, direction subset).</summary>
+    member this.TickParams(?direction: string) = direction |> Option.iter (fun d -> this.TickDirection <- d)
+
+    /// <summary>Show or hide one spine by side (<c>top/bottom/left/right</c>).</summary>
+    member this.SetSpineVisible(side: string, visible: bool) =
+        match side with
+        | "top" -> this.SpineTop <- visible
+        | "bottom" -> this.SpineBottom <- visible
+        | "left" -> this.SpineLeft <- visible
+        | "right" -> this.SpineRight <- visible
+        | other -> failwith $"Unknown spine '{other}'."
+
     /// <summary>Set the X view limits explicitly (disables x autoscale).</summary>
     member this.SetXLim(lower: float, upper: float) =
         this.XLim <- { Lower = lower; Upper = upper }
@@ -394,6 +509,18 @@ type Axes(rc: RcParams) =
             (this.YAxis.Scale.CreateLocator nbinsY).TickValues this.YLim
             |> Array.filter (AxesLayout.inView this.YLim)
 
+        let xMinor =
+            if this.MinorTicksEnabled then
+                AxesLayout.minorTicks xTicks this.XLim
+            else
+                [||]
+
+        let yMinor =
+            if this.MinorTicksEnabled then
+                AxesLayout.minorTicks yTicks this.YLim
+            else
+                [||]
+
         {
             Renderer = renderer
             Box = box
@@ -404,6 +531,8 @@ type Axes(rc: RcParams) =
             XLabels = (this.XAxis.Scale.CreateFormatter()).FormatTicks xTicks
             YTicks = yTicks
             YLabels = (this.YAxis.Scale.CreateFormatter()).FormatTicks yTicks
+            XMinor = xMinor
+            YMinor = yMinor
         }
 
     member private this.DrawBackground(ctx: AxesDrawContext) =
@@ -450,18 +579,19 @@ type Axes(rc: RcParams) =
     member private this.DrawSpines(ctx: AxesDrawContext) =
         let edges =
             [
-                { X = 0.0; Y = 0.0 }, { X = 1.0; Y = 0.0 }
-                { X = 0.0; Y = 1.0 }, { X = 1.0; Y = 1.0 }
-                { X = 0.0; Y = 0.0 }, { X = 0.0; Y = 1.0 }
-                { X = 1.0; Y = 0.0 }, { X = 1.0; Y = 1.0 }
+                this.SpineBottom, ({ X = 0.0; Y = 0.0 }, { X = 1.0; Y = 0.0 })
+                this.SpineTop, ({ X = 0.0; Y = 1.0 }, { X = 1.0; Y = 1.0 })
+                this.SpineLeft, ({ X = 0.0; Y = 0.0 }, { X = 0.0; Y = 1.0 })
+                this.SpineRight, ({ X = 1.0; Y = 0.0 }, { X = 1.0; Y = 1.0 })
             ]
 
-        for (a, b) in edges do
-            let spine = Spine(a, b)
-            spine.Transform <- ctx.TransAxes
-            spine.Color <- rc.AxesEdgeColor
-            spine.LineWidth <- rc.AxesLineWidth
-            spine.Draw ctx.Renderer
+        for (visible, (a, b)) in edges do
+            if visible then
+                let spine = Spine(a, b)
+                spine.Transform <- ctx.TransAxes
+                spine.Color <- rc.AxesEdgeColor
+                spine.LineWidth <- rc.AxesLineWidth
+                spine.Draw ctx.Renderer
 
     member private _.MakeTickLabel(x: float, y: float, text: string, ha: HAlign, va: VAlign) : Text =
         let t = Text(x, y, text)
@@ -481,6 +611,8 @@ type Axes(rc: RcParams) =
         let b = ctx.Box
         let len = rc.TickMajorSize * ctx.Pt2Px
         let pad = rc.TickPad * ctx.Pt2Px
+        let dir = this.TickDirection
+        let labelOff = if dir = "in" then pad else len + pad
 
         let gc =
             { GraphicsContext.Default with
@@ -491,18 +623,42 @@ type Axes(rc: RcParams) =
         Array.iter2
             (fun tv lab ->
                 let x = (ctx.TransData.Transform { X = tv; Y = this.YLim.Lower }).X
-                ctx.Renderer.DrawPath(gc, Path.polyline [ { X = x; Y = b.Y0 }; { X = x; Y = b.Y0 - len } ], None)
-                (this.MakeTickLabel(x, b.Y0 - len - pad, lab, HCenter, VTop)).Draw ctx.Renderer)
+                let y0, y1 = AxesLayout.tickEndpoints b.Y0 len dir
+                ctx.Renderer.DrawPath(gc, Path.polyline [ { X = x; Y = y0 }; { X = x; Y = y1 } ], None)
+                (this.MakeTickLabel(x, b.Y0 - labelOff, lab, HCenter, VTop)).Draw ctx.Renderer)
             ctx.XTicks
             ctx.XLabels
 
         Array.iter2
             (fun tv lab ->
                 let y = (ctx.TransData.Transform { X = this.XLim.Lower; Y = tv }).Y
-                ctx.Renderer.DrawPath(gc, Path.polyline [ { X = b.X0; Y = y }; { X = b.X0 - len; Y = y } ], None)
-                (this.MakeTickLabel(b.X0 - len - pad, y, lab, HRight, VCenter)).Draw ctx.Renderer)
+                let x0, x1 = AxesLayout.tickEndpoints b.X0 len dir
+                ctx.Renderer.DrawPath(gc, Path.polyline [ { X = x0; Y = y }; { X = x1; Y = y } ], None)
+                (this.MakeTickLabel(b.X0 - labelOff, y, lab, HRight, VCenter)).Draw ctx.Renderer)
             ctx.YTicks
             ctx.YLabels
+
+    member private this.DrawMinorTicks(ctx: AxesDrawContext) =
+        if this.MinorTicksEnabled then
+            let b = ctx.Box
+            let len = rc.TickMinorSize * ctx.Pt2Px
+            let dir = this.TickDirection
+
+            let gc =
+                { GraphicsContext.Default with
+                    StrokeColor = rc.TickColor
+                    LineWidth = rc.TickMinorWidth * ctx.Pt2Px
+                }
+
+            for tv in ctx.XMinor do
+                let x = (ctx.TransData.Transform { X = tv; Y = this.YLim.Lower }).X
+                let y0, y1 = AxesLayout.tickEndpoints b.Y0 len dir
+                ctx.Renderer.DrawPath(gc, Path.polyline [ { X = x; Y = y0 }; { X = x; Y = y1 } ], None)
+
+            for tv in ctx.YMinor do
+                let y = (ctx.TransData.Transform { X = this.XLim.Lower; Y = tv }).Y
+                let x0, x1 = AxesLayout.tickEndpoints b.X0 len dir
+                ctx.Renderer.DrawPath(gc, Path.polyline [ { X = x0; Y = y }; { X = x1; Y = y } ], None)
 
     member private this.DrawAxisLabelsAndTitle(ctx: AxesDrawContext) =
         let b = ctx.Box
@@ -676,6 +832,7 @@ type Axes(rc: RcParams) =
         this.DrawGrid ctx
         this.DrawData ctx
         this.DrawSpines ctx
+        this.DrawMinorTicks ctx
         this.DrawTicks ctx
         this.DrawAxisLabelsAndTitle ctx
         this.DrawLegend ctx

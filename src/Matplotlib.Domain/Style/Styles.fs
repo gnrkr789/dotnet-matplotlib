@@ -156,6 +156,8 @@ type RcParams =
         FontSize: float
         TickMajorSize: float
         TickMajorWidth: float
+        TickMinorSize: float
+        TickMinorWidth: float
         TickLabelSize: float
         TickPad: float
         AxesTitleSize: float
@@ -186,6 +188,8 @@ type RcParams =
             FontSize = 10.0
             TickMajorSize = 3.5
             TickMajorWidth = 0.8
+            TickMinorSize = 2.0
+            TickMinorWidth = 0.6
             TickLabelSize = 10.0
             TickPad = 3.5
             AxesTitleSize = 12.0

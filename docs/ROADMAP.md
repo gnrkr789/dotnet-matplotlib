@@ -16,11 +16,11 @@ Status: ✅ done · 🚧 in progress · ⬜ planned.
 - ✅ Facade: `Pyplot` (`Plot`, `Title`, `XLabel`, `YLabel`, `Legend`, `Savefig`)
 
 ## Phase 2 — Plot types & styling breadth
-- 🚧 `scatter` ✅, `bar`/`barh` ✅ (sticky baseline), `fill_between` ✅, `step` ✅, `errorbar` ✅; `stem` ⬜
+- ✅ `scatter`, `bar`/`barh` (sticky baseline), `fill_between`, `step`, `errorbar`, `stem`
 - 🚧 Patches: `Rectangle` ✅, `Circle` ✅, `Polygon` ✅; `PathPatch`, `Collection`s ⬜
 - ⬜ Markers: full marker set from `markers.py`
 - 🚧 Legend (basic box ✅); layout engine, `Annotation` ⬜
-- ⬜ Grid ✅ (basic); minor ticks, tick params, spine placement/visibility ⬜
+- 🚧 Grid ✅; minor ticks ✅; tick params (direction ✅, rest ⬜); spine visibility ✅
 - 🚧 `subplots` ✅, `GridSpec` ✅ (wspace/hspace); constrained/tight layout ⬜
 
 ## Phase 3 — Scales, color, data domains
