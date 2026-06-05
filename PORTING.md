@@ -1,12 +1,12 @@
 # PORTING.md — Changes relative to Matplotlib
 
-This document satisfies clause 3 of the Matplotlib license (a brief summary of
-changes made to Matplotlib) and records the porting decisions and parity status.
+This document records the porting decisions and parity status relative to the
+reference Matplotlib implementation.
 
 ## Nature of the port
 
 `dotnet-matplotlib` is an **independent native re-implementation** of Matplotlib
-in C# / .NET 10. No Matplotlib Python source code is copied or distributed.
+in F# / .NET 10. No Matplotlib Python source code is copied or distributed.
 Behavior, the object model, default styling, numeric constants, and color tables
 are reproduced so that output matches Matplotlib's. The reference implementation
 (`example/matplotlib`, Matplotlib `v3.11.0rc2`) is used only as a specification

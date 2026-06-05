@@ -1,5 +1,8 @@
 # dotnet-matplotlib
 
+[![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
+[![NuGet](https://img.shields.io/nuget/v/DotnetMatplotlib.svg?logo=nuget&label=NuGet)](https://www.nuget.org/packages/DotnetMatplotlib/)
+
 A **native .NET 10** port of [Matplotlib](https://matplotlib.org/) — the de-facto
 2D plotting library for Python — rebuilt in idiomatic **F#** following
 **Object-Oriented** and **Domain-Driven Design** principles.
@@ -21,26 +24,6 @@ plt.YLabel "y"
 plt.Legend()
 plt.Savefig "hello.svg"
 ```
-
-## Status
-
-This project is developed **agile, sprint by sprint**. See [PORTING.md](PORTING.md)
-for the porting log and [docs/ROADMAP.md](docs/ROADMAP.md) for the module-by-module
-plan tracking Matplotlib parity.
-
-| Layer | Module | Status |
-|-------|--------|--------|
-| Domain | Primitives (Point2D, Size, BBox, Color) | ✅ Sprint 1 |
-| Domain | Transforms (Affine2D, transform stack) | ✅ Sprint 1 |
-| Domain | Artists (Line2D, Text, Spine) | ✅ Sprint 1 |
-| Domain | Figure / Axes / Axis | ✅ Sprint 1 |
-| Domain | Scales & Ticking (Linear, MaxNLocator) | ✅ Sprint 1 |
-| Infra | SVG backend | ✅ Sprint 1 |
-| App | `Pyplot` facade | ✅ Sprint 1 |
-| Domain | Patches (Rectangle, Polygon, Circle) | ✅ Sprint 2 |
-| App | `bar` / `barh` / `fill_between` | ✅ Sprint 2 |
-| App | `subplots` grid (GridSpec) | ✅ Sprint 2 |
-| … | Collections, Images, Colormaps, Log/Date scales, Agg raster backend | 🚧 planned |
 
 ## Building
 
@@ -79,43 +62,12 @@ samples/Gallery/        # Runnable example gallery.
 See [CLAUDE.md](CLAUDE.md) for the full engineering guide and
 [Skills.md](Skills.md) for the porting playbook.
 
-## License & Attribution
+## License
 
-`dotnet-matplotlib` is released under the **BSD-3-Clause** license
-([LICENSE](LICENSE)). It is an independent re-implementation of Matplotlib; the
-Matplotlib copyright notice — *"Copyright (c) 2012- Matplotlib Development Team;
-All Rights Reserved"* — is retained in [LICENSE](LICENSE) as required, and the
-full Matplotlib (PSF-based) license is available
-[upstream](https://github.com/matplotlib/matplotlib/blob/main/LICENSE/LICENSE).
-A summary of changes is in [PORTING.md](PORTING.md).
+`dotnet-matplotlib` is released under the **BSD-3-Clause** license — see
+[LICENSE](LICENSE).
 
 ## Citation
 
-If `dotnet-matplotlib` (or Matplotlib, from which it is ported) contributes to a
-project that leads to a scientific publication, please cite the original
-Matplotlib paper:
-
-> J. D. Hunter, "Matplotlib: A 2D Graphics Environment", *Computing in Science &
-> Engineering*, vol. 9, no. 3, pp. 90–95, 2007, doi:10.1109/MCSE.2007.55.
-
-BibTeX:
-
-```bibtex
-@Article{Hunter:2007,
-  Author    = {Hunter, J. D.},
-  Title     = {Matplotlib: A 2D graphics environment},
-  Journal   = {Computing in Science \& Engineering},
-  Volume    = {9},
-  Number    = {3},
-  Pages     = {90--95},
-  abstract  = {Matplotlib is a 2D graphics package used for Python for
-  application development, interactive scripting, and publication-quality
-  image generation across user interfaces and operating systems.},
-  publisher = {IEEE COMPUTER SOC},
-  doi       = {10.1109/MCSE.2007.55},
-  year      = 2007
-}
-```
-
-Matplotlib — Visualization with Python. The Matplotlib Development Team.
-<https://matplotlib.org/> · <https://github.com/matplotlib/matplotlib>
+Hunter, J. D. (2007). Matplotlib: A 2D graphics environment. *Computing in
+Science & Engineering*, 9(3), 90–95. https://doi.org/10.1109/MCSE.2007.55
