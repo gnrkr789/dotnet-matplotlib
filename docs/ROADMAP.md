@@ -19,7 +19,7 @@ Status: ✅ done · 🚧 in progress · ⬜ planned.
 - ✅ `scatter`, `bar`/`barh` (sticky baseline), `fill_between`, `step`, `errorbar`, `stem`
 - 🚧 Patches: `Rectangle` ✅, `Circle` ✅, `Polygon` ✅; `PathPatch`, `Collection`s ⬜
 - ✅ Markers: full set (circle, point, square, diamond, thin-diamond, triangles ▲▼◀▶, pentagon, hexagon, star, +, x, |, _)
-- 🚧 Legend: box ✅, `loc` ✅; auto-best placement, `Annotation` ⬜
+- 🚧 Legend: box ✅, `loc` ✅ (auto-best ⬜); `text` ✅, `Annotation` ✅ (basic arrow)
 - 🚧 Grid ✅; minor ticks ✅; tick params (direction ✅, rest ⬜); spine visibility ✅
 - 🚧 `subplots` ✅, `GridSpec` ✅ (wspace/hspace); constrained/tight layout ⬜
 
