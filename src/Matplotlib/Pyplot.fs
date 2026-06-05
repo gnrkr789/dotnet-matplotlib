@@ -128,6 +128,27 @@ type Pyplot() =
         let markerOpt = marker |> Option.map Styles.parseMarker
         ax.Errorbar(x, y, ?yerr = yerr, ?xerr = xerr, ?color = colorOpt, ?marker = markerOpt, ?label = label)
 
+    /// <summary>Draw a stem plot (Matplotlib's <c>plt.stem</c>).</summary>
+    member this.Stem(x: float[], y: float[], ?bottom: float, ?color: string, ?label: string) : Line2D =
+        let ax = this.EnsureAxes()
+        let colorOpt = color |> Option.map (fun s -> ColorResolver.Default.Resolve s)
+        ax.Stem(x, y, ?bottom = bottom, ?color = colorOpt, ?label = label)
+
+    /// <summary>Enable (or disable) minor ticks (Matplotlib's <c>plt.minorticks_on</c>).</summary>
+    member this.MinorTicks(?on: bool) =
+        let ax = this.EnsureAxes()
+
+        if defaultArg on true then
+            ax.MinorTicksOn()
+        else
+            ax.MinorTicksOff()
+
+    /// <summary>Adjust tick parameters on the current axes (direction subset).</summary>
+    member this.TickParams(?direction: string) = this.EnsureAxes().TickParams(?direction = direction)
+
+    /// <summary>Show or hide a spine by side (<c>top/bottom/left/right</c>).</summary>
+    member this.SpineVisible(side: string, visible: bool) = this.EnsureAxes().SetSpineVisible(side, visible)
+
     /// <summary>Create a grid of subplots (Matplotlib's <c>plt.subplots</c>).</summary>
     member this.Subplots(?nrows: int, ?ncols: int, ?width: float, ?height: float, ?dpi: float) : Figure * Axes[,] =
         let fig = this.Figure(?width = width, ?height = height, ?dpi = dpi)

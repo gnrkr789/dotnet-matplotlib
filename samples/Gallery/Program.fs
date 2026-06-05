@@ -90,6 +90,22 @@ let private renderErrorbar (outDir: string) =
     plt.Savefig path
     printfn "wrote %s" path
 
+let private renderStem (outDir: string) =
+    let plt = Pyplot()
+    let xs = [| for i in 0..20 -> float i / 2.0 |]
+    let ys = xs |> Array.map (fun x -> exp (-x / 4.0) * cos x)
+    plt.Stem(xs, ys, color = "C4", label = "damped") |> ignore
+    plt.Title "dotnet-matplotlib: stem"
+    plt.XLabel "t"
+    plt.MinorTicks()
+    plt.TickParams(direction = "in")
+    plt.SpineVisible("top", false)
+    plt.SpineVisible("right", false)
+    plt.Legend()
+    let path = Path.Combine(outDir, "stem.svg")
+    plt.Savefig path
+    printfn "wrote %s" path
+
 [<EntryPoint>]
 let main argv =
     let outDir = if argv.Length > 0 then argv[0] else "out"
@@ -100,4 +116,5 @@ let main argv =
     renderFillBetween outDir
     renderStep outDir
     renderErrorbar outDir
+    renderStem outDir
     0

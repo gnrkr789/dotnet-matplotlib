@@ -7,6 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Allow the test project to unit-test internal layout helpers. -->
+    <InternalsVisibleTo Include="Matplotlib.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Primitives (value objects) -->
     <Compile Include="Primitives/Point2D.fs" />
     <Compile Include="Primitives/Size.fs" />

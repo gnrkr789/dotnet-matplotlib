@@ -45,6 +45,9 @@ and is not part of this repository (it is git-ignored).
 | 2026-06-05 | 3 | `Artist.sticky_edges` autoscale handling | `Domain/Axes` (`marginExpandSticky`) | bars stick to their baseline |
 | 2026-06-05 | 3 | `axes.Axes.step` (pre/post/mid drawstyles) | `Domain/Axes.Step` + `Pyplot.Step` | step plots |
 | 2026-06-05 | 3 | `axes.Axes.errorbar` | `Domain/Axes.Errorbar` + `Pyplot.Errorbar` | x/y error bars |
+| 2026-06-05 | 4 | `axes.Axes.stem` | `Domain/Axes.Stem` + `Pyplot.Stem` | stem plots |
+| 2026-06-05 | 4 | `ticker.AutoMinorLocator` | `Domain/Axes` (`minorTicks`) | minor ticks (4/5 subdivisions) |
+| 2026-06-05 | 4 | `Axes.tick_params` (direction), `spines[*].set_visible` | `Domain/Axes` (`TickParams`, `SetSpineVisible`) | tick direction in/out/inout, spine visibility |
 
 Known deviations (to refine in later sprints):
 - `errorbar` draws the error lines only; caps (`capsize`) are not yet rendered
