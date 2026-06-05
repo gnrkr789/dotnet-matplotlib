@@ -78,6 +78,57 @@ type Figure(rc: RcParams) =
             axesList.Add ax
             ax)
 
+    /// <summary>
+    /// Adjust the outer margins so axis labels, tick labels and titles are not
+    /// clipped, repositioning every Axes within the new envelope.
+    /// </summary>
+    /// <remarks>
+    /// Ported (approximated) from <c>matplotlib.figure.Figure.tight_layout</c>:
+    /// margins are estimated from font sizes and the presence of labels/title,
+    /// then each Axes is remapped linearly from the default subplot envelope.
+    /// </remarks>
+    member this.TightLayout(?pad: float) =
+        let figPx = this.PixelSize
+        let pt2px = this.Dpi / 72.0
+        let padPx = defaultArg pad 1.08 * rc.FontSize * pt2px * 0.5
+        let anyTitle = axesList |> Seq.exists (fun a -> a.Title <> "")
+        let anyXLabel = axesList |> Seq.exists (fun a -> a.XAxis.Label <> "")
+        let anyYLabel = axesList |> Seq.exists (fun a -> a.YAxis.Label <> "")
+        let tickRoom = rc.TickMajorSize * pt2px + rc.TickPad * pt2px
+        let labelH = rc.AxesLabelSize * pt2px
+        let xlabelRoom = if anyXLabel then rc.AxesLabelPad * pt2px + labelH else 0.0
+        let ylabelRoom = if anyYLabel then rc.AxesLabelPad * pt2px + labelH else 0.0
+
+        let titleRoom =
+            if anyTitle then
+                rc.AxesTitlePad * pt2px + rc.AxesTitleSize * pt2px
+            else
+                0.0
+
+        let bottomPx = tickRoom + rc.TickLabelSize * pt2px + xlabelRoom + padPx
+        let leftPx = tickRoom + 4.0 * 0.6 * rc.TickLabelSize * pt2px + ylabelRoom + padPx
+
+        let newL = leftPx / figPx.Width
+        let newR = 1.0 - padPx / figPx.Width
+        let newB = bottomPx / figPx.Height
+        let newT = 1.0 - (titleRoom + padPx) / figPx.Height
+
+        let remap v oldA oldB newA newB =
+            if oldB = oldA then
+                newA
+            else
+                newA + (v - oldA) / (oldB - oldA) * (newB - newA)
+
+        for ax in axesList do
+            let pos = ax.Position
+
+            ax.Position <-
+                BBox.fromExtents
+                    (remap pos.X0 rc.SubplotLeft rc.SubplotRight newL newR)
+                    (remap pos.Y0 rc.SubplotBottom rc.SubplotTop newB newT)
+                    (remap pos.X1 rc.SubplotLeft rc.SubplotRight newL newR)
+                    (remap pos.Y1 rc.SubplotBottom rc.SubplotTop newB newT)
+
     /// <summary>Render the figure background and every Axes onto the renderer.</summary>
     member this.Draw(renderer: IRenderer) =
         let canvas = renderer.CanvasSizePx

@@ -233,6 +233,9 @@ type Pyplot() =
     /// <summary>Toggle grid lines on the current axes.</summary>
     member this.Grid(?visible: bool) = this.EnsureAxes().Grid(defaultArg visible true)
 
+    /// <summary>Tighten margins so labels/titles fit (Matplotlib's <c>plt.tight_layout</c>).</summary>
+    member this.TightLayout(?pad: float) = this.CurrentFigure().TightLayout(?pad = pad)
+
     /// <summary>Render the current figure to an SVG string.</summary>
     member this.ToSvg() : string = FigureCanvas(this.CurrentFigure()).RenderToSvg()
 
