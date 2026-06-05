@@ -50,10 +50,21 @@ type LineCollection(segments: Point2D[] list) as this =
                     CapStyle = "round"
                 }
 
-            for seg in this.Segments do
-                if seg.Length >= 2 then
+            // Emit all segments as a single multi-subpath for compact output.
+            let commands =
+                this.Segments
+                |> Seq.filter (fun seg -> seg.Length >= 2)
+                |> Seq.collect (fun seg ->
                     let pts = seg |> Array.map this.Transform.Transform
-                    renderer.DrawPath(gc, Path.polyline pts, None)
+
+                    seq {
+                        yield MoveTo pts[0]
+                        for k in 1 .. pts.Length - 1 -> LineTo pts[k]
+                    })
+                |> Seq.toList
+
+            if not commands.IsEmpty then
+                renderer.DrawPath(gc, { Commands = commands }, None)
 
     override this.DataBounds() = CollectionBounds.ofPoints (this.Segments |> Seq.collect id)
 

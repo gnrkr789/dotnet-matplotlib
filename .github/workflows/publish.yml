@@ -1,0 +1,50 @@
+name: publish
+
+# Publishes the DotnetMatplotlib NuGet package when a version tag is pushed,
+# e.g. `git tag v0.0.1 && git push origin v0.0.1`.
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  contents: read
+
+jobs:
+  publish-nuget:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify NuGet token
+        run: |
+          if [ -z "${{ secrets.NUGET_TOKEN }}" ]; then
+            echo "Error: NUGET_TOKEN secret is not set"
+            exit 1
+          fi
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore src/Matplotlib/Matplotlib.fsproj
+
+      - name: Build
+        run: dotnet build src/Matplotlib/Matplotlib.fsproj -c Release --no-restore
+
+      - name: Pack
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "Packing version $VERSION"
+          dotnet pack src/Matplotlib/Matplotlib.fsproj -c Release --no-build --output . -p:Version=$VERSION
+
+      - name: Push
+        env:
+          TOKEN: ${{ secrets.NUGET_TOKEN }}
+        run: |
+          dotnet nuget push *.nupkg \
+            --source "https://api.nuget.org/v3/index.json" \
+            --api-key "${TOKEN}" \
+            --skip-duplicate

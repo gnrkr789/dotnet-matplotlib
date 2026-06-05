@@ -196,6 +196,10 @@ type Pyplot() =
     member this.Contour(data: float[,], ?levels: float[], ?cmap: string) : float[] =
         this.EnsureAxes().Contour(data, ?levels = levels, ?cmap = cmap)
 
+    /// <summary>Draw filled contour bands of a 2D field (Matplotlib's <c>plt.contourf</c>).</summary>
+    member this.Contourf(data: float[,], ?levels: float[], ?cmap: string) : float[] =
+        this.EnsureAxes().Contourf(data, ?levels = levels, ?cmap = cmap)
+
     /// <summary>Plot y versus dates with a date-formatted x axis (Matplotlib's <c>plt.plot_date</c>).</summary>
     member this.PlotDate(dates: DateTime[], ys: float[], ?format: string, ?color: string, ?label: string) : Line2D =
         let ax = this.EnsureAxes()

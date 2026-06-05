@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="640" height="480" viewBox="0 0 640 480">
+<path fill="#ffffff" fill-opacity="1" stroke="none" stroke-linecap="butt" stroke-linejoin="round" d="M 0 480 L 640 480 L 640 0 L 0 0 Z" />
+<path fill="#ffffff" fill-opacity="1" stroke="none" stroke-linecap="butt" stroke-linejoin="round" d="M 80 427.2 L 576 427.2 L 576 57.6 L 80 57.6 Z" />
+<path fill="none" stroke="#1f77b4" stroke-opacity="1" stroke-width="2.083" stroke-linecap="round" stroke-linejoin="round" d="M 102.545 242.47 L 110.061 214.582 L 117.576 187.467 L 125.091 161.876 L 132.606 138.518 L 140.121 118.042 L 147.636 101.014 L 155.152 87.906 L 162.667 79.082 L 170.182 74.785 L 177.697 75.136 L 185.212 80.124 L 192.727 89.612 L 200.242 103.335 L 207.758 120.915 L 215.273 141.863 L 222.788 165.6 L 230.303 191.467 L 237.818 218.747 L 245.333 246.685 L 252.848 274.505 L 260.364 301.439 L 267.879 326.737 L 275.394 349.701 L 282.909 369.693 L 290.424 386.159 L 297.939 398.643 L 305.455 406.798 L 312.97 410.4 L 320.485 409.348 L 328 403.671 L 335.515 393.526 L 343.03 379.195 L 350.545 361.075 L 358.061 339.668 L 365.576 315.568 L 373.091 289.441 L 380.606 262.013 L 388.121 234.043 L 395.636 206.307 L 403.152 179.573 L 410.667 154.582 L 418.182 132.027 L 425.697 112.532 L 433.212 96.639 L 440.727 84.787 L 448.242 77.305 L 455.758 74.4 L 463.273 76.153 L 470.788 82.515 L 478.303 93.311 L 485.818 108.24 L 493.333 126.889 L 500.848 148.741 L 508.364 173.19 L 515.879 199.56 L 523.394 227.119 L 530.909 255.103 L 538.424 282.737 L 545.939 309.256 L 553.455 333.923" />
+<path fill="none" stroke="#000000" stroke-opacity="1" stroke-width="1.111" stroke-linecap="butt" stroke-linejoin="round" d="M 80 427.2 L 576 427.2" />
+<path fill="none" stroke="#000000" stroke-opacity="1" stroke-width="1.111" stroke-linecap="butt" stroke-linejoin="round" d="M 80 57.6 L 576 57.6" />
+<path fill="none" stroke="#000000" stroke-opacity="1" stroke-width="1.111" stroke-linecap="butt" stroke-linejoin="round" d="M 80 427.2 L 80 57.6" />
+<path fill="none" stroke="#000000" stroke-opacity="1" stroke-width="1.111" stroke-linecap="butt" stroke-linejoin="round" d="M 576 427.2 L 576 57.6" />
+<path fill="none" stroke="#000000" stroke-opacity="1" stroke-width="1.111" stroke-linecap="butt" stroke-linejoin="round" d="M 102.545 427.2 L 102.545 432.061" />
+<text x="102.545" y="436.922" font-family="sans-serif" font-size="13.889" fill="#000000" fill-opacity="1" text-anchor="middle" dominant-baseline="text-before-edge">0</text>
+<path fill="none" stroke="#000000" stroke-opacity="1" stroke-width="1.111" stroke-linecap="butt" stroke-linejoin="round" d="M 192.727 427.2 L 192.727 432.061" />
+<text x="192.727" y="436.922" font-family="sans-serif" font-size="13.889" fill="#000000" fill-opacity="1" text-anchor="middle" dominant-baseline="text-before-edge">2</text>
+<path fill="none" stroke="#000000" stroke-opacity="1" stroke-width="1.111" stroke-linecap="butt" stroke-linejoin="round" d="M 282.909 427.2 L 282.909 432.061" />
+<text x="282.909" y="436.922" font-family="sans-serif" font-size="13.889" fill="#000000" fill-opacity="1" text-anchor="middle" dominant-baseline="text-before-edge">4</text>
+<path fill="none" stroke="#000000" stroke-opacity="1" stroke-width="1.111" stroke-linecap="butt" stroke-linejoin="round" d="M 373.091 427.2 L 373.091 432.061" />
+<text x="373.091" y="436.922" font-family="sans-serif" font-size="13.889" fill="#000000" fill-opacity="1" text-anchor="middle" dominant-baseline="text-before-edge">6</text>
+<path fill="none" stroke="#000000" stroke-opacity="1" stroke-width="1.111" stroke-linecap="butt" stroke-linejoin="round" d="M 463.273 427.2 L 463.273 432.061" />
+<text x="463.273" y="436.922" font-family="sans-serif" font-size="13.889" fill="#000000" fill-opacity="1" text-anchor="middle" dominant-baseline="text-before-edge">8</text>
+<path fill="none" stroke="#000000" stroke-opacity="1" stroke-width="1.111" stroke-linecap="butt" stroke-linejoin="round" d="M 553.455 427.2 L 553.455 432.061" />
+<text x="553.455" y="436.922" font-family="sans-serif" font-size="13.889" fill="#000000" fill-opacity="1" text-anchor="middle" dominant-baseline="text-before-edge">10</text>
+<path fill="none" stroke="#000000" stroke-opacity="1" stroke-width="1.111" stroke-linecap="butt" stroke-linejoin="round" d="M 80 410.576 L 75.139 410.576" />
+<text x="70.278" y="410.576" font-family="sans-serif" font-size="13.889" fill="#000000" fill-opacity="1" text-anchor="end" dominant-baseline="central">-1.00</text>
+<path fill="none" stroke="#000000" stroke-opacity="1" stroke-width="1.111" stroke-linecap="butt" stroke-linejoin="round" d="M 80 368.549 L 75.139 368.549" />
+<text x="70.278" y="368.549" font-family="sans-serif" font-size="13.889" fill="#000000" fill-opacity="1" text-anchor="end" dominant-baseline="central">-0.75</text>
+<path fill="none" stroke="#000000" stroke-opacity="1" stroke-width="1.111" stroke-linecap="butt" stroke-linejoin="round" d="M 80 326.523 L 75.139 326.523" />
+<text x="70.278" y="326.523" font-family="sans-serif" font-size="13.889" fill="#000000" fill-opacity="1" text-anchor="end" dominant-baseline="central">-0.50</text>
+<path fill="none" stroke="#000000" stroke-opacity="1" stroke-width="1.111" stroke-linecap="butt" stroke-linejoin="round" d="M 80 284.496 L 75.139 284.496" />
+<text x="70.278" y="284.496" font-family="sans-serif" font-size="13.889" fill="#000000" fill-opacity="1" text-anchor="end" dominant-baseline="central">-0.25</text>
+<path fill="none" stroke="#000000" stroke-opacity="1" stroke-width="1.111" stroke-linecap="butt" stroke-linejoin="round" d="M 80 242.47 L 75.139 242.47" />
+<text x="70.278" y="242.47" font-family="sans-serif" font-size="13.889" fill="#000000" fill-opacity="1" text-anchor="end" dominant-baseline="central">0.00</text>
+<path fill="none" stroke="#000000" stroke-opacity="1" stroke-width="1.111" stroke-linecap="butt" stroke-linejoin="round" d="M 80 200.443 L 75.139 200.443" />
+<text x="70.278" y="200.443" font-family="sans-serif" font-size="13.889" fill="#000000" fill-opacity="1" text-anchor="end" dominant-baseline="central">0.25</text>
+<path fill="none" stroke="#000000" stroke-opacity="1" stroke-width="1.111" stroke-linecap="butt" stroke-linejoin="round" d="M 80 158.417 L 75.139 158.417" />
+<text x="70.278" y="158.417" font-family="sans-serif" font-size="13.889" fill="#000000" fill-opacity="1" text-anchor="end" dominant-baseline="central">0.50</text>
+<path fill="none" stroke="#000000" stroke-opacity="1" stroke-width="1.111" stroke-linecap="butt" stroke-linejoin="round" d="M 80 116.391 L 75.139 116.391" />
+<text x="70.278" y="116.391" font-family="sans-serif" font-size="13.889" fill="#000000" fill-opacity="1" text-anchor="end" dominant-baseline="central">0.75</text>
+<path fill="none" stroke="#000000" stroke-opacity="1" stroke-width="1.111" stroke-linecap="butt" stroke-linejoin="round" d="M 80 74.364 L 75.139 74.364" />
+<text x="70.278" y="74.364" font-family="sans-serif" font-size="13.889" fill="#000000" fill-opacity="1" text-anchor="end" dominant-baseline="central">1.00</text>
+<text x="328" y="456.367" font-family="sans-serif" font-size="13.889" fill="#000000" fill-opacity="1" text-anchor="middle" dominant-baseline="text-before-edge">x</text>
+<text x="328" y="49.267" font-family="sans-serif" font-size="16.667" fill="#000000" fill-opacity="1" text-anchor="middle" dominant-baseline="text-after-edge">dotnet-matplotlib: annotate</text>
+<path fill="none" stroke="#d62728" stroke-opacity="1" stroke-width="2.083" stroke-linecap="round" stroke-linejoin="round" d="M 246.836 124.796 L 173.374 74.364" />
+<text x="246.836" y="124.796" font-family="sans-serif" font-size="13.889" fill="#d62728" fill-opacity="1" text-anchor="start" dominant-baseline="alphabetic">first peak</text>
+<text x="418.182" y="385.36" font-family="sans-serif" font-size="13.889" fill="#1f77b4" fill-opacity="1" text-anchor="start" dominant-baseline="alphabetic">sine wave</text>
+<path fill="#ffffff" fill-opacity="0.9" stroke="#cccccc" stroke-opacity="1" stroke-width="1.389" stroke-linecap="butt" stroke-linejoin="round" d="M 86.944 420.256 L 182.778 420.256 L 182.778 389.7 L 86.944 389.7 Z" />
+<path fill="none" stroke="#1f77b4" stroke-opacity="1" stroke-width="2.083" stroke-linecap="butt" stroke-linejoin="round" d="M 92.5 404.978 L 120.278 404.978" />
+<text x="127.222" y="404.978" font-family="sans-serif" font-size="13.889" fill="#000000" fill-opacity="1" text-anchor="start" dominant-baseline="central">sin(x)</text>
+</svg>
