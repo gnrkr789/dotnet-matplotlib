@@ -33,6 +33,8 @@
     <Compile Include="Scales/Scale.fs" />
     <!-- Style -->
     <Compile Include="Style/Styles.fs" />
+    <!-- Text (font parsing) -->
+    <Compile Include="Text/TrueTypeFont.fs" />
     <!-- Rendering port -->
     <Compile Include="Rendering/Path.fs" />
     <Compile Include="Rendering/Renderer.fs" />

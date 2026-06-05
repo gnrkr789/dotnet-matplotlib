@@ -298,8 +298,18 @@ type Pyplot() =
     /// <summary>Render the current figure to an SVG string.</summary>
     member this.ToSvg() : string = FigureCanvas(this.CurrentFigure()).RenderToSvg()
 
-    /// <summary>Save the current figure to an SVG file (Matplotlib's <c>plt.savefig</c>).</summary>
-    member this.Savefig(path: string) = FigureCanvas(this.CurrentFigure()).SaveSvg path
+    /// <summary>
+    /// Save the current figure, choosing the format from the file extension
+    /// (Matplotlib's <c>plt.savefig</c>): <c>.png</c> uses the pure-managed raster
+    /// backend, anything else writes SVG.
+    /// </summary>
+    member this.Savefig(path: string) =
+        let canvas = FigureCanvas(this.CurrentFigure())
+
+        if path.EndsWith(".png", System.StringComparison.OrdinalIgnoreCase) then
+            canvas.SavePng path
+        else
+            canvas.SaveSvg path
 
     /// <summary>A fresh, independent pyplot state.</summary>
     static member Instance = Pyplot()

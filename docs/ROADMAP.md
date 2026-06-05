@@ -37,8 +37,9 @@ Status: ✅ done · 🚧 in progress · ⬜ planned.
   - opt-in GDI+ export ✅ (`Raster.savePng` / `plt.SavePng`, Windows, with text)
   - pure-managed cross-platform rasterizer + PNG encoder ✅
     (`Matplotlib.Backends.Raster`, `FigureCanvas.RenderToPng`/`SavePng`; even-odd
-    fill, thick strokes, supersampled AA) — managed text & dashes await TrueType ⬜
-- ⬜ Font metrics (AFM/TrueType) for exact text layout (enables managed raster text)
+    fill, thick strokes, supersampled AA)
+- ✅ TrueType font loading (`Domain/Text/TrueTypeFont`, `Backends/Text/FontManager`):
+  pure-managed `glyf` parser (cmap 4/12, simple + composite glyphs) → raster text
 - ⬜ Mathtext subset; hatching; clipping; alpha compositing
 - ⬜ PDF backend
 

@@ -82,6 +82,46 @@ type RasterImage(width: int, height: int) =
 
                     k <- k + 2
 
+    /// <summary>
+    /// Fill several contours together with a single even-odd rule, so inner
+    /// contours cut holes (used for glyph outlines such as "o" or "e").
+    /// </summary>
+    member this.FillPolygons(contours: (float * float)[][], color: Color) =
+        let edges = contours |> Array.filter (fun c -> c.Length >= 2)
+
+        if edges.Length > 0 then
+            let r, g, b, a = byte color.R255, byte color.G255, byte color.B255, byte color.A255
+            let allY = edges |> Array.collect (Array.map snd)
+            let yMin = max 0 (int (floor (Array.min allY)))
+            let yMax = min (height - 1) (int (ceil (Array.max allY)))
+            let xs = ResizeArray<float>()
+
+            for y in yMin..yMax do
+                let yc = float y + 0.5
+                xs.Clear()
+
+                for contour in edges do
+                    let n = contour.Length
+
+                    for i in 0 .. n - 1 do
+                        let x0, y0 = contour[i]
+                        let x1, y1 = contour[(i + 1) % n]
+
+                        if (y0 <= yc && y1 > yc) || (y1 <= yc && y0 > yc) then
+                            xs.Add(x0 + (yc - y0) / (y1 - y0) * (x1 - x0))
+
+                xs.Sort()
+                let mutable k = 0
+
+                while k + 1 < xs.Count do
+                    let xStart = max 0 (int (ceil (xs[k] - 0.5)))
+                    let xEnd = min (width - 1) (int (floor (xs[k + 1] - 0.5)))
+
+                    for x in xStart..xEnd do
+                        this.SetOver(x, y, r, g, b, a)
+
+                    k <- k + 2
+
     /// <summary>Fill a disk (used for round line joins and markers).</summary>
     member this.FillDisk(cx: float, cy: float, radius: float, color: Color) =
         if radius > 0.0 then

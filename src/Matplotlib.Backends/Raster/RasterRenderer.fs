@@ -3,6 +3,7 @@ namespace Matplotlib.Backends.Raster
 open Matplotlib.Domain.Primitives
 open Matplotlib.Domain.Style
 open Matplotlib.Domain.Rendering
+open Matplotlib.Backends.Text
 
 /// <summary>
 /// A pure-managed, cross-platform raster <see cref="IRenderer"/>. Draws paths
@@ -12,10 +13,11 @@ open Matplotlib.Domain.Rendering
 /// the renderer flips Y and scales by the supersample factor internally.
 /// </summary>
 /// <remarks>
-/// The Agg-equivalent of <c>matplotlib.backends.backend_agg</c>, minus text:
-/// glyph rasterization awaits the TrueType font slice, so <c>DrawText</c> is a
-/// no-op here (text still measures via the same heuristic as the SVG backend).
-/// Dash patterns are not yet honored (strokes render solid).
+/// The Agg-equivalent of <c>matplotlib.backends.backend_agg</c>. Text is drawn by
+/// filling TrueType glyph outlines resolved through the <see cref="FontManager"/>
+/// (skipped if no font resolves; <c>MeasureText</c> uses the same heuristic as the
+/// SVG backend so layout matches). Dash patterns are not yet honored (strokes
+/// render solid).
 /// </remarks>
 type RasterRenderer(image: RasterImage, sizePx: Size, dpi: float, scale: int) =
 
@@ -106,17 +108,62 @@ type RasterRenderer(image: RasterImage, sizePx: Size, dpi: float, scale: int) =
 
         member _.DrawText
             (
-                _gc: GraphicsContext,
-                _x: float,
-                _y: float,
-                _text: string,
-                _font: FontProperties,
-                _angleDegrees: float,
-                _hAlign: HAlign,
-                _vAlign: VAlign
+                gc: GraphicsContext,
+                x: float,
+                y: float,
+                text: string,
+                font: FontProperties,
+                angleDegrees: float,
+                hAlign: HAlign,
+                vAlign: VAlign
             ) =
-            // Text rasterization awaits the TrueType glyph slice; intentionally a no-op.
-            ()
+            // Render glyph outlines if a font resolves; otherwise skip (text still
+            // measures via MeasureText, so layout is unaffected).
+            match FontManager.Default.Resolve font.Family with
+            | None -> ()
+            | Some ttf when not (System.String.IsNullOrEmpty text) ->
+                let emPx = font.Size * dpi / 72.0
+                let unit = emPx / float ttf.UnitsPerEm // font units -> logical px
+                let codepoints = text.EnumerateRunes() |> Seq.map (fun r -> r.Value) |> Seq.toArray
+                let widthPx = (codepoints |> Array.sumBy ttf.Advance) * unit
+
+                let startX =
+                    match hAlign with
+                    | HLeft -> 0.0
+                    | HCenter -> -widthPx / 2.0
+                    | HRight -> -widthPx
+
+                let baselineShift =
+                    match vAlign with
+                    | VBaseline -> 0.0
+                    | VTop -> -ttf.Ascent * unit
+                    | VBottom -> -ttf.Descent * unit
+                    | VCenter -> -(ttf.Ascent + ttf.Descent) / 2.0 * unit
+
+                let rad = angleDegrees * System.Math.PI / 180.0
+                let cosA = cos rad
+                let sinA = sin rad
+
+                // text-local (right, up; baseline at 0) -> device point
+                let place (lx: float) (ly: float) =
+                    let rx = lx * cosA - ly * sinA
+                    let ry = lx * sinA + ly * cosA
+                    toDevice { X = x + rx; Y = y + ry }
+
+                let mutable penX = startX
+
+                for cp in codepoints do
+                    let contours =
+                        ttf.Outline cp
+                        |> Array.map (fun contour ->
+                            contour
+                            |> Array.map (fun (gx, gy) -> place (penX + gx * unit) (baselineShift + gy * unit)))
+
+                    if contours.Length > 0 then
+                        image.FillPolygons(contours, gc.StrokeColor)
+
+                    penX <- penX + ttf.Advance cp * unit
+            | Some _ -> ()
 
         member _.MeasureText(text: string, font: FontProperties) : Size =
             // Same heuristic as the SVG backend so layout matches across backends.

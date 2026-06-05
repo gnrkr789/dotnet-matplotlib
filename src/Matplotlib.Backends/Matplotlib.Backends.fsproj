@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <Compile Include="Svg/SvgRenderer.fs" />
+    <Compile Include="Text/FontManager.fs" />
     <Compile Include="Raster/PngEncoder.fs" />
     <Compile Include="Raster/RasterImage.fs" />
     <Compile Include="Raster/RasterRenderer.fs" />

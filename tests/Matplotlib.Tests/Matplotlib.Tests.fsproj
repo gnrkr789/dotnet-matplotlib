@@ -27,6 +27,7 @@
     <Compile Include="SubplotTests.fs" />
     <Compile Include="RenderingTests.fs" />
     <Compile Include="RasterTests.fs" />
+    <Compile Include="TrueTypeTests.fs" />
   </ItemGroup>
 
   <ItemGroup>
