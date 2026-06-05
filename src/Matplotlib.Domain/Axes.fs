@@ -628,6 +628,248 @@ type Axes(rc: RcParams) =
         this.Autoscale()
         markerLine
 
+    /// <summary>Draw a field of arrows from <c>(x,y)</c> with components <c>(u,v)</c> (Matplotlib's <c>quiver</c>).</summary>
+    member this.Quiver(x: float[], y: float[], u: float[], v: float[], ?scale: float, ?color: Color) : unit =
+        let s = defaultArg scale 1.0
+        let col = defaultArg color (cycler.Next())
+
+        for i in 0 .. x.Length - 1 do
+            let x0, y0 = x[i], y[i]
+            let x1, y1 = x0 + u[i] * s, y0 + v[i] * s
+            let shaft = Line2D([| x0; x1 |], [| y0; y1 |])
+            shaft.Color <- col
+            shaft.LineWidth <- rc.LinesLineWidth
+            lines.Add shaft
+            let dx, dy = x1 - x0, y1 - y0
+            let len = sqrt (dx * dx + dy * dy)
+
+            if len > 1e-12 then
+                let ang = atan2 dy dx
+                let hl, hw = 0.3 * len, 0.16 * len
+                let bx, by = x1 - hl * cos ang, y1 - hl * sin ang
+
+                let head =
+                    Polygon(
+                        [|
+                            { X = x1; Y = y1 }
+                            {
+                                X = bx - hw * sin ang
+                                Y = by + hw * cos ang
+                            }
+                            {
+                                X = bx + hw * sin ang
+                                Y = by - hw * cos ang
+                            }
+                        |]
+                    )
+
+                head.FaceColor <- col
+                head.EdgeColor <- Some col
+                patches.Add head
+
+        this.Autoscale()
+
+    /// <summary>Draw a 2D histogram as a colormapped image (Matplotlib's <c>hist2d</c>).</summary>
+    member this.Hist2d(x: float[], y: float[], ?bins: int, ?cmap: string) : AxesImage =
+        let nb = defaultArg bins 10
+        let xmin, xmax = Array.min x, Array.max x
+        let ymin, ymax = Array.min y, Array.max y
+        let xw = (xmax - xmin) / float nb
+        let yw = (ymax - ymin) / float nb
+        let counts = Array2D.zeroCreate nb nb
+
+        for k in 0 .. x.Length - 1 do
+            let cx =
+                if xw <= 0.0 then
+                    0
+                else
+                    min (nb - 1) (max 0 (int ((x[k] - xmin) / xw)))
+
+            let cy =
+                if yw <= 0.0 then
+                    0
+                else
+                    min (nb - 1) (max 0 (int ((y[k] - ymin) / yw)))
+
+            counts[cy, cx] <- counts[cy, cx] + 1.0
+
+        let mutable hi = 1.0
+        Array2D.iter (fun c -> hi <- max hi c) counts
+        let colormap = Colormap.byName (defaultArg cmap "viridis")
+        let xEdges = Array.init (nb + 1) (fun j -> xmin + float j * xw)
+        let yEdges = Array.init (nb + 1) (fun i -> ymin + float i * yw)
+        let image = AxesImage(counts, colormap, Normalize(0.0, hi), xEdges, yEdges)
+        images.Add image
+        this.SetXLim(xmin, xmax)
+        this.SetYLim(ymin, ymax)
+        image
+
+    /// <summary>Draw box-and-whisker plots of each dataset (Matplotlib's <c>boxplot</c>).</summary>
+    member this.Boxplot(data: float[][], ?positions: float[], ?width: float) : unit =
+        let w = defaultArg width 0.5
+        let pos = defaultArg positions (Array.init data.Length (fun i -> float (i + 1)))
+        let boxCol = Color.fromHex "#1f77b4"
+        let medCol = Color.fromHex "#ff7f0e"
+
+        let quantile (s: float[]) (q: float) =
+            match s.Length with
+            | 0 -> 0.0
+            | 1 -> s[0]
+            | n ->
+                let p = q * float (n - 1)
+                let lo = int (floor p)
+                let hi = min (n - 1) (lo + 1)
+                let f = p - float lo
+                s[lo] * (1.0 - f) + s[hi] * f
+
+        let addLine (xs: float[]) (ys: float[]) =
+            let l = Line2D(xs, ys)
+            l.Color <- boxCol
+            lines.Add l
+
+        for i in 0 .. data.Length - 1 do
+            let s = Array.sort data[i]
+
+            if s.Length > 0 then
+                let p = pos[i]
+                let q1 = quantile s 0.25
+                let med = quantile s 0.5
+                let q3 = quantile s 0.75
+                let iqr = q3 - q1
+
+                let whisLo =
+                    s
+                    |> Array.filter (fun v -> v >= q1 - 1.5 * iqr)
+                    |> Array.tryHead
+                    |> Option.defaultValue q1
+
+                let whisHi =
+                    s
+                    |> Array.filter (fun v -> v <= q3 + 1.5 * iqr)
+                    |> Array.tryLast
+                    |> Option.defaultValue q3
+
+                let box = Rectangle(p - w / 2.0, q1, w, iqr)
+                box.EdgeColor <- Some boxCol
+                box.Fill <- false
+                patches.Add box
+
+                let medLine = Line2D([| p - w / 2.0; p + w / 2.0 |], [| med; med |])
+                medLine.Color <- medCol
+                lines.Add medLine
+
+                addLine [| p; p |] [| q3; whisHi |] // upper whisker
+                addLine [| p; p |] [| q1; whisLo |] // lower whisker
+                addLine [| p - w / 4.0; p + w / 4.0 |] [| whisHi; whisHi |] // upper cap
+                addLine [| p - w / 4.0; p + w / 4.0 |] [| whisLo; whisLo |] // lower cap
+
+                let outs = s |> Array.filter (fun v -> v < q1 - 1.5 * iqr || v > q3 + 1.5 * iqr)
+
+                if outs.Length > 0 then
+                    let fliers = Line2D(Array.create outs.Length p, outs)
+                    fliers.LineStyle <- NoLine
+                    fliers.Marker <- MarkerStyle.Circle
+                    fliers.MarkerSize <- 4.0
+                    fliers.Color <- boxCol
+                    lines.Add fliers
+
+        this.Autoscale()
+
+    /// <summary>Draw violin plots (kernel-density estimates) of each dataset (Matplotlib's <c>violinplot</c>).</summary>
+    member this.Violinplot(data: float[][], ?positions: float[], ?width: float) : unit =
+        let w = defaultArg width 0.5
+        let pos = defaultArg positions (Array.init data.Length (fun i -> float (i + 1)))
+        let col = Color.fromHex "#1f77b4"
+        let normalPdf z = exp (-0.5 * z * z) / sqrt (2.0 * System.Math.PI)
+
+        for i in 0 .. data.Length - 1 do
+            let d = data[i]
+
+            if d.Length > 1 then
+                let n = float d.Length
+                let mean = Array.average d
+                let std = sqrt (Array.sumBy (fun v -> (v - mean) * (v - mean)) d / n)
+                let h = if std <= 0.0 then 1.0 else 1.06 * std * (n ** -0.2) // Silverman's rule
+                let lo, hi = Array.min d, Array.max d
+                let grid = 50
+                let ys = Array.init grid (fun k -> lo + (hi - lo) * float k / float (grid - 1))
+
+                let dens =
+                    ys
+                    |> Array.map (fun y -> (d |> Array.sumBy (fun xj -> normalPdf ((y - xj) / h))) / (n * h))
+
+                let maxD = Array.max dens
+                let scale = if maxD <= 0.0 then 0.0 else (w / 2.0) / maxD
+                let p = pos[i]
+                let right = Array.map2 (fun y de -> { X = p + de * scale; Y = y }) ys dens
+
+                let left = Array.map2 (fun y de -> { X = p - de * scale; Y = y }) ys dens |> Array.rev
+
+                let poly = Polygon(Array.append right left)
+                poly.FaceColor <- col.WithAlpha 0.5
+                poly.EdgeColor <- Some col
+                patches.Add poly
+
+        this.Autoscale()
+
+    /// <summary>Draw streamlines of a vector field on a grid (Matplotlib's <c>streamplot</c>).</summary>
+    /// <remarks>Forward arc-length integration (RK1) from a coarse seed grid; bilinear field sampling.</remarks>
+    member this.Streamplot(x: float[], y: float[], u: float[,], v: float[,], ?density: int, ?color: Color) : unit =
+        let col = defaultArg color (cycler.Next())
+        let nx, ny = x.Length, y.Length
+        let x0, x1 = x[0], x[nx - 1]
+        let y0, y1 = y[0], y[ny - 1]
+        let inDomain px py = px >= x0 && px <= x1 && py >= y0 && py <= y1
+
+        let interp (grid: float[,]) px py =
+            let fc = (px - x0) / (x1 - x0) * float (nx - 1)
+            let fr = (py - y0) / (y1 - y0) * float (ny - 1)
+            let c0 = min (nx - 2) (max 0 (int fc))
+            let r0 = min (ny - 2) (max 0 (int fr))
+            let tc = fc - float c0
+            let tr = fr - float r0
+
+            (grid[r0, c0] * (1.0 - tc) + grid[r0, c0 + 1] * tc) * (1.0 - tr)
+            + (grid[r0 + 1, c0] * (1.0 - tc) + grid[r0 + 1, c0 + 1] * tc) * tr
+
+        let dt = (x1 - x0) / float (nx - 1) * 0.5
+        let step = max 1 (defaultArg density (max 1 (nx / 10)))
+        let maxSteps = 200
+
+        for ri in 0..step .. ny - 1 do
+            for ci in 0..step .. nx - 1 do
+                let pxs = ResizeArray<float>()
+                let pys = ResizeArray<float>()
+                let mutable px, py = x[ci], y[ri]
+                let mutable alive = true
+                let mutable k = 0
+                pxs.Add px
+                pys.Add py
+
+                while alive && k < maxSteps do
+                    let uu = interp u px py
+                    let vv = interp v px py
+                    let sp = sqrt (uu * uu + vv * vv)
+                    let nxp, nyp = px + uu / sp * dt, py + vv / sp * dt
+
+                    if sp < 1e-9 || not (inDomain nxp nyp) then
+                        alive <- false
+                    else
+                        px <- nxp
+                        py <- nyp
+                        pxs.Add px
+                        pys.Add py
+
+                    k <- k + 1
+
+                if pxs.Count > 2 then
+                    let line = Line2D(pxs.ToArray(), pys.ToArray())
+                    line.Color <- col
+                    lines.Add line
+
+        this.SetXLim(x0, x1)
+        this.SetYLim(y0, y1)
+
     /// <summary>Add text at a data-space position (Matplotlib's <c>Axes.text</c>).</summary>
     member _.Text
         (

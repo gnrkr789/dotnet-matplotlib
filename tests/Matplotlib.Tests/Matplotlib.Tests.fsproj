@@ -30,6 +30,7 @@
     <Compile Include="TrueTypeTests.fs" />
     <Compile Include="PdfTests.fs" />
     <Compile Include="HatchClipTests.fs" />
+    <Compile Include="Phase5PlotsTests.fs" />
   </ItemGroup>
 
   <ItemGroup>

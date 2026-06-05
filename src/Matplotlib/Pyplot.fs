@@ -213,6 +213,28 @@ type Pyplot() =
     member this.Contourf(data: float[,], ?levels: float[], ?cmap: string) : float[] =
         this.EnsureAxes().Contourf(data, ?levels = levels, ?cmap = cmap)
 
+    /// <summary>Draw a field of arrows (Matplotlib's <c>plt.quiver</c>).</summary>
+    member this.Quiver(x: float[], y: float[], u: float[], v: float[], ?scale: float, ?color: string) : unit =
+        let colorOpt = color |> Option.map (fun s -> ColorResolver.Default.Resolve s)
+        this.EnsureAxes().Quiver(x, y, u, v, ?scale = scale, ?color = colorOpt)
+
+    /// <summary>Draw a 2D histogram image (Matplotlib's <c>plt.hist2d</c>).</summary>
+    member this.Hist2d(x: float[], y: float[], ?bins: int, ?cmap: string) : AxesImage =
+        this.EnsureAxes().Hist2d(x, y, ?bins = bins, ?cmap = cmap)
+
+    /// <summary>Draw box-and-whisker plots (Matplotlib's <c>plt.boxplot</c>).</summary>
+    member this.Boxplot(data: float[][], ?positions: float[], ?width: float) : unit =
+        this.EnsureAxes().Boxplot(data, ?positions = positions, ?width = width)
+
+    /// <summary>Draw violin plots (Matplotlib's <c>plt.violinplot</c>).</summary>
+    member this.Violinplot(data: float[][], ?positions: float[], ?width: float) : unit =
+        this.EnsureAxes().Violinplot(data, ?positions = positions, ?width = width)
+
+    /// <summary>Draw streamlines of a vector field (Matplotlib's <c>plt.streamplot</c>).</summary>
+    member this.Streamplot(x: float[], y: float[], u: float[,], v: float[,], ?density: int, ?color: string) : unit =
+        let colorOpt = color |> Option.map (fun s -> ColorResolver.Default.Resolve s)
+        this.EnsureAxes().Streamplot(x, y, u, v, ?density = density, ?color = colorOpt)
+
     /// <summary>Plot y versus dates with a date-formatted x axis (Matplotlib's <c>plt.plot_date</c>).</summary>
     member this.PlotDate(dates: DateTime[], ys: float[], ?format: string, ?color: string, ?label: string) : Line2D =
         let ax = this.EnsureAxes()

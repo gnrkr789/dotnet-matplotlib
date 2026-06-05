@@ -69,6 +69,7 @@ and is not part of this repository (it is git-ignored).
 | 2026-06-06 | 19 | `font_manager` + FreeType glyph loading (TrueType) | `Domain/Text/TrueTypeFont` (pure parser), `Backends/Text/FontManager` (I/O) | pure-managed TTF reader (cmap 4/12, simple + composite glyphs, quadratic flattening); raster backend now renders anti-aliased text via glyph outlines; `Pyplot.Savefig` writes PNG for `.png` paths |
 | 2026-06-06 | 20 | `backend_pdf` | `Matplotlib.Backends.Pdf.PdfRenderer`, `FigureCanvas.RenderToPdf`/`SavePdf` | pure-managed single-page PDF 1.4 writer: path operators, standard Helvetica text, alpha via `ExtGState`, xref table; `Pyplot.Savefig` writes PDF for `.pdf` paths |
 | 2026-06-06 | 21 | `Artist.set_clip_box`, `patches.Patch.set_hatch`, `matplotlib.hatch` | `IRenderer.PushClip`/`PopClip` (SVG/raster/PDF/GDI), `Domain/Axes` (data clipped to the axes box), `Hatching` + `Patch.Hatch`, `Pyplot.Bar(?hatch)` | plotted data is clipped to the axes box; patches render hatch patterns (`/ \ | - + x`); alpha compositing already honored via per-color alpha |
+| 2026-06-06 | 22 | `axes.quiver/hist2d/boxplot/violinplot/streamplot` | `Domain/Axes` + `Matplotlib/Pyplot` | Phase 5 plot types: arrow fields, 2D histograms (image), box-and-whisker (quartiles/whiskers/fliers), violins (Gaussian-KDE, Silverman bandwidth), streamlines (bilinear sampling, arc-length integration) |
 
 Known deviations (to refine in later sprints):
 - `errorbar` draws the error lines only; caps (`capsize`) are not yet rendered
