@@ -20,6 +20,8 @@
     <Compile Include="Primitives/Color.fs" />
     <Compile Include="Primitives/ColorData.fs" />
     <Compile Include="Primitives/ColorResolver.fs" />
+    <Compile Include="Primitives/ColormapData.fs" />
+    <Compile Include="Primitives/Colormap.fs" />
     <!-- Transforms -->
     <Compile Include="Transforms/Transform.fs" />
     <Compile Include="Transforms/Affine2D.fs" />
@@ -41,6 +43,7 @@
     <Compile Include="Artists/Spine.fs" />
     <Compile Include="Artists/Patch.fs" />
     <Compile Include="Artists/Collection.fs" />
+    <Compile Include="Artists/Image.fs" />
     <!-- Containers -->
     <Compile Include="Axis.fs" />
     <Compile Include="Axes.fs" />

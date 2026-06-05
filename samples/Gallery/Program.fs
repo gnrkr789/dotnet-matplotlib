@@ -201,6 +201,24 @@ let private renderLogScale (outDir: string) =
     plt.Savefig path
     printfn "wrote %s" path
 
+let private renderImshow (outDir: string) =
+    let plt = Pyplot()
+    let n = 60
+
+    let data =
+        Array2D.init n n (fun i j ->
+            let x = float j / float n * 6.0
+            let y = float i / float n * 6.0
+            sin x * cos y)
+
+    plt.Imshow(data, cmap = "viridis") |> ignore
+    plt.Title "dotnet-matplotlib: imshow (viridis)"
+    plt.XLabel "column"
+    plt.YLabel "row"
+    let path = Path.Combine(outDir, "imshow.svg")
+    plt.Savefig path
+    printfn "wrote %s" path
+
 [<EntryPoint>]
 let main argv =
     let outDir = if argv.Length > 0 then argv[0] else "out"
@@ -217,4 +235,5 @@ let main argv =
     renderCollections outDir
     renderSubplots outDir
     renderLogScale outDir
+    renderImshow outDir
     0

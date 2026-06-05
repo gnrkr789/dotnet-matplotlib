@@ -56,11 +56,14 @@ and is not part of this repository (it is git-ignored).
 | 2026-06-05 | 7 | `figure.tight_layout` | `Domain/Figure.TightLayout` + `Pyplot.TightLayout` | margin auto-fit (approx) |
 | 2026-06-05 | 8 | `constrained_layout` | `Domain/Figure.ConstrainedLayout` + `Pyplot` | per-subplot decoration-aware grid layout (approx) |
 | 2026-06-06 | 9 | `scale.LogScale`, `ticker.LogLocator/LogFormatter` | `Domain/Scales/Scale`, `Transforms.FunctionalTransform` | base-10 log scale, decade ticks + log minor ticks, `set_xscale/yscale` |
+| 2026-06-06 | 10 | `colors.Colormap/Normalize`, `_cm_listed` viridis, `image.AxesImage` | `Domain/Primitives/{Colormap,ColormapData}`, `Artists/Image` | viridis (256-LUT) + gray/jet/hot, linear Normalize, `imshow` |
 
 Known deviations (to refine in later sprints):
 - `errorbar` draws the error lines only; caps (`capsize`) are not yet rendered
   (Matplotlib's default `errorbar.capsize` is also `0`, i.e. no caps).
 - `fill_between` autoscaling uses simple 5% margins (Matplotlib does not apply
   sticky edges to `fill_between` by default either).
+- `imshow` rasterizes each cell as an SVG rectangle (no interpolation / PNG
+  embedding yet); fine for modest arrays, heavier for very large ones.
 
 (Append a row per slice.)
