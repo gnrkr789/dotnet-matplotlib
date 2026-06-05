@@ -179,6 +179,14 @@ type Pyplot() =
     /// <summary>Add a colorbar for an image (Matplotlib's <c>plt.colorbar</c>).</summary>
     member this.Colorbar(image: AxesImage, ?ax: Axes) = this.CurrentFigure().Colorbar(image, ?ax = ax)
 
+    /// <summary>Draw a quad mesh of a 2D array (Matplotlib's <c>plt.pcolormesh</c>).</summary>
+    member this.Pcolormesh(data: float[,], ?cmap: string, ?vmin: float, ?vmax: float) : AxesImage =
+        this.EnsureAxes().Pcolormesh(data, ?cmap = cmap, ?vmin = vmin, ?vmax = vmax)
+
+    /// <summary>Draw contour lines of a 2D field (Matplotlib's <c>plt.contour</c>).</summary>
+    member this.Contour(data: float[,], ?levels: float[], ?cmap: string) : float[] =
+        this.EnsureAxes().Contour(data, ?levels = levels, ?cmap = cmap)
+
     /// <summary>Set the x-axis scale (<c>"linear"</c> / <c>"log"</c>).</summary>
     member this.XScale(name: string) = this.EnsureAxes().SetXScale name
 

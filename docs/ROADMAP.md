@@ -28,7 +28,7 @@ Status: ✅ done · 🚧 in progress · ⬜ planned.
 - ⬜ Date axis (`dates.py`) + locators/formatters
 - ⬜ Categorical axis (`category.py`)
 - 🚧 Colormaps: `viridis` ✅ (+ gray/jet/hot), `Normalize` ✅, `colorbar` ✅; more `_cm*` maps ⬜
-- 🚧 `imshow` ✅; `pcolormesh`, `contour`/`contourf` ⬜
+- 🚧 `imshow` ✅, `pcolormesh` ✅, `contour` ✅ (marching squares); `contourf` ⬜
 
 ## Phase 4 — Backends & fidelity
 - ⬜ Raster backend (Agg-equivalent, pure-managed or opt-in native) → PNG

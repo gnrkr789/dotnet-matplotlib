@@ -164,6 +164,61 @@ module internal AxesLayout =
             }
 
     /// <summary>
+    /// Iso-line segments of a 2D field at the given level, in data coordinates
+    /// (x = column, y = row).
+    /// </summary>
+    /// <remarks>Ported from the marching-squares contour generator behind <c>contour</c>.</remarks>
+    let marchingSquares (z: float[,]) (level: float) : (Point2D * Point2D) list =
+        let rows = Array2D.length1 z
+        let cols = Array2D.length2 z
+        let result = ResizeArray<Point2D * Point2D>()
+
+        let interp v0 (p0: Point2D) v1 (p1: Point2D) =
+            let t = if v1 = v0 then 0.5 else (level - v0) / (v1 - v0)
+
+            {
+                X = p0.X + (p1.X - p0.X) * t
+                Y = p0.Y + (p1.Y - p0.Y) * t
+            }
+
+        for i in 0 .. rows - 2 do
+            for j in 0 .. cols - 2 do
+                let blV, brV, trV, tlV = z[i, j], z[i, j + 1], z[i + 1, j + 1], z[i + 1, j]
+                let blP = { X = float j; Y = float i }
+                let brP = { X = float (j + 1); Y = float i }
+                let trP = { X = float (j + 1); Y = float (i + 1) }
+                let tlP = { X = float j; Y = float (i + 1) }
+                let bit v = if v >= level then 1 else 0
+                let case = bit blV + 2 * bit brV + 4 * bit trV + 8 * bit tlV
+                let pB = interp blV blP brV brP
+                let pR = interp brV brP trV trP
+                let pT = interp trV trP tlV tlP
+                let pL = interp tlV tlP blV blP
+
+                match case with
+                | 1
+                | 14 -> result.Add(pL, pB)
+                | 2
+                | 13 -> result.Add(pB, pR)
+                | 3
+                | 12 -> result.Add(pL, pR)
+                | 4
+                | 11 -> result.Add(pR, pT)
+                | 6
+                | 9 -> result.Add(pB, pT)
+                | 7
+                | 8 -> result.Add(pL, pT)
+                | 5 ->
+                    result.Add(pL, pB)
+                    result.Add(pR, pT)
+                | 10 ->
+                    result.Add(pB, pR)
+                    result.Add(pT, pL)
+                | _ -> ()
+
+        List.ofSeq result
+
+    /// <summary>
     /// The two coordinates of a tick mark along the axis-normal direction,
     /// given the spine <paramref name="baseline"/>, tick <paramref name="length"/>
     /// (px) and direction (<c>in</c> / <c>out</c> / <c>inout</c>).
@@ -293,8 +348,7 @@ type Axes(rc: RcParams) =
     /// <summary>The displayed images.</summary>
     member _.Images = images
 
-    /// <summary>Display a 2D array as a colormapped image (Matplotlib's <c>imshow</c>).</summary>
-    member this.Imshow(data: float[,], ?cmap: string, ?vmin: float, ?vmax: float) : AxesImage =
+    member private _.DataRange(data: float[,], vmin: float option, vmax: float option) : float * float =
         let rows = Array2D.length1 data
         let cols = Array2D.length2 data
 
@@ -304,15 +358,57 @@ type Axes(rc: RcParams) =
                     for j in 0 .. cols - 1 -> data[i, j]
             |]
 
-        let lo = defaultArg vmin (Array.min flat)
-        let hi = defaultArg vmax (Array.max flat)
+        defaultArg vmin (Array.min flat), defaultArg vmax (Array.max flat)
+
+    /// <summary>Display a 2D array as a colormapped image (Matplotlib's <c>imshow</c>).</summary>
+    member this.Imshow(data: float[,], ?cmap: string, ?vmin: float, ?vmax: float) : AxesImage =
+        let rows = Array2D.length1 data
+        let cols = Array2D.length2 data
+        let lo, hi = this.DataRange(data, vmin, vmax)
         let colormap = Colormap.byName (defaultArg cmap "viridis")
-        let image = AxesImage(data, colormap, Normalize(lo, hi))
+        let xEdges = Array.init (cols + 1) (fun j -> float j - 0.5)
+        let yEdges = Array.init (rows + 1) (fun i -> float i - 0.5)
+        let image = AxesImage(data, colormap, Normalize(lo, hi), xEdges, yEdges)
         images.Add image
         // origin 'upper': row 0 at top, so the y-axis is inverted.
         this.SetXLim(-0.5, float cols - 0.5)
         this.SetYLim(float rows - 0.5, -0.5)
         image
+
+    /// <summary>Draw a quadrilateral mesh of a 2D array (Matplotlib's <c>pcolormesh</c>, origin lower).</summary>
+    member this.Pcolormesh(data: float[,], ?cmap: string, ?vmin: float, ?vmax: float) : AxesImage =
+        let rows = Array2D.length1 data
+        let cols = Array2D.length2 data
+        let lo, hi = this.DataRange(data, vmin, vmax)
+        let colormap = Colormap.byName (defaultArg cmap "viridis")
+
+        let mesh =
+            AxesImage(data, colormap, Normalize(lo, hi), Array.init (cols + 1) float, Array.init (rows + 1) float)
+
+        images.Add mesh
+        this.SetXLim(0.0, float cols)
+        this.SetYLim(0.0, float rows)
+        mesh
+
+    /// <summary>Draw contour lines of a 2D field (Matplotlib's <c>contour</c>).</summary>
+    member this.Contour(data: float[,], ?levels: float[], ?cmap: string) : float[] =
+        let lo, hi = this.DataRange(data, None, None)
+        let levs = defaultArg levels [| for k in 1..6 -> lo + float k / 7.0 * (hi - lo) |]
+        let colormap = Colormap.byName (defaultArg cmap "viridis")
+        let norm = Normalize(lo, hi)
+
+        for level in levs do
+            let segments = AxesLayout.marchingSquares data level |> List.map (fun (a, b) -> [| a; b |])
+
+            if not segments.IsEmpty then
+                let collection = LineCollection segments
+                collection.Color <- colormap.Apply(norm.Normalize level)
+                collection.LineWidth <- 1.0
+                collections.Add collection
+
+        this.SetXLim(0.0, float (Array2D.length2 data - 1))
+        this.SetYLim(0.0, float (Array2D.length1 data - 1))
+        levs
 
     /// <summary>Add a collection and rescale to include it (Matplotlib's <c>add_collection</c>).</summary>
     member this.AddCollection(collection: Collection) : Collection =

@@ -220,10 +220,29 @@ let private renderImshow (outDir: string) =
     plt.Savefig path
     printfn "wrote %s" path
 
+let private renderContour (outDir: string) =
+    let plt = Pyplot()
+    let n = 80
+
+    let data =
+        Array2D.init n n (fun i j ->
+            let x = float j / float n * 6.0 - 3.0
+            let y = float i / float n * 6.0 - 3.0
+            sin (x * x + y * y))
+
+    plt.Contour(data, cmap = "viridis") |> ignore
+    plt.Title "dotnet-matplotlib: contour"
+    plt.XLabel "column"
+    plt.YLabel "row"
+    let path = Path.Combine(outDir, "contour.svg")
+    plt.Savefig path
+    printfn "wrote %s" path
+
 [<EntryPoint>]
 let main argv =
     let outDir = if argv.Length > 0 then argv[0] else "out"
     Directory.CreateDirectory outDir |> ignore
+    renderContour outDir
     renderSine outDir
     renderScatter outDir
     renderBar outDir
