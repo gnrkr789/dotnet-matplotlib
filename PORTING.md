@@ -65,6 +65,7 @@ and is not part of this repository (it is git-ignored).
 | 2026-06-06 | 16 | `pyplot.show`, interactive figure window | `Matplotlib.Gui` (`GdiRenderer`, `PlotWindow`, `Pyplot.Show`) | opt-in Windows GDI+/WinForms window; live resize re-layout (not on the default zero-dependency path) |
 | 2026-06-06 | 16 | `rcParams["font.family"]` | `RcParams.FontFamily`, `Pyplot.FontFamily` | configurable default font family for all text (e.g. `"맑은 고딕"`); honored by SVG + GDI backends |
 | 2026-06-06 | 17 | `FigureCanvasAgg.print_png` (raster → PNG) | `Matplotlib.Gui` (`Raster.toBitmap`/`savePng`, `Pyplot.SavePng`) | opt-in GDI+ raster export to PNG (Windows); reuses `GdiRenderer`. Pure-managed cross-platform rasterizer still on the roadmap |
+| 2026-06-06 | 18 | `backend_agg` + PNG output (pure-managed) | `Matplotlib.Backends.Raster` (`PngEncoder`, `RasterImage`, `RasterRenderer`); `FigureCanvas.RenderToPng`/`SavePng` | cross-platform PNG with zero native deps: managed PNG encoder (`ZLibStream` + CRC-32), even-odd polygon fill, thick-line stroke (round joins), supersampled anti-aliasing. Text and dash patterns not yet drawn by this backend (await TrueType glyph slice) |
 
 Known deviations (to refine in later sprints):
 - `errorbar` draws the error lines only; caps (`capsize`) are not yet rendered

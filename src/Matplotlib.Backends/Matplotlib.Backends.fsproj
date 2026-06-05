@@ -8,6 +8,9 @@
 
   <ItemGroup>
     <Compile Include="Svg/SvgRenderer.fs" />
+    <Compile Include="Raster/PngEncoder.fs" />
+    <Compile Include="Raster/RasterImage.fs" />
+    <Compile Include="Raster/RasterRenderer.fs" />
     <Compile Include="FigureCanvas.fs" />
   </ItemGroup>
 
