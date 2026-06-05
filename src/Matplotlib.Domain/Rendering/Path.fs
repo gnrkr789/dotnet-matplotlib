@@ -43,6 +43,16 @@ module Path =
                 Commands = p.Commands @ [ ClosePath ]
             }
 
+    /// <summary>The anchor vertices of a path (segment ends; curve end points).</summary>
+    let vertices (path: Path) : Point2D list =
+        path.Commands
+        |> List.choose (fun cmd ->
+            match cmd with
+            | MoveTo p
+            | LineTo p -> Some p
+            | CurveTo(_, _, e) -> Some e
+            | ClosePath -> None)
+
     /// <summary>Apply a point mapping to every vertex of a path (e.g. a transform).</summary>
     let map (f: Point2D -> Point2D) (path: Path) : Path =
         let mapCmd cmd =

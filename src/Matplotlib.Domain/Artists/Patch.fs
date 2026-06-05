@@ -108,6 +108,23 @@ type Polygon(points: Point2D[], ?closed: bool) =
             let ys = this.Points |> Array.map (fun p -> p.Y)
             Some(BBox.fromExtents (Array.min xs) (Array.min ys) (Array.max xs) (Array.max ys))
 
+/// <summary>A patch defined by an arbitrary path (data coordinates).</summary>
+/// <remarks>Ported from <c>matplotlib.patches.PathPatch</c>.</remarks>
+type PathPatch(pathData: Path) =
+    inherit Patch()
+
+    member val PathData = pathData with get, set
+
+    override this.BuildPath() = this.PathData
+
+    override this.DataBounds() =
+        match Path.vertices this.PathData with
+        | [] -> None
+        | verts ->
+            let xs = verts |> List.map (fun pt -> pt.X)
+            let ys = verts |> List.map (fun pt -> pt.Y)
+            Some(BBox.fromExtents (List.min xs) (List.min ys) (List.max xs) (List.max ys))
+
 /// <summary>A circle of a given radius about a center (data coordinates).</summary>
 /// <remarks>Ported from <c>matplotlib.patches.Circle</c>.</remarks>
 type Circle(center: Point2D, radius: float) =

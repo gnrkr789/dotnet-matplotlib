@@ -32,7 +32,7 @@ module MarkerLegendTests =
 
     [<Fact>]
     let ``parseLegendLoc covers the standard locations`` () =
-        Assert.Equal(UpperRight, Styles.parseLegendLoc "best")
+        Assert.Equal(Best, Styles.parseLegendLoc "best")
         Assert.Equal(UpperRight, Styles.parseLegendLoc "upper right")
         Assert.Equal(LowerLeft, Styles.parseLegendLoc "lower left")
         Assert.Equal(CenterRight, Styles.parseLegendLoc "center right")

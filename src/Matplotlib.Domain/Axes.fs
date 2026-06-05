@@ -177,6 +177,7 @@ type Axes(rc: RcParams) =
 
     let lines = ResizeArray<Line2D>()
     let patches = ResizeArray<Patch>()
+    let collections = ResizeArray<Collection>()
     let overlays = ResizeArray<Artist>()
     let stickyX = ResizeArray<float>()
     let stickyY = ResizeArray<float>()
@@ -216,7 +217,7 @@ type Axes(rc: RcParams) =
     member val ShowLegend = false with get, set
 
     /// <summary>Where the legend is placed within the Axes.</summary>
-    member val LegendLoc = UpperRight with get, set
+    member val LegendLoc = Best with get, set
 
     /// <summary>Whether minor ticks are drawn.</summary>
     member val MinorTicksEnabled = false with get, set
@@ -241,6 +242,15 @@ type Axes(rc: RcParams) =
 
     /// <summary>The plotted patches (bars, filled regions, shapes).</summary>
     member _.Patches = patches
+
+    /// <summary>The drawn collections (bulk line/polygon sets).</summary>
+    member _.Collections = collections
+
+    /// <summary>Add a collection and rescale to include it (Matplotlib's <c>add_collection</c>).</summary>
+    member this.AddCollection(collection: Collection) : Collection =
+        collections.Add collection
+        this.Autoscale()
+        collection
 
     /// <summary>Plot y versus x as a connected line (Matplotlib's <c>plot</c>).</summary>
     member this.Plot
@@ -526,13 +536,19 @@ type Axes(rc: RcParams) =
 
     member private this.Autoscale() =
         let finite = Array.filter Double.IsFinite
-        let patchBounds = patches |> Seq.choose (fun p -> p.DataBounds()) |> Seq.toArray
-        let patchXs = patchBounds |> Array.collect (fun b -> [| b.XMin; b.XMax |])
-        let patchYs = patchBounds |> Array.collect (fun b -> [| b.YMin; b.YMax |])
+
+        let bounds =
+            Seq.append
+                (patches |> Seq.choose (fun p -> p.DataBounds()))
+                (collections |> Seq.choose (fun c -> c.DataBounds()))
+            |> Seq.toArray
+
+        let boundsXs = bounds |> Array.collect (fun b -> [| b.XMin; b.XMax |])
+        let boundsYs = bounds |> Array.collect (fun b -> [| b.YMin; b.YMax |])
         let lineXs = lines |> Seq.collect (fun l -> l.XData) |> Seq.toArray
         let lineYs = lines |> Seq.collect (fun l -> l.YData) |> Seq.toArray
-        let xs = Array.append lineXs patchXs |> finite
-        let ys = Array.append lineYs patchYs |> finite
+        let xs = Array.append lineXs boundsXs |> finite
+        let ys = Array.append lineYs boundsYs |> finite
 
         if this.XLimAuto && xs.Length > 0 then
             this.XLim <- AxesLayout.marginExpandSticky stickyX (Array.min xs) (Array.max xs)
@@ -631,6 +647,10 @@ type Axes(rc: RcParams) =
         for patch in patches do
             patch.Transform <- ctx.TransData
             patch.Draw ctx.Renderer
+
+        for collection in collections do
+            collection.Transform <- ctx.TransData
+            collection.Draw ctx.Renderer
 
         for line in lines do
             line.Transform <- ctx.TransData
@@ -784,6 +804,83 @@ type Axes(rc: RcParams) =
             t.VAlign <- VBottom
             t.Draw ctx.Renderer
 
+    /// <summary>Lower-left x and top y of the legend box for a concrete location.</summary>
+    member private _.LegendBoxPosition
+        (loc: LegendLoc, boxW: float, boxH: float, b: BBox, inset: float)
+        : float * float =
+        let x0 =
+            match loc with
+            | UpperLeft
+            | LowerLeft
+            | CenterLeft -> b.XMin + inset
+            | UpperCenter
+            | LowerCenter
+            | Center -> b.CenterX - boxW / 2.0
+            | Best
+            | UpperRight
+            | LowerRight
+            | CenterRight -> b.XMax - inset - boxW
+
+        let y1 =
+            match loc with
+            | Best
+            | UpperLeft
+            | UpperRight
+            | UpperCenter -> b.YMax - inset
+            | CenterLeft
+            | CenterRight
+            | Center -> b.CenterY + boxH / 2.0
+            | LowerLeft
+            | LowerRight
+            | LowerCenter -> b.YMin + inset + boxH
+
+        x0, y1
+
+    /// <summary>Choose the location whose legend box overlaps the fewest data points.</summary>
+    member private this.BestLegendLoc(ctx: AxesDrawContext, boxW: float, boxH: float, inset: float) : LegendLoc =
+        let b = ctx.Box
+
+        let pts =
+            seq {
+                for line in lines do
+                    for i in 0 .. line.XData.Length - 1 do
+                        yield ctx.TransData.Transform { X = line.XData[i]; Y = line.YData[i] }
+
+                for patch in patches do
+                    match patch.DataBounds() with
+                    | Some db ->
+                        yield ctx.TransData.Transform { X = db.XMin; Y = db.YMin }
+                        yield ctx.TransData.Transform { X = db.XMax; Y = db.YMax }
+                        yield ctx.TransData.Transform { X = db.XMin; Y = db.YMax }
+                        yield ctx.TransData.Transform { X = db.XMax; Y = db.YMin }
+                    | None -> ()
+            }
+            |> Seq.toArray
+
+        let candidates =
+            [
+                UpperRight
+                UpperLeft
+                LowerLeft
+                LowerRight
+                CenterRight
+                CenterLeft
+                LowerCenter
+                UpperCenter
+                Center
+            ]
+
+        let overlap loc =
+            let x0, y1 = this.LegendBoxPosition(loc, boxW, boxH, b, inset)
+            let x1 = x0 + boxW
+            let y0 = y1 - boxH
+
+            pts
+            |> Array.filter (fun p -> p.X >= x0 && p.X <= x1 && p.Y >= y0 && p.Y <= y1)
+            |> Array.length
+
+        candidates |> List.minBy overlap
+
     member private this.DrawLegend(ctx: AxesDrawContext) =
         // A legend entry is (label, color, lineWidth option). Some => line sample,
         // None => filled patch swatch.
@@ -822,30 +919,12 @@ type Axes(rc: RcParams) =
             let boxH = pad + lineH * float entries.Length + pad
             let inset = 0.5 * rc.FontSize * ctx.Pt2Px
 
-            let x0 =
+            let resolvedLoc =
                 match this.LegendLoc with
-                | UpperLeft
-                | LowerLeft
-                | CenterLeft -> b.XMin + inset
-                | UpperCenter
-                | LowerCenter
-                | Center -> b.CenterX - boxW / 2.0
-                | UpperRight
-                | LowerRight
-                | CenterRight -> b.XMax - inset - boxW
+                | Best -> this.BestLegendLoc(ctx, boxW, boxH, inset)
+                | l -> l
 
-            let y1 =
-                match this.LegendLoc with
-                | UpperLeft
-                | UpperRight
-                | UpperCenter -> b.YMax - inset
-                | CenterLeft
-                | CenterRight
-                | Center -> b.CenterY + boxH / 2.0
-                | LowerLeft
-                | LowerRight
-                | LowerCenter -> b.YMin + inset + boxH
-
+            let x0, y1 = this.LegendBoxPosition(resolvedLoc, boxW, boxH, b, inset)
             let x1 = x0 + boxW
             let y0 = y1 - boxH
 

@@ -51,6 +51,9 @@ and is not part of this repository (it is git-ignored).
 | 2026-06-05 | 5 | `markers.py` marker set | `Domain/Artists/Line2D` (`MarkerPaths`) | triangles, pentagon, hexagon, star, thin-diamond, vline, hline |
 | 2026-06-05 | 5 | legend `loc` placement | `Domain/Axes` (`LegendLoc`) + `Pyplot.Legend` | 9 standard legend locations |
 | 2026-06-05 | 6 | `axes.Axes.text`, `annotate` | `Domain/Axes` (`Text`, `Annotate`, overlays) | data-space text & basic annotations |
+| 2026-06-05 | 7 | legend `loc='best'` | `Domain/Axes` (`BestLegendLoc`) | least-overlap placement |
+| 2026-06-05 | 7 | `patches.PathPatch`, `collections.LineCollection/PolyCollection` | `Domain/Artists/{Patch,Collection}` | path patch & bulk collections |
+| 2026-06-05 | 7 | `figure.tight_layout` | `Domain/Figure.TightLayout` + `Pyplot.TightLayout` | margin auto-fit (approx) |
 
 Known deviations (to refine in later sprints):
 - `errorbar` draws the error lines only; caps (`capsize`) are not yet rendered

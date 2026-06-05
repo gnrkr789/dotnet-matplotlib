@@ -3,6 +3,8 @@ module Matplotlib.Samples.Gallery.Program
 open System
 open System.IO
 open Matplotlib
+open Matplotlib.Domain.Primitives
+open Matplotlib.Domain.Artists
 
 let private renderSine (outDir: string) =
     let plt = Pyplot()
@@ -140,6 +142,25 @@ let private renderAnnotate (outDir: string) =
     plt.Savefig path
     printfn "wrote %s" path
 
+let private renderCollections (outDir: string) =
+    let plt = Pyplot()
+    let ax = plt.CurrentAxes()
+    let xs = [| for i in 0..60 -> float i / 6.0 |]
+
+    let segments = [ for k in 0..4 -> xs |> Array.map (fun x -> { X = x; Y = sin x + float k }) ]
+
+    let lc = LineCollection(segments)
+    lc.Color <- ColorResolver.Default.Resolve "C0"
+    lc.LineWidth <- 1.2
+    ax.AddCollection lc |> ignore
+    plt.Title "dotnet-matplotlib: LineCollection"
+    plt.XLabel "x"
+    plt.YLabel "sin(x) + k"
+    plt.TightLayout()
+    let path = Path.Combine(outDir, "collections.svg")
+    plt.Savefig path
+    printfn "wrote %s" path
+
 [<EntryPoint>]
 let main argv =
     let outDir = if argv.Length > 0 then argv[0] else "out"
@@ -153,4 +174,5 @@ let main argv =
     renderStem outDir
     renderMarkers outDir
     renderAnnotate outDir
+    renderCollections outDir
     0

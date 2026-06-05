@@ -85,6 +85,7 @@ type StepWhere =
 /// <summary>Legend placement within the Axes.</summary>
 /// <remarks>Ported from Matplotlib's legend <c>loc</c> strings.</remarks>
 type LegendLoc =
+    | Best
     | UpperRight
     | UpperLeft
     | LowerLeft
@@ -151,7 +152,7 @@ module Styles =
     /// <summary>Parse a Matplotlib legend <c>loc</c> string (<c>best</c> maps to upper right).</summary>
     let parseLegendLoc (code: string) : LegendLoc =
         match code with
-        | "best"
+        | "best" -> Best
         | "upper right" -> UpperRight
         | "upper left" -> UpperLeft
         | "lower left" -> LowerLeft

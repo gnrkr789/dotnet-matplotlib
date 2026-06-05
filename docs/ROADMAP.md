@@ -15,13 +15,13 @@ Status: ✅ done · 🚧 in progress · ⬜ planned.
 - ✅ Backend: `SvgRenderer`, `FigureCanvas`
 - ✅ Facade: `Pyplot` (`Plot`, `Title`, `XLabel`, `YLabel`, `Legend`, `Savefig`)
 
-## Phase 2 — Plot types & styling breadth
+## Phase 2 — Plot types & styling breadth (essentially complete)
 - ✅ `scatter`, `bar`/`barh` (sticky baseline), `fill_between`, `step`, `errorbar`, `stem`
-- 🚧 Patches: `Rectangle` ✅, `Circle` ✅, `Polygon` ✅; `PathPatch`, `Collection`s ⬜
+- ✅ Patches: `Rectangle`, `Circle`, `Polygon`, `PathPatch`; `LineCollection`, `PolyCollection`
 - ✅ Markers: full set (circle, point, square, diamond, thin-diamond, triangles ▲▼◀▶, pentagon, hexagon, star, +, x, |, _)
-- 🚧 Legend: box ✅, `loc` ✅ (auto-best ⬜); `text` ✅, `Annotation` ✅ (basic arrow)
+- ✅ Legend: box, `loc` (9 positions), auto-`best`; `text`, `Annotation` (basic arrow)
 - 🚧 Grid ✅; minor ticks ✅; tick params (direction ✅, rest ⬜); spine visibility ✅
-- 🚧 `subplots` ✅, `GridSpec` ✅ (wspace/hspace); constrained/tight layout ⬜
+- 🚧 `subplots` ✅, `GridSpec` ✅, `tight_layout` ✅ (approx); `constrained_layout` ⬜
 
 ## Phase 3 — Scales, color, data domains
 - ⬜ `LogScale`, `SymlogScale`, `LogitScale`; log locators/formatters
