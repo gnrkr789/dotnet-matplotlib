@@ -14,6 +14,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Matplotlib\Matplotlib.fsproj" />
+    <!-- Matplotlib bundles Domain/Backends privately, so reference Domain directly. -->
+    <ProjectReference Include="..\..\src\Matplotlib.Domain\Matplotlib.Domain.fsproj" />
   </ItemGroup>
 
 </Project>

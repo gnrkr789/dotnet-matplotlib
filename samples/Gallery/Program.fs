@@ -203,7 +203,7 @@ let private renderLogScale (outDir: string) =
 
 let private renderImshow (outDir: string) =
     let plt = Pyplot()
-    let n = 60
+    let n = 40
 
     let data =
         Array2D.init n n (fun i j ->
@@ -222,13 +222,15 @@ let private renderImshow (outDir: string) =
 
 let private renderContour (outDir: string) =
     let plt = Pyplot()
-    let n = 80
+    let n = 60
 
     let data =
         Array2D.init n n (fun i j ->
             let x = float j / float n * 6.0 - 3.0
             let y = float i / float n * 6.0 - 3.0
-            sin (x * x + y * y))
+
+            exp (-((x - 1.0) ** 2.0 + y ** 2.0))
+            + 0.8 * exp (-((x + 1.3) ** 2.0 + (y + 0.8) ** 2.0) / 0.6))
 
     plt.Contour(data, cmap = "viridis") |> ignore
     plt.Title "dotnet-matplotlib: contour"

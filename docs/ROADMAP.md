@@ -23,12 +23,12 @@ Status: ✅ done · 🚧 in progress · ⬜ planned.
 - 🚧 Grid ✅; minor ticks ✅; tick params (direction ✅, rest ⬜); spine visibility ✅
 - ✅ `subplots`, `GridSpec`, `tight_layout`, `constrained_layout` (approx)
 
-## Phase 3 — Scales, color, data domains (essentially complete)
+## Phase 3 — Scales, color, data domains (complete)
 - ✅ `LogScale`, `SymlogScale`, `LogitScale` (decade / symlog / logit locators)
 - ✅ Date axis (`DateFormatter`, `plot_date` via OADate) + `FixedLocator`/`FixedFormatter`
 - ✅ Categorical axis (`set_xcategories`, string→index)
 - 🚧 Colormaps: `viridis` ✅ (+ gray/jet/hot), `Normalize` ✅, `colorbar` ✅; more `_cm*` maps ⬜
-- 🚧 `imshow` ✅, `pcolormesh` ✅, `contour` ✅ (marching squares); `contourf` ⬜
+- ✅ `imshow`, `pcolormesh`, `contour` (marching squares), `contourf` (banded)
 
 ## Phase 4 — Backends & fidelity
 - ⬜ Raster backend (Agg-equivalent, pure-managed or opt-in native) → PNG

@@ -411,6 +411,33 @@ type Axes(rc: RcParams) =
         this.SetYLim(0.0, float (Array2D.length1 data - 1))
         levs
 
+    /// <summary>Draw filled contour bands of a 2D field (Matplotlib's <c>contourf</c>).</summary>
+    /// <remarks>Approximated by colouring each cell with its level band's color.</remarks>
+    member this.Contourf(data: float[,], ?levels: float[], ?cmap: string) : float[] =
+        let lo, hi = this.DataRange(data, None, None)
+        let boundaries = defaultArg levels [| for k in 0..10 -> lo + float k / 10.0 * (hi - lo) |]
+        let rows = Array2D.length1 data
+        let cols = Array2D.length2 data
+
+        let bandMid (v: float) =
+            let mutable b = 0
+
+            while b < boundaries.Length - 2 && v >= boundaries[b + 1] do
+                b <- b + 1
+
+            (boundaries[b] + boundaries[b + 1]) / 2.0
+
+        let quantized = Array2D.init rows cols (fun i j -> bandMid data[i, j])
+        let colormap = Colormap.byName (defaultArg cmap "viridis")
+
+        let img =
+            AxesImage(quantized, colormap, Normalize(lo, hi), Array.init (cols + 1) float, Array.init (rows + 1) float)
+
+        images.Add img
+        this.SetXLim(0.0, float cols)
+        this.SetYLim(0.0, float rows)
+        boundaries
+
     /// <summary>Add a collection and rescale to include it (Matplotlib's <c>add_collection</c>).</summary>
     member this.AddCollection(collection: Collection) : Collection =
         collections.Add collection

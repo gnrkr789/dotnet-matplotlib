@@ -3,8 +3,13 @@
   <PropertyGroup>
     <RootNamespace>Matplotlib</RootNamespace>
     <AssemblyName>Matplotlib</AssemblyName>
-    <Description>dotnet-matplotlib application facade: the stateful Pyplot API over the domain model and backends.</Description>
     <PackageId>DotnetMatplotlib</PackageId>
+    <Description>A native .NET 10 port of Matplotlib in F#: a pyplot-style 2D plotting API (lines, scatter, bars, images/colormaps, contours, log/symlog/logit/date/categorical axes) rendering to SVG with zero native dependencies.</Description>
+    <PackageTags>matplotlib;plotting;chart;graph;visualization;fsharp;svg;pyplot;dataviz</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageProjectUrl>https://github.com/gnrkr789/dotnet-matplotlib</PackageProjectUrl>
+    <!-- Ship this facade plus its referenced domain/backend assemblies as one package. -->
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,8 +17,20 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Matplotlib.Domain\Matplotlib.Domain.fsproj" />
-    <ProjectReference Include="..\Matplotlib.Backends\Matplotlib.Backends.fsproj" />
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
+
+  <ItemGroup>
+    <!-- PrivateAssets=all so they are bundled (below), not declared as nuget dependencies. -->
+    <ProjectReference Include="..\Matplotlib.Domain\Matplotlib.Domain.fsproj" PrivateAssets="all" />
+    <ProjectReference Include="..\Matplotlib.Backends\Matplotlib.Backends.fsproj" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- Bundle the referenced project DLLs into the package lib folder. -->
+  <Target Name="CopyProjectReferencesToPackage" DependsOnTargets="ResolveReferences">
+    <ItemGroup>
+      <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))" />
+    </ItemGroup>
+  </Target>
 
 </Project>

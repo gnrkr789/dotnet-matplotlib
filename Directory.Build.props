@@ -22,7 +22,7 @@
     <Product>dotnet-matplotlib</Product>
     <Company>dotnet-matplotlib</Company>
     <RepositoryUrl>https://github.com/gnrkr789/dotnet-matplotlib</RepositoryUrl>
-    <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Copyright>Copyright (c) 2026 dotnet-matplotlib contributors.</Copyright>
   </PropertyGroup>
 

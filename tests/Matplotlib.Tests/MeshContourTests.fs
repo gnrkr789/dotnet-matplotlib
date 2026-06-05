@@ -40,3 +40,12 @@ module MeshContourTests =
         plt.Contour data |> ignore
         Assert.True(plt.CurrentAxes().Collections.Count > 0)
         Assert.Contains("<path", plt.ToSvg())
+
+    [<Fact>]
+    let ``Contourf fills the field with banded colors`` () =
+        let plt = Pyplot()
+        let data = array2D [ for i in 0..9 -> [ for j in 0..9 -> float (i + j) ] ]
+        let levels = plt.Contourf(data, cmap = "viridis")
+        Assert.True(levels.Length > 2)
+        Assert.Equal(1, plt.CurrentAxes().Images.Count)
+        Assert.Contains("<path", plt.ToSvg())

@@ -2,6 +2,7 @@
 
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
 [![NuGet](https://img.shields.io/nuget/v/DotnetMatplotlib.svg?logo=nuget&label=NuGet)](https://www.nuget.org/packages/DotnetMatplotlib/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 A **native .NET 10** port of [Matplotlib](https://matplotlib.org/) — the de-facto
 2D plotting library for Python — rebuilt in idiomatic **F#** following
@@ -11,6 +12,27 @@ A **native .NET 10** port of [Matplotlib](https://matplotlib.org/) — the de-fa
 > (`Figure` / `Axes` / `Artist` / `Transform` / `Backend`) with a familiar
 > `pyplot`-style facade, producing publication-quality output with **zero native
 > dependencies** (pure-managed SVG backend; raster/Agg backend on the roadmap).
+
+## Gallery
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/gallery/imshow.svg" alt="imshow + colorbar" width="420"><br><sub><code>imshow</code> + <code>colorbar</code> (viridis)</sub></td>
+    <td align="center"><img src="docs/gallery/contour.svg" alt="contour" width="420"><br><sub><code>contour</code> (marching squares)</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/gallery/annotate.svg" alt="annotate" width="420"><br><sub><code>annotate</code> + <code>text</code></sub></td>
+    <td align="center"><img src="docs/gallery/collections.svg" alt="LineCollection" width="420"><br><sub><code>LineCollection</code></sub></td>
+  </tr>
+</table>
+
+More examples are produced by `dotnet run --project samples/Gallery -- out`.
+
+## Install
+
+```bash
+dotnet add package DotnetMatplotlib
+```
 
 ```fsharp
 open Matplotlib
@@ -25,6 +47,16 @@ plt.Legend()
 plt.Savefig "hello.svg"
 ```
 
+## Features
+
+Line / scatter / bar / barh / fill_between / step / errorbar / stem, the full
+marker set, patches & collections, images (`imshow` / `pcolormesh`) with
+colormaps + `colorbar`, `contour`/`contourf`, legends (with `best` placement),
+text & annotations, subplots with `tight_layout` / `constrained_layout`, and
+linear / log / symlog / logit / categorical / date axes. See
+[docs/ROADMAP.md](docs/ROADMAP.md) for the module-by-module parity status and
+[PORTING.md](PORTING.md) for the porting log.
+
 ## Building
 
 Requires the **.NET 10 SDK**.
@@ -37,35 +69,12 @@ dotnet run --project samples/Gallery -- out   # render the sample gallery to ./o
 ```
 
 Style is enforced with **Fantomas**, and **FSharpLint** is the configured lint
-rule set — see [LINTING.md](LINTING.md).
-
-## Architecture
-
-`dotnet-matplotlib` mirrors Matplotlib's layered object model under a DDD project
-structure. F# is functional-first but fully supports the OOP model Matplotlib
-relies on (classes, interfaces, inheritance) — used for the artist hierarchy —
-while value objects are immutable records and algorithms live in modules.
-
-```
-src/
-  Matplotlib.Domain/    # Pure F# domain: Figure, Axes, Artist, Transform,
-                        #   Scale, Ticker, Color — no I/O, no rendering deps.
-                        #   Defines IRenderer (port) that artists draw onto.
-  Matplotlib.Backends/  # Infrastructure: concrete IRenderer implementations
-                        #   (SvgRenderer) + FigureCanvas (output adapters).
-  Matplotlib/           # Application/facade: the stateful `Pyplot` API.
-tests/
-  Matplotlib.Tests/     # xUnit unit & golden-file tests.
-samples/Gallery/        # Runnable example gallery.
-```
-
-See [CLAUDE.md](CLAUDE.md) for the full engineering guide and
-[Skills.md](Skills.md) for the porting playbook.
+rule set — see [LINTING.md](LINTING.md). The engineering guide is in
+[CLAUDE.md](CLAUDE.md) and the porting playbook in [Skills.md](Skills.md).
 
 ## License
 
-`dotnet-matplotlib` is released under the **BSD-3-Clause** license — see
-[LICENSE](LICENSE).
+`dotnet-matplotlib` is released under the **MIT** license — see [LICENSE](LICENSE).
 
 ## Citation
 
