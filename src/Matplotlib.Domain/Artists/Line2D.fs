@@ -1,5 +1,6 @@
 namespace Matplotlib.Domain.Artists
 
+open System
 open Matplotlib.Domain.Primitives
 open Matplotlib.Domain.Style
 open Matplotlib.Domain.Rendering
@@ -77,6 +78,63 @@ module internal MarkerPaths =
                 ]
         }
 
+    /// <summary>A regular n-gon inscribed in radius <paramref name="r"/>.</summary>
+    let private regular (center: Point2D) (r: float) (n: int) (startDeg: float) : Path =
+        [
+            for k in 0 .. n - 1 ->
+                let a = (startDeg + 360.0 * float k / float n) * Math.PI / 180.0
+                p (center.X + r * cos a) (center.Y + r * sin a)
+        ]
+        |> Path.polygon
+
+    /// <summary>An n-pointed star (inner radius ratio 0.382).</summary>
+    let private starShape (center: Point2D) (r: float) (n: int) (startDeg: float) : Path =
+        let inner = r * 0.382
+
+        [
+            for k in 0 .. (2 * n - 1) ->
+                let rr = if k % 2 = 0 then r else inner
+                let a = (startDeg + 360.0 * float k / float (2 * n)) * Math.PI / 180.0
+                p (center.X + rr * cos a) (center.Y + rr * sin a)
+        ]
+        |> Path.polygon
+
+    let pentagon (center: Point2D) (r: float) : Path = regular center r 5 90.0
+
+    let hexagon (center: Point2D) (r: float) : Path = regular center r 6 90.0
+
+    let star (center: Point2D) (r: float) : Path = starShape center r 5 90.0
+
+    let triangleDown (center: Point2D) (r: float) : Path =
+        let cx, cy = center.X, center.Y
+        Path.polygon [ p cx (cy - r); p (cx - r) (cy + r); p (cx + r) (cy + r) ]
+
+    let triangleLeft (center: Point2D) (r: float) : Path =
+        let cx, cy = center.X, center.Y
+        Path.polygon [ p (cx - r) cy; p (cx + r) (cy + r); p (cx + r) (cy - r) ]
+
+    let triangleRight (center: Point2D) (r: float) : Path =
+        let cx, cy = center.X, center.Y
+        Path.polygon [ p (cx + r) cy; p (cx - r) (cy - r); p (cx - r) (cy + r) ]
+
+    let thinDiamond (center: Point2D) (r: float) : Path =
+        let cx, cy = center.X, center.Y
+        Path.polygon [ p cx (cy + r); p (cx + r * 0.6) cy; p cx (cy - r); p (cx - r * 0.6) cy ]
+
+    let vline (center: Point2D) (r: float) : Path =
+        let cx, cy = center.X, center.Y
+
+        {
+            Commands = [ MoveTo(p cx (cy - r)); LineTo(p cx (cy + r)) ]
+        }
+
+    let hline (center: Point2D) (r: float) : Path =
+        let cx, cy = center.X, center.Y
+
+        {
+            Commands = [ MoveTo(p (cx - r) cy); LineTo(p (cx + r) cy) ]
+        }
+
 /// <summary>
 /// A 2D line, optionally with markers — the artist created by <c>plot</c>.
 /// </summary>
@@ -139,16 +197,28 @@ type Line2D(xData: float[], yData: float[]) as this =
                 LineWidth = edgeWidthPx
             }
 
+        let fill (path: Path) = renderer.DrawPath(strokeGc, path, Some face)
+        let stroke (path: Path) = renderer.DrawPath(strokeGc, path, None)
+
         for pt in points do
             match this.Marker with
             | NoMarker -> ()
-            | Circle -> renderer.DrawPath(strokeGc, MarkerPaths.circle pt r, Some face)
-            | Point -> renderer.DrawPath(strokeGc, MarkerPaths.circle pt (r / 2.0), Some face)
-            | Square -> renderer.DrawPath(strokeGc, MarkerPaths.square pt r, Some face)
-            | Diamond -> renderer.DrawPath(strokeGc, MarkerPaths.diamond pt r, Some face)
-            | TriangleUp -> renderer.DrawPath(strokeGc, MarkerPaths.triangleUp pt r, Some face)
-            | Plus -> renderer.DrawPath(strokeGc, MarkerPaths.plus pt r, None)
-            | Cross -> renderer.DrawPath(strokeGc, MarkerPaths.cross pt r, None)
+            | Circle -> fill (MarkerPaths.circle pt r)
+            | Point -> fill (MarkerPaths.circle pt (r / 2.0))
+            | Square -> fill (MarkerPaths.square pt r)
+            | Diamond -> fill (MarkerPaths.diamond pt r)
+            | ThinDiamond -> fill (MarkerPaths.thinDiamond pt r)
+            | TriangleUp -> fill (MarkerPaths.triangleUp pt r)
+            | TriangleDown -> fill (MarkerPaths.triangleDown pt r)
+            | TriangleLeft -> fill (MarkerPaths.triangleLeft pt r)
+            | TriangleRight -> fill (MarkerPaths.triangleRight pt r)
+            | Pentagon -> fill (MarkerPaths.pentagon pt r)
+            | Hexagon -> fill (MarkerPaths.hexagon pt r)
+            | Star -> fill (MarkerPaths.star pt r)
+            | Plus -> stroke (MarkerPaths.plus pt r)
+            | Cross -> stroke (MarkerPaths.cross pt r)
+            | VLine -> stroke (MarkerPaths.vline pt r)
+            | HLine -> stroke (MarkerPaths.hline pt r)
 
     override this.Draw(renderer: IRenderer) =
         if this.Visible && this.XData.Length > 0 then

@@ -17,6 +17,7 @@
     <Compile Include="PatchTests.fs" />
     <Compile Include="StepErrorbarTests.fs" />
     <Compile Include="TickStyleTests.fs" />
+    <Compile Include="MarkerLegendTests.fs" />
     <Compile Include="SubplotTests.fs" />
     <Compile Include="RenderingTests.fs" />
   </ItemGroup>

@@ -214,6 +214,9 @@ type Axes(rc: RcParams) =
     /// <summary>Whether to draw the legend.</summary>
     member val ShowLegend = false with get, set
 
+    /// <summary>Where the legend is placed within the Axes.</summary>
+    member val LegendLoc = UpperRight with get, set
+
     /// <summary>Whether minor ticks are drawn.</summary>
     member val MinorTicksEnabled = false with get, set
 
@@ -463,6 +466,11 @@ type Axes(rc: RcParams) =
     member this.Grid(visible: bool) =
         this.XAxis.ShowGrid <- visible
         this.YAxis.ShowGrid <- visible
+
+    /// <summary>Show the legend, optionally at a specific location.</summary>
+    member this.Legend(?loc: LegendLoc) =
+        this.ShowLegend <- true
+        loc |> Option.iter (fun l -> this.LegendLoc <- l)
 
     member private this.Autoscale() =
         let finite = Array.filter Double.IsFinite
@@ -755,9 +763,33 @@ type Axes(rc: RcParams) =
 
             let boxW = pad + sample + gap + textW + pad
             let boxH = pad + lineH * float entries.Length + pad
-            let x1 = b.X1 - 0.01 * b.Width - pad
-            let y1 = b.Y1 - 0.01 * abs b.Height - pad
-            let x0 = x1 - boxW
+            let inset = 0.5 * rc.FontSize * ctx.Pt2Px
+
+            let x0 =
+                match this.LegendLoc with
+                | UpperLeft
+                | LowerLeft
+                | CenterLeft -> b.XMin + inset
+                | UpperCenter
+                | LowerCenter
+                | Center -> b.CenterX - boxW / 2.0
+                | UpperRight
+                | LowerRight
+                | CenterRight -> b.XMax - inset - boxW
+
+            let y1 =
+                match this.LegendLoc with
+                | UpperLeft
+                | UpperRight
+                | UpperCenter -> b.YMax - inset
+                | CenterLeft
+                | CenterRight
+                | Center -> b.CenterY + boxH / 2.0
+                | LowerLeft
+                | LowerRight
+                | LowerCenter -> b.YMin + inset + boxH
+
+            let x1 = x0 + boxW
             let y0 = y1 - boxH
 
             let frameGc =

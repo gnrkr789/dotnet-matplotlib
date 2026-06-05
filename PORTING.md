@@ -48,6 +48,8 @@ and is not part of this repository (it is git-ignored).
 | 2026-06-05 | 4 | `axes.Axes.stem` | `Domain/Axes.Stem` + `Pyplot.Stem` | stem plots |
 | 2026-06-05 | 4 | `ticker.AutoMinorLocator` | `Domain/Axes` (`minorTicks`) | minor ticks (4/5 subdivisions) |
 | 2026-06-05 | 4 | `Axes.tick_params` (direction), `spines[*].set_visible` | `Domain/Axes` (`TickParams`, `SetSpineVisible`) | tick direction in/out/inout, spine visibility |
+| 2026-06-05 | 5 | `markers.py` marker set | `Domain/Artists/Line2D` (`MarkerPaths`) | triangles, pentagon, hexagon, star, thin-diamond, vline, hline |
+| 2026-06-05 | 5 | legend `loc` placement | `Domain/Axes` (`LegendLoc`) + `Pyplot.Legend` | 9 standard legend locations |
 
 Known deviations (to refine in later sprints):
 - `errorbar` draws the error lines only; caps (`capsize`) are not yet rendered

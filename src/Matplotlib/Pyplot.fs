@@ -171,8 +171,10 @@ type Pyplot() =
     /// <summary>Set the y view limits of the current axes.</summary>
     member this.YLim(lower: float, upper: float) = this.EnsureAxes().SetYLim(lower, upper)
 
-    /// <summary>Show the legend on the current axes.</summary>
-    member this.Legend() = this.EnsureAxes().ShowLegend <- true
+    /// <summary>Show the legend on the current axes, optionally at a location.</summary>
+    member this.Legend(?loc: string) =
+        let locOpt = loc |> Option.map Styles.parseLegendLoc
+        this.EnsureAxes().Legend(?loc = locOpt)
 
     /// <summary>Toggle grid lines on the current axes.</summary>
     member this.Grid(?visible: bool) = this.EnsureAxes().Grid(defaultArg visible true)
