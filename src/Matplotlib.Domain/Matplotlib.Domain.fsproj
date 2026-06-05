@@ -34,6 +34,7 @@
     <Compile Include="Artists/Line2D.fs" />
     <Compile Include="Artists/Text.fs" />
     <Compile Include="Artists/Spine.fs" />
+    <Compile Include="Artists/Patch.fs" />
     <!-- Containers -->
     <Compile Include="Axis.fs" />
     <Compile Include="Axes.fs" />

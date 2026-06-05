@@ -14,6 +14,8 @@
     <Compile Include="TransformTests.fs" />
     <Compile Include="ColorTests.fs" />
     <Compile Include="TickingTests.fs" />
+    <Compile Include="PatchTests.fs" />
+    <Compile Include="SubplotTests.fs" />
     <Compile Include="RenderingTests.fs" />
   </ItemGroup>
 

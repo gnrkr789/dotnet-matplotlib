@@ -45,6 +45,7 @@ copyright notice is retained:
     "Copyright (c) 2012- Matplotlib Development Team; All Rights Reserved"
     "Copyright (c) 2002-2011 John D. Hunter; All Rights Reserved"
 
-The full Matplotlib license is reproduced in LICENSE-matplotlib.txt. A summary
+The full Matplotlib license is available upstream at
+https://github.com/matplotlib/matplotlib/blob/main/LICENSE/LICENSE. A summary
 of the changes made relative to Matplotlib (as required by clause 3 of that
 license) is maintained in PORTING.md.

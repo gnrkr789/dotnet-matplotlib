@@ -39,5 +39,13 @@ and is not part of this repository (it is git-ignored).
 | 2026-06-05 | 1 | `figure.Figure`, `axes._base/_axes`, `axis.XAxis/YAxis` | `Domain/Figure,Axes,Axis` | containers |
 | 2026-06-05 | 1 | `backend_bases.RendererBase`, `backend_svg` | `Rendering/IRenderer`, `Backends/Svg/SvgRenderer` | SVG output |
 | 2026-06-05 | 1 | `pyplot` | `Matplotlib/Pyplot` | stateful facade |
+| 2026-06-05 | 2 | `patches.Patch/Rectangle/Polygon/Circle` | `Domain/Artists/Patch` | filled shapes (zorder 1) |
+| 2026-06-05 | 2 | `axes.Axes.bar/barh/fill_between` | `Domain/Axes` + `Matplotlib/Pyplot` | bar charts & filled regions |
+| 2026-06-05 | 2 | `figure.Figure.subplots`, `GridSpec` | `Domain/Figure.Subplots` + `Pyplot.Subplots` | subplot grid layout |
+
+Known deviations (to refine in later sprints):
+- Bar/fill_between autoscaling uses simple 5% margins; Matplotlib's
+  `sticky_edges` (bars/areas sticking exactly to the baseline) is not yet
+  implemented, so a small margin appears below a `0` baseline.
 
 (Append a row per slice.)

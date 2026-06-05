@@ -51,6 +51,33 @@ type Figure(rc: RcParams) =
         axesList.Add ax
         ax
 
+    /// <summary>
+    /// Create a grid of <paramref name="nrows"/>×<paramref name="ncols"/> Axes,
+    /// indexed <c>[row, col]</c> with row 0 at the top.
+    /// </summary>
+    /// <remarks>
+    /// Ported from <c>matplotlib.figure.Figure.subplots</c> / <c>GridSpec</c>.
+    /// <paramref name="wspace"/>/<paramref name="hspace"/> are the inter-cell
+    /// spacing as a fraction of the average cell size (Matplotlib default 0.2).
+    /// </remarks>
+    member _.Subplots(nrows: int, ncols: int, ?wspace: float, ?hspace: float) : Axes[,] =
+        let ws = defaultArg wspace 0.2
+        let hs = defaultArg hspace 0.2
+        let left, right = rc.SubplotLeft, rc.SubplotRight
+        let bottom, top = rc.SubplotBottom, rc.SubplotTop
+        let cellW = (right - left) / (float ncols + ws * float (ncols - 1))
+        let cellH = (top - bottom) / (float nrows + hs * float (nrows - 1))
+        let sepW = ws * cellW
+        let sepH = hs * cellH
+
+        Array2D.init nrows ncols (fun i j ->
+            let l = left + float j * (cellW + sepW)
+            let t = top - float i * (cellH + sepH)
+            let ax = Axes(rc)
+            ax.Position <- BBox.fromExtents l (t - cellH) (l + cellW) t
+            axesList.Add ax
+            ax)
+
     /// <summary>Render the figure background and every Axes onto the renderer.</summary>
     member this.Draw(renderer: IRenderer) =
         let canvas = renderer.CanvasSizePx

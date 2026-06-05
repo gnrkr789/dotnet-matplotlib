@@ -37,7 +37,10 @@ plan tracking Matplotlib parity.
 | Domain | Scales & Ticking (Linear, MaxNLocator) | ✅ Sprint 1 |
 | Infra | SVG backend | ✅ Sprint 1 |
 | App | `Pyplot` facade | ✅ Sprint 1 |
-| … | Patches, Collections, Images, Colormaps, Log/Date scales, Agg raster backend | 🚧 planned |
+| Domain | Patches (Rectangle, Polygon, Circle) | ✅ Sprint 2 |
+| App | `bar` / `barh` / `fill_between` | ✅ Sprint 2 |
+| App | `subplots` grid (GridSpec) | ✅ Sprint 2 |
+| … | Collections, Images, Colormaps, Log/Date scales, Agg raster backend | 🚧 planned |
 
 ## Building
 
@@ -80,10 +83,11 @@ See [CLAUDE.md](CLAUDE.md) for the full engineering guide and
 
 `dotnet-matplotlib` is released under the **BSD-3-Clause** license
 ([LICENSE](LICENSE)). It is an independent re-implementation of Matplotlib; the
-Matplotlib license (PSF-based) is reproduced in
-[LICENSE-matplotlib.txt](LICENSE-matplotlib.txt) and its copyright notice —
-*"Copyright (c) 2012- Matplotlib Development Team; All Rights Reserved"* — is
-retained as required. A summary of changes is in [PORTING.md](PORTING.md).
+Matplotlib copyright notice — *"Copyright (c) 2012- Matplotlib Development Team;
+All Rights Reserved"* — is retained in [LICENSE](LICENSE) as required, and the
+full Matplotlib (PSF-based) license is available
+[upstream](https://github.com/matplotlib/matplotlib/blob/main/LICENSE/LICENSE).
+A summary of changes is in [PORTING.md](PORTING.md).
 
 ## Citation
 
