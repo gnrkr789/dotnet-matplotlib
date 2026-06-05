@@ -1,0 +1,79 @@
+name: CI
+
+# Run on every push and pull request.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
+
+jobs:
+  build-test:
+    name: Build & Test (.NET 10)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET SDKs
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Restore tools
+        run: dotnet tool restore
+
+      - name: Restore
+        run: dotnet restore DotnetMatplotlib.slnx
+
+      - name: Build (warnings as errors)
+        run: dotnet build DotnetMatplotlib.slnx --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test DotnetMatplotlib.slnx --configuration Release --no-build --verbosity normal
+
+  style:
+    name: Style (Fantomas + FSharpLint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET SDKs
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Restore tools
+        run: dotnet tool restore
+
+      # Enforced gate: the whole tree must be Fantomas-formatted.
+      - name: Fantomas format check
+        run: dotnet fantomas --check src tests samples
+
+      # FSharpLint is the configured lint rule set. FSharpLint 0.24.2 cannot yet
+      # crack net10 projects (Ionide.ProjInfo fails to load System.Runtime — see
+      # LINTING.md), so it runs via the net8.0 lint shim and is non-blocking
+      # until an upstream net10-compatible release lands.
+      - name: FSharpLint (net8 shim, non-blocking)
+        continue-on-error: true
+        working-directory: build/lint
+        env:
+          DOTNET_ROLL_FORWARD: LatestMajor
+        run: |
+          dotnet tool restore
+          dotnet restore LintShim.fsproj
+          dotnet dotnet-fsharplint lint --lint-config ../../fsharplint.json --file-type project LintShim.fsproj
