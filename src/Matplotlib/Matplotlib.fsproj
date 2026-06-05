@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Matplotlib</RootNamespace>
+    <AssemblyName>Matplotlib</AssemblyName>
+    <Description>dotnet-matplotlib application facade: the stateful Pyplot API over the domain model and backends.</Description>
+    <PackageId>DotnetMatplotlib</PackageId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Pyplot.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Matplotlib.Domain\Matplotlib.Domain.fsproj" />
+    <ProjectReference Include="..\Matplotlib.Backends\Matplotlib.Backends.fsproj" />
+  </ItemGroup>
+
+</Project>

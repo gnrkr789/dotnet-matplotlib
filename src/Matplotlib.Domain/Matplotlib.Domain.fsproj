@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Matplotlib.Domain</RootNamespace>
+    <AssemblyName>Matplotlib.Domain</AssemblyName>
+    <Description>Pure F# domain model of dotnet-matplotlib: Figure, Axes, Artist, Transform, Scale, Ticker, Color. No rendering or platform dependencies.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Primitives (value objects) -->
+    <Compile Include="Primitives/Point2D.fs" />
+    <Compile Include="Primitives/Size.fs" />
+    <Compile Include="Primitives/Interval.fs" />
+    <Compile Include="Primitives/BBox.fs" />
+    <Compile Include="Primitives/Color.fs" />
+    <Compile Include="Primitives/ColorData.fs" />
+    <Compile Include="Primitives/ColorResolver.fs" />
+    <!-- Transforms -->
+    <Compile Include="Transforms/Transform.fs" />
+    <Compile Include="Transforms/Affine2D.fs" />
+    <Compile Include="Transforms/Transforms.fs" />
+    <!-- Ticking -->
+    <Compile Include="Ticking/Locators.fs" />
+    <Compile Include="Ticking/Formatters.fs" />
+    <!-- Scales -->
+    <Compile Include="Scales/Scale.fs" />
+    <!-- Style -->
+    <Compile Include="Style/Styles.fs" />
+    <!-- Rendering port -->
+    <Compile Include="Rendering/Path.fs" />
+    <Compile Include="Rendering/Renderer.fs" />
+    <!-- Artists -->
+    <Compile Include="Artists/Artist.fs" />
+    <Compile Include="Artists/Line2D.fs" />
+    <Compile Include="Artists/Text.fs" />
+    <Compile Include="Artists/Spine.fs" />
+    <!-- Containers -->
+    <Compile Include="Axis.fs" />
+    <Compile Include="Axes.fs" />
+    <Compile Include="Figure.fs" />
+  </ItemGroup>
+
+</Project>

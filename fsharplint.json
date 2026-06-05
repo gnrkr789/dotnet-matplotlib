@@ -1,0 +1,60 @@
+{
+  "ignoreFiles": [
+    "*AssemblyInfo.fs",
+    "obj/**",
+    "bin/**"
+  ],
+  "MaxLinesInFile": { "enabled": true, "config": { "maxLinesInFile": 1000 } },
+  "MaxLinesInFunction": { "enabled": true, "config": { "maxLines": 120 } },
+  "MaxLinesInLambdaFunction": { "enabled": true, "config": { "maxLines": 40 } },
+  "MaxLinesInMatchLambdaFunction": { "enabled": true, "config": { "maxLines": 80 } },
+  "MaxLinesInValue": { "enabled": false },
+  "MaxLinesInModule": { "enabled": false },
+  "MaxCharactersOnLine": { "enabled": true, "config": { "maxCharactersOnLine": 140 } },
+  "TrailingWhitespaceOnLine": {
+    "enabled": true,
+    "config": {
+      "numberOfSpacesAllowed": 0,
+      "oneSpaceAllowedAfterOperator": true,
+      "ignoreBlankLines": true
+    }
+  },
+  "TrailingNewLineInFile": { "enabled": true },
+  "NoTabCharacters": { "enabled": true },
+  "MaxNumberOfFunctionParameters": { "enabled": true, "config": { "maxItems": 8 } },
+  "MaxNumberOfMembers": { "enabled": false },
+  "MaxNumberOfBooleanOperatorsInCondition": { "enabled": true, "config": { "maxItems": 6 } },
+  "FavourIgnoreOverLetWild": { "enabled": true },
+  "FavourReRaise": { "enabled": true },
+  "FavourTypedIgnore": { "enabled": false },
+  "ReimplementsFunction": { "enabled": true },
+  "CanBeReplacedWithComposition": { "enabled": true },
+  "RedundantNewKeyword": { "enabled": true },
+  "InterfaceNames": { "enabled": true, "config": { "naming": "PascalCase", "prefix": "I" } },
+  "TypeNames": { "enabled": true, "config": { "naming": "PascalCase" } },
+  "RecordFieldNames": { "enabled": true, "config": { "naming": "PascalCase" } },
+  "EnumCasesNames": { "enabled": true, "config": { "naming": "PascalCase" } },
+  "UnionCasesNames": { "enabled": true, "config": { "naming": "PascalCase" } },
+  "ModuleNames": { "enabled": true, "config": { "naming": "PascalCase" } },
+  "LiteralNames": { "enabled": true, "config": { "naming": "PascalCase" } },
+  "PublicValuesNames": { "enabled": false },
+  "MemberNames": { "enabled": true, "config": { "naming": "PascalCase" } },
+  "ParameterNames": { "enabled": true, "config": { "naming": "CamelCase" } },
+  "NonPublicValuesNames": { "enabled": false },
+  "TupleCommaSpacing": { "enabled": true },
+  "TupleIndentation": { "enabled": false },
+  "TupleParentheses": { "enabled": false },
+  "PatternMatchClausesOnNewLine": { "enabled": false },
+  "PatternMatchOrClausesOnNewLine": { "enabled": false },
+  "Indentation": { "enabled": false },
+  "Hints": {
+    "add": [
+      "not (a =  b) ===> a <> b",
+      "not (a <> b) ===> a =  b",
+      "fun x -> x ===> id",
+      "x |> List.map f |> List.concat ===> x |> List.collect f",
+      "List.head (List.sort x) ===> List.min x"
+    ],
+    "ignore": []
+  }
+}
