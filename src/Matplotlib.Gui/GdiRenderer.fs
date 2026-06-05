@@ -23,6 +23,7 @@ type GdiRenderer(graphics: Graphics, sizePx: Size, dpi: float) =
 
     let height = sizePx.Height
     let pt2px = dpi / 72.0
+    let clipStates = System.Collections.Generic.Stack<GraphicsState>()
 
     /// <summary>Flip a display-space Y (bottom-left origin) to GDI Y (top-left).</summary>
     let flip (y: float) = height - y
@@ -169,3 +170,12 @@ type GdiRenderer(graphics: Graphics, sizePx: Size, dpi: float) =
                 Width = float text.Length * 0.6 * emPx
                 Height = emPx
             }
+
+        member _.PushClip(clip: BBox) =
+            clipStates.Push(graphics.Save())
+            let y = flip clip.Y1
+            graphics.IntersectClip(RectangleF(float32 clip.X0, float32 y, float32 clip.Width, float32 clip.Height))
+
+        member _.PopClip() =
+            if clipStates.Count > 0 then
+                graphics.Restore(clipStates.Pop())

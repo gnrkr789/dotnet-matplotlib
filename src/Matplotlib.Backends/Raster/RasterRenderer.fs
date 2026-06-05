@@ -24,6 +24,7 @@ type RasterRenderer(image: RasterImage, sizePx: Size, dpi: float, scale: int) =
     let fscale = float scale
     let logicalHeight = sizePx.Height
     let bezierSteps = 24
+    let clipStack = System.Collections.Generic.Stack<int * int * int * int>()
 
     /// <summary>Logical display point → supersampled, Y-flipped device point.</summary>
     let toDevice (p: Point2D) = (p.X * fscale, (logicalHeight - p.Y) * fscale)
@@ -173,3 +174,30 @@ type RasterRenderer(image: RasterImage, sizePx: Size, dpi: float, scale: int) =
                 Width = float text.Length * 0.6 * emPx
                 Height = emPx
             }
+
+        member _.PushClip(clip: BBox) =
+            let x0 = int (floor (clip.X0 * fscale))
+            let x1 = int (ceil (clip.X1 * fscale)) - 1
+            // display y-up -> device y-down
+            let y0 = int (floor ((logicalHeight - clip.Y1) * fscale))
+            let y1 = int (ceil ((logicalHeight - clip.Y0) * fscale)) - 1
+
+            let nx0, ny0, nx1, ny1 =
+                if clipStack.Count > 0 then
+                    let (cx0, cy0, cx1, cy1) = clipStack.Peek()
+                    max x0 cx0, max y0 cy0, min x1 cx1, min y1 cy1
+                else
+                    x0, y0, x1, y1
+
+            clipStack.Push(nx0, ny0, nx1, ny1)
+            image.SetClip(nx0, ny0, nx1, ny1)
+
+        member _.PopClip() =
+            if clipStack.Count > 0 then
+                clipStack.Pop() |> ignore
+
+            if clipStack.Count > 0 then
+                let (a, b, c, d) = clipStack.Peek()
+                image.SetClip(a, b, c, d)
+            else
+                image.ResetClip()

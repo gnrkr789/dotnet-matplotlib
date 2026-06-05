@@ -4,6 +4,81 @@ open Matplotlib.Domain.Primitives
 open Matplotlib.Domain.Rendering
 
 /// <summary>
+/// Generates hatch line segments clipped to a polygon outline, for the standard
+/// Matplotlib hatch characters (<c>/ \ | - + x</c>).
+/// </summary>
+/// <remarks>Ported in spirit from <c>matplotlib.hatch</c>.</remarks>
+[<RequireQualifiedAccess>]
+module Hatching =
+
+    let private angleOf (c: char) : float =
+        match c with
+        | '/' -> System.Math.PI / 4.0
+        | '\\' -> -System.Math.PI / 4.0
+        | '|' -> System.Math.PI / 2.0
+        | '-' -> 0.0
+        | _ -> nan
+
+    /// <summary>Expand compound patterns and map to distinct line angles (radians).</summary>
+    let private anglesOf (pattern: string) : float list =
+        pattern
+        |> Seq.collect (fun c ->
+            match c with
+            | '+' -> "-|" :> char seq
+            | 'x' -> "/\\"
+            | other -> Seq.singleton other)
+        |> Seq.choose (fun c ->
+            let a = angleOf c
+            if System.Double.IsNaN a then None else Some a)
+        |> Seq.distinct
+        |> Seq.toList
+
+    let private rot (a: float) (p: Point2D) : Point2D =
+        let c = cos a
+        let s = sin a
+
+        {
+            X = p.X * c - p.Y * s
+            Y = p.X * s + p.Y * c
+        }
+
+    /// <summary>Hatch line segments (display coords) filling <paramref name="outline"/>.</summary>
+    let segments (outline: Point2D[]) (pattern: string) (spacing: float) : (Point2D * Point2D) list =
+        if outline.Length < 3 || spacing <= 0.0 then
+            []
+        else
+            let result = ResizeArray<Point2D * Point2D>()
+            let n = outline.Length
+
+            for angle in anglesOf pattern do
+                // rotate so this hatch family is horizontal, scan, then rotate back
+                let r = outline |> Array.map (rot -angle)
+                let ys = r |> Array.map (fun p -> p.Y)
+                let mutable yc = ceil (Array.min ys / spacing) * spacing
+                let yMax = Array.max ys
+
+                while yc <= yMax do
+                    let xs = ResizeArray<float>()
+
+                    for i in 0 .. n - 1 do
+                        let a = r[i]
+                        let b = r[(i + 1) % n]
+
+                        if (a.Y <= yc && b.Y > yc) || (b.Y <= yc && a.Y > yc) then
+                            xs.Add(a.X + (yc - a.Y) / (b.Y - a.Y) * (b.X - a.X))
+
+                    xs.Sort()
+                    let mutable k = 0
+
+                    while k + 1 < xs.Count do
+                        result.Add(rot angle { X = xs[k]; Y = yc }, rot angle { X = xs[k + 1]; Y = yc })
+                        k <- k + 2
+
+                    yc <- yc + spacing
+
+            List.ofSeq result
+
+/// <summary>
 /// Abstract base for 2D filled shapes with a face color and an optional edge.
 /// The shape is expressed in the artist's (data) coordinate space and mapped to
 /// display pixels by its <c>Transform</c> at draw time.
@@ -30,6 +105,9 @@ type Patch() as this =
 
     /// <summary>Whether the shape is filled.</summary>
     member val Fill = true with get, set
+
+    /// <summary>Hatch pattern (<c>/ \ | - + x</c>), or <c>None</c> for no hatch.</summary>
+    member val Hatch: string option = None with get, set
 
     /// <summary>Legend label.</summary>
     member val Label = "" with get, set
@@ -58,6 +136,27 @@ type Patch() as this =
 
             let fill = if this.Fill then Some this.FaceColor else None
             renderer.DrawPath(gc, path, fill)
+
+            match this.Hatch with
+            | Some pattern when pattern <> "" ->
+                let outline = Path.vertices path |> List.toArray
+
+                let hatchColor =
+                    match this.EdgeColor with
+                    | Some c -> c
+                    | None -> Color.black
+
+                let gcHatch =
+                    { GraphicsContext.Default with
+                        StrokeColor = hatchColor
+                        LineWidth = 0.5 * renderer.Dpi / 72.0
+                    }
+
+                let spacing = 6.0 * renderer.Dpi / 72.0
+
+                for (p0, p1) in Hatching.segments outline pattern spacing do
+                    renderer.DrawPath(gcHatch, Path.polyline [ p0; p1 ], None)
+            | _ -> ()
 
 /// <summary>An axis-aligned rectangle anchored at its lower-left corner.</summary>
 /// <remarks>Ported from <c>matplotlib.patches.Rectangle</c>.</remarks>

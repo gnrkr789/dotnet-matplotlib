@@ -40,7 +40,8 @@ Status: ✅ done · 🚧 in progress · ⬜ planned.
     fill, thick strokes, supersampled AA)
 - ✅ TrueType font loading (`Domain/Text/TrueTypeFont`, `Backends/Text/FontManager`):
   pure-managed `glyf` parser (cmap 4/12, simple + composite glyphs) → raster text
-- ⬜ Mathtext subset; hatching; clipping; alpha compositing
+- 🚧 hatching ✅ (`Hatching`, `Patch.Hatch`), clipping ✅ (axes-box clip via
+  `IRenderer.PushClip`/`PopClip` in all backends), alpha compositing ✅; mathtext ⬜
 - ✅ PDF backend (`Matplotlib.Backends.Pdf`, `FigureCanvas.SavePdf`): pure-managed
   PDF 1.4 (paths, Helvetica text, alpha via ExtGState)
 

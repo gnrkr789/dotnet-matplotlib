@@ -1263,7 +1263,10 @@ type Axes(rc: RcParams) =
         let ctx = this.BuildContext renderer
         this.DrawBackground ctx
         this.DrawGrid ctx
+        // plotted data is clipped to the axes box (Matplotlib's default)
+        renderer.PushClip ctx.Box
         this.DrawData ctx
+        renderer.PopClip()
         this.DrawSpines ctx
         this.DrawMinorTicks ctx
         this.DrawTicks ctx

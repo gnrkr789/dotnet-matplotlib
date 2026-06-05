@@ -29,6 +29,7 @@
     <Compile Include="RasterTests.fs" />
     <Compile Include="TrueTypeTests.fs" />
     <Compile Include="PdfTests.fs" />
+    <Compile Include="HatchClipTests.fs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -20,6 +20,7 @@ type SvgRenderer(sizePx: Size, dpi: float) =
     let body = StringBuilder()
     let height = sizePx.Height
     let pt2px = dpi / 72.0
+    let mutable clipCounter = 0
 
     /// <summary>Format a number compactly with invariant culture.</summary>
     let num (v: float) = v.ToString("0.###", CultureInfo.InvariantCulture)
@@ -159,3 +160,16 @@ type SvgRenderer(sizePx: Size, dpi: float) =
                 Width = float text.Length * 0.6 * sizePx
                 Height = sizePx
             }
+
+        member _.PushClip(clip: BBox) =
+            clipCounter <- clipCounter + 1
+            let y = flip clip.Y1 // top edge in SVG coordinates
+
+            body
+                .Append($"<clipPath id=\"clip{clipCounter}\">")
+                .Append($"<rect x=\"{num clip.X0}\" y=\"{num y}\" ")
+                .Append($"width=\"{num clip.Width}\" height=\"{num clip.Height}\" /></clipPath>\n")
+                .Append($"<g clip-path=\"url(#clip{clipCounter})\">\n")
+            |> ignore
+
+        member _.PopClip() = body.Append("</g>\n") |> ignore

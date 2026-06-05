@@ -15,6 +15,24 @@ open Matplotlib.Domain.Primitives
 /// </remarks>
 type RasterImage(width: int, height: int) =
     let data = Array.zeroCreate<byte> (width * height * 4)
+    let mutable clipX0 = 0
+    let mutable clipY0 = 0
+    let mutable clipX1 = width - 1
+    let mutable clipY1 = height - 1
+
+    /// <summary>Set the pixel clip rectangle (inclusive); drawing outside is ignored.</summary>
+    member _.SetClip(x0: int, y0: int, x1: int, y1: int) =
+        clipX0 <- max 0 x0
+        clipY0 <- max 0 y0
+        clipX1 <- min (width - 1) x1
+        clipY1 <- min (height - 1) y1
+
+    /// <summary>Reset the clip to the whole image.</summary>
+    member _.ResetClip() =
+        clipX0 <- 0
+        clipY0 <- 0
+        clipX1 <- width - 1
+        clipY1 <- height - 1
 
     /// <summary>Image width in pixels.</summary>
     member _.Width = width
@@ -27,7 +45,7 @@ type RasterImage(width: int, height: int) =
 
     /// <summary>Source-over composite of a straight-alpha colour onto one pixel.</summary>
     member _.SetOver(x: int, y: int, r: byte, g: byte, b: byte, a: byte) =
-        if x >= 0 && x < width && y >= 0 && y < height && a > 0uy then
+        if x >= clipX0 && x <= clipX1 && y >= clipY0 && y <= clipY1 && a > 0uy then
             let i = (y * width + x) * 4
 
             if a = 255uy then

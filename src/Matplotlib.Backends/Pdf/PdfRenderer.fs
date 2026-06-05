@@ -174,6 +174,14 @@ type PdfRenderer(sizePx: Size, dpi: float) =
                 Height = emPx
             }
 
+        member _.PushClip(clip: BBox) =
+            body
+                .Append("q\n")
+                .Append($"{num (sx clip.X0)} {num (sx clip.Y0)} {num (sx clip.Width)} {num (sx clip.Height)} re W n\n")
+            |> ignore
+
+        member _.PopClip() = body.Append("Q\n") |> ignore
+
     /// <summary>Assemble the full PDF document bytes.</summary>
     member _.GetPdf() : byte[] =
         let content = body.ToString()

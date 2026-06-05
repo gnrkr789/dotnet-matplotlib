@@ -37,3 +37,12 @@ type IRenderer =
 
     /// <summary>Estimate the rendered size of a text string.</summary>
     abstract member MeasureText: text: string * font: FontProperties -> Size
+
+    /// <summary>
+    /// Restrict subsequent drawing to the given rectangle (display pixels,
+    /// bottom-left origin) until the matching <see cref="PopClip"/>. Clips nest.
+    /// </summary>
+    abstract member PushClip: clip: BBox -> unit
+
+    /// <summary>Remove the most recently pushed clip region.</summary>
+    abstract member PopClip: unit -> unit

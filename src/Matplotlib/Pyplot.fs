@@ -101,11 +101,12 @@ type Pyplot() =
 
     /// <summary>Draw a vertical bar chart (Matplotlib's <c>plt.bar</c>).</summary>
     member this.Bar
-        (x: float[], height: float[], ?width: float, ?bottom: float[], ?color: string, ?label: string)
-        : Rectangle[] =
+        (x: float[], height: float[], ?width: float, ?bottom: float[], ?color: string, ?label: string, ?hatch: string) : Rectangle[] =
         let ax = this.EnsureAxes()
         let colorOpt = color |> Option.map (fun s -> ColorResolver.Default.Resolve s)
-        ax.Bar(x, height, ?width = width, ?bottom = bottom, ?color = colorOpt, ?label = label)
+        let rects = ax.Bar(x, height, ?width = width, ?bottom = bottom, ?color = colorOpt, ?label = label)
+        hatch |> Option.iter (fun h -> rects |> Array.iter (fun r -> r.Hatch <- Some h))
+        rects
 
     /// <summary>Bar chart over named categories (Matplotlib's <c>plt.bar</c> with string labels).</summary>
     member this.Bar(categories: string[], heights: float[], ?color: string, ?label: string) : Rectangle[] =
