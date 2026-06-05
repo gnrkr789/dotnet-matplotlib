@@ -59,6 +59,7 @@ and is not part of this repository (it is git-ignored).
 | 2026-06-06 | 10 | `colors.Colormap/Normalize`, `_cm_listed` viridis, `image.AxesImage` | `Domain/Primitives/{Colormap,ColormapData}`, `Artists/Image` | viridis (256-LUT) + gray/jet/hot, linear Normalize, `imshow` |
 | 2026-06-06 | 11 | `figure.colorbar` | `Domain/Figure.Colorbar` + `Pyplot.Colorbar` | gradient axes + value scale on the right; Axes gains XTicksVisible / YTickSide |
 | 2026-06-06 | 12 | `axes.pcolormesh`, `axes.contour` | `Domain/Artists/Image` (cell edges), `Domain/Axes` (`marchingSquares`) | quad mesh (origin lower) + iso-line contours |
+| 2026-06-06 | 13 | `scale.SymmetricalLogScale`, `scale.LogitScale` | `Domain/Scales/Scale` | symlog (linear near 0, log beyond) + logit scales, locators |
 
 Known deviations (to refine in later sprints):
 - `errorbar` draws the error lines only; caps (`capsize`) are not yet rendered

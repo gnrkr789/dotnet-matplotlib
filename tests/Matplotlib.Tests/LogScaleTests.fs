@@ -51,3 +51,36 @@ module LogScaleTests =
         let svg = plt.ToSvg()
         Assert.Contains("<path", svg)
         Assert.Contains(">100<", svg)
+
+    [<Fact>]
+    let ``Symlog scale is symmetric and round-trips`` () =
+        let scale = SymlogScale() :> IScale
+        Assert.Equal("symlog", scale.Name)
+        assertClose 0.0 (scale.TransformValue 0.0)
+        assertCloseTol 1e-9 123.4 (scale.InverseValue(scale.TransformValue 123.4))
+        assertCloseTol 1e-9 -0.5 (scale.InverseValue(scale.TransformValue -0.5))
+        assertCloseTol 1e-12 (-(scale.TransformValue 50.0)) (scale.TransformValue -50.0)
+
+    [<Fact>]
+    let ``Logit scale maps 0.5 to 0 and round-trips`` () =
+        let scale = LogitScale() :> IScale
+        Assert.Equal("logit", scale.Name)
+        assertClose 0.0 (scale.TransformValue 0.5)
+        assertClose 0.5 (scale.InverseValue 0.0)
+        assertCloseTol 1e-9 0.73 (scale.InverseValue(scale.TransformValue 0.73))
+
+    [<Fact>]
+    let ``Scale factory resolves symlog and logit`` () =
+        Assert.Equal("symlog", (Scale.byName "symlog").Name)
+        Assert.Equal("logit", (Scale.byName "logit").Name)
+
+    [<Fact>]
+    let ``Symlog axis renders across zero`` () =
+        let plt = Pyplot()
+
+        plt.Plot([| -100.0; -1.0; 0.0; 1.0; 100.0 |], [| -100.0; -1.0; 0.0; 1.0; 100.0 |])
+        |> ignore
+
+        plt.YScale "symlog"
+        plt.XScale "symlog"
+        Assert.Contains("<path", plt.ToSvg())
