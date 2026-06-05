@@ -20,6 +20,7 @@ type Pyplot() =
 
     let mutable currentFigure: Figure option = None
     let mutable currentAxes: Axes option = None
+    let mutable rcParams = RcParams.Default
 
     member private this.EnsureAxes() : Axes =
         match currentAxes with
@@ -30,9 +31,20 @@ type Pyplot() =
             currentAxes <- Some ax
             ax
 
+    /// <summary>
+    /// The default font family applied to figures created afterward (Matplotlib's
+    /// <c>rcParams["font.family"]</c>). Set this before plotting; e.g.
+    /// <c>plt.FontFamily &lt;- "맑은 고딕"</c> to render Korean text. Generic names
+    /// (<c>"sans-serif"</c>, <c>"serif"</c>, <c>"monospace"</c>) are mapped to a
+    /// concrete font by each backend.
+    /// </summary>
+    member _.FontFamily
+        with get () = rcParams.FontFamily
+        and set (name: string) = rcParams <- { rcParams with FontFamily = name }
+
     /// <summary>Create a new current figure (Matplotlib's <c>plt.figure</c>).</summary>
     member _.Figure(?width: float, ?height: float, ?dpi: float) : Figure =
-        let fig = Figure()
+        let fig = Figure(rcParams)
 
         match width, height with
         | Some w, Some h -> fig.SizeInches <- { Width = w; Height = h }

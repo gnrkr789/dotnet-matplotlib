@@ -645,6 +645,7 @@ type Axes(rc: RcParams) =
 
         t.Font <-
             { FontProperties.Default with
+                Family = rc.FontFamily
                 Size = defaultArg fontSize rc.FontSize
             }
 
@@ -671,6 +672,7 @@ type Axes(rc: RcParams) =
 
         t.Font <-
             { FontProperties.Default with
+                Family = rc.FontFamily
                 Size = rc.FontSize
             }
 
@@ -925,6 +927,7 @@ type Axes(rc: RcParams) =
 
         t.Font <-
             { FontProperties.Default with
+                Family = rc.FontFamily
                 Size = rc.TickLabelSize
             }
 
@@ -1010,11 +1013,13 @@ type Axes(rc: RcParams) =
 
         let tickFont =
             { FontProperties.Default with
+                Family = rc.FontFamily
                 Size = rc.TickLabelSize
             }
 
         let labelFont =
             { FontProperties.Default with
+                Family = rc.FontFamily
                 Size = rc.AxesLabelSize
             }
 
@@ -1054,6 +1059,7 @@ type Axes(rc: RcParams) =
 
             t.Font <-
                 { FontProperties.Default with
+                    Family = rc.FontFamily
                     Size = rc.AxesTitleSize
                 }
 
@@ -1159,6 +1165,7 @@ type Axes(rc: RcParams) =
 
             let font =
                 { FontProperties.Default with
+                    Family = rc.FontFamily
                     Size = rc.FontSize
                 }
 
