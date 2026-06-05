@@ -184,6 +184,23 @@ let private renderSubplots (outDir: string) =
     plt.Savefig path
     printfn "wrote %s" path
 
+let private renderLogScale (outDir: string) =
+    let plt = Pyplot()
+    let xs = [| for i in 0..40 -> 10.0 ** (float i / 10.0) |]
+    let ys = xs |> Array.map (fun x -> x ** 1.5)
+    plt.Plot(xs, ys, color = "C0", marker = "o", label = "y = x^1.5") |> ignore
+    plt.XScale "log"
+    plt.YScale "log"
+    plt.Title "dotnet-matplotlib: log-log"
+    plt.XLabel "x"
+    plt.YLabel "y"
+    plt.Grid()
+    plt.Legend()
+    plt.TightLayout()
+    let path = Path.Combine(outDir, "loglog.svg")
+    plt.Savefig path
+    printfn "wrote %s" path
+
 [<EntryPoint>]
 let main argv =
     let outDir = if argv.Length > 0 then argv[0] else "out"
@@ -199,4 +216,5 @@ let main argv =
     renderAnnotate outDir
     renderCollections outDir
     renderSubplots outDir
+    renderLogScale outDir
     0

@@ -3,6 +3,7 @@ namespace Matplotlib.Domain
 open System
 open Matplotlib.Domain.Primitives
 open Matplotlib.Domain.Transforms
+open Matplotlib.Domain.Scales
 open Matplotlib.Domain.Style
 open Matplotlib.Domain.Rendering
 open Matplotlib.Domain.Artists
@@ -128,6 +129,40 @@ module internal AxesLayout =
                 |> List.filter (fun v -> not (majors |> Array.exists (fun m -> abs (m - v) < minorStep * 1e-6)))
                 |> List.toArray
 
+    /// <summary>Minor tick locations for a log axis (2..9 within each decade).</summary>
+    /// <remarks>Ported from <c>matplotlib.ticker.LogLocator</c> minor sub-ticks.</remarks>
+    let logMinorTicks (view: Interval) : float[] =
+        let lo = max view.Min 1e-300
+        let hi = max view.Max (lo * 10.0)
+        let loExp = int (floor (log10 lo))
+        let hiExp = int (ceil (log10 hi))
+
+        [
+            for k in loExp..hiExp do
+                for d in 2..9 do
+                    let v = float d * (10.0 ** float k)
+
+                    if v >= lo - 1e-12 && v <= hi + 1e-12 then
+                        yield v
+        ]
+        |> List.toArray
+
+    /// <summary>Autoscale limits in log space (margins applied to the exponents).</summary>
+    let logLimits (vals: float[]) : Interval =
+        let pos = vals |> Array.filter (fun v -> v > 0.0)
+
+        if pos.Length = 0 then
+            { Lower = 1.0; Upper = 10.0 }
+        else
+            let llo = log10 (Array.min pos)
+            let lhi = log10 (Array.max pos)
+            let m = 0.05 * (if lhi = llo then 1.0 else lhi - llo)
+
+            {
+                Lower = 10.0 ** (llo - m)
+                Upper = 10.0 ** (lhi + m)
+            }
+
     /// <summary>
     /// The two coordinates of a tick mark along the axis-normal direction,
     /// given the spine <paramref name="baseline"/>, tick <paramref name="length"/>
@@ -160,6 +195,8 @@ type internal AxesDrawContext =
         TransAxes: ITransform
         TransData: ITransform
         Pt2Px: float
+        XView: Interval
+        YView: Interval
         XTicks: float[]
         XLabels: string[]
         YTicks: float[]
@@ -524,6 +561,16 @@ type Axes(rc: RcParams) =
     /// <summary>Set the Y axis label.</summary>
     member this.SetYLabel(label: string) = this.YAxis.Label <- label
 
+    /// <summary>Set the X axis scale by name (<c>"linear"</c> / <c>"log"</c>).</summary>
+    member this.SetXScale(name: string) =
+        this.XAxis.Scale <- Scale.byName name
+        this.Autoscale()
+
+    /// <summary>Set the Y axis scale by name (<c>"linear"</c> / <c>"log"</c>).</summary>
+    member this.SetYScale(name: string) =
+        this.YAxis.Scale <- Scale.byName name
+        this.Autoscale()
+
     /// <summary>Enable grid lines on both axes.</summary>
     member this.Grid(visible: bool) =
         this.XAxis.ShowGrid <- visible
@@ -551,10 +598,18 @@ type Axes(rc: RcParams) =
         let ys = Array.append lineYs boundsYs |> finite
 
         if this.XLimAuto && xs.Length > 0 then
-            this.XLim <- AxesLayout.marginExpandSticky stickyX (Array.min xs) (Array.max xs)
+            this.XLim <-
+                if this.XAxis.Scale.Name = "log" then
+                    AxesLayout.logLimits xs
+                else
+                    AxesLayout.marginExpandSticky stickyX (Array.min xs) (Array.max xs)
 
         if this.YLimAuto && ys.Length > 0 then
-            this.YLim <- AxesLayout.marginExpandSticky stickyY (Array.min ys) (Array.max ys)
+            this.YLim <-
+                if this.YAxis.Scale.Name = "log" then
+                    AxesLayout.logLimits ys
+                else
+                    AxesLayout.marginExpandSticky stickyY (Array.min ys) (Array.max ys)
 
     member private this.BuildContext(renderer: IRenderer) : AxesDrawContext =
         let canvas = renderer.CanvasSizePx
@@ -568,34 +623,40 @@ type Axes(rc: RcParams) =
                 (pos.Y1 * canvas.Height)
 
         let transAxes = BBoxTransform(BBox.unit, box) :> ITransform
+        let xScale = this.XAxis.Scale
+        let yScale = this.YAxis.Scale
+        let xView = xScale.ClampLimits this.XLim
+        let yView = yScale.ClampLimits this.YLim
 
-        let dataBox = BBox.fromExtents this.XLim.Lower this.YLim.Lower this.XLim.Upper this.YLim.Upper
+        let transScale =
+            FunctionalTransform(xScale.TransformValue, yScale.TransformValue, xScale.InverseValue, yScale.InverseValue)
+            :> ITransform
 
-        let transLimits = BBoxTransform(dataBox, BBox.unit) :> ITransform
-        let transData = Transforms.compose transLimits transAxes
+        let scaledBox =
+            BBox.fromExtents
+                (xScale.TransformValue xView.Lower)
+                (yScale.TransformValue yView.Lower)
+                (xScale.TransformValue xView.Upper)
+                (yScale.TransformValue yView.Upper)
+
+        let transLimits = BBoxTransform(scaledBox, BBox.unit) :> ITransform
+        let transData = Transforms.compose (Transforms.compose transScale transLimits) transAxes
         let pt2px = renderer.Dpi / 72.0
         let nbinsX = AxesLayout.tickBins (abs box.Width) rc.TickLabelSize 3.0 pt2px
         let nbinsY = AxesLayout.tickBins (abs box.Height) rc.TickLabelSize 2.0 pt2px
 
         let xTicks =
-            (this.XAxis.Scale.CreateLocator nbinsX).TickValues this.XLim
-            |> Array.filter (AxesLayout.inView this.XLim)
+            (xScale.CreateLocator nbinsX).TickValues xView
+            |> Array.filter (AxesLayout.inView xView)
 
         let yTicks =
-            (this.YAxis.Scale.CreateLocator nbinsY).TickValues this.YLim
-            |> Array.filter (AxesLayout.inView this.YLim)
+            (yScale.CreateLocator nbinsY).TickValues yView
+            |> Array.filter (AxesLayout.inView yView)
 
-        let xMinor =
-            if this.MinorTicksEnabled then
-                AxesLayout.minorTicks xTicks this.XLim
-            else
-                [||]
-
-        let yMinor =
-            if this.MinorTicksEnabled then
-                AxesLayout.minorTicks yTicks this.YLim
-            else
-                [||]
+        let minorOf (scale: IScale) (ticks: float[]) (view: Interval) =
+            if not this.MinorTicksEnabled then [||]
+            elif scale.Name = "log" then AxesLayout.logMinorTicks view
+            else AxesLayout.minorTicks ticks view
 
         {
             Renderer = renderer
@@ -603,12 +664,14 @@ type Axes(rc: RcParams) =
             TransAxes = transAxes
             TransData = transData
             Pt2Px = pt2px
+            XView = xView
+            YView = yView
             XTicks = xTicks
-            XLabels = (this.XAxis.Scale.CreateFormatter()).FormatTicks xTicks
+            XLabels = (xScale.CreateFormatter()).FormatTicks xTicks
             YTicks = yTicks
-            YLabels = (this.YAxis.Scale.CreateFormatter()).FormatTicks yTicks
-            XMinor = xMinor
-            YMinor = yMinor
+            YLabels = (yScale.CreateFormatter()).FormatTicks yTicks
+            XMinor = minorOf xScale xTicks xView
+            YMinor = minorOf yScale yTicks yView
         }
 
     member private this.DrawBackground(ctx: AxesDrawContext) =
@@ -634,12 +697,12 @@ type Axes(rc: RcParams) =
 
         if this.XAxis.ShowGrid then
             for tv in ctx.XTicks do
-                let x = (ctx.TransData.Transform { X = tv; Y = this.YLim.Lower }).X
+                let x = (ctx.TransData.Transform { X = tv; Y = ctx.YView.Lower }).X
                 ctx.Renderer.DrawPath(gc, Path.polyline [ { X = x; Y = b.Y0 }; { X = x; Y = b.Y1 } ], None)
 
         if this.YAxis.ShowGrid then
             for tv in ctx.YTicks do
-                let y = (ctx.TransData.Transform { X = this.XLim.Lower; Y = tv }).Y
+                let y = (ctx.TransData.Transform { X = ctx.XView.Lower; Y = tv }).Y
                 ctx.Renderer.DrawPath(gc, Path.polyline [ { X = b.X0; Y = y }; { X = b.X1; Y = y } ], None)
 
     member private this.DrawData(ctx: AxesDrawContext) =
@@ -707,7 +770,7 @@ type Axes(rc: RcParams) =
 
         Array.iter2
             (fun tv lab ->
-                let x = (ctx.TransData.Transform { X = tv; Y = this.YLim.Lower }).X
+                let x = (ctx.TransData.Transform { X = tv; Y = ctx.YView.Lower }).X
                 let y0, y1 = AxesLayout.tickEndpoints b.Y0 len dir
                 ctx.Renderer.DrawPath(gc, Path.polyline [ { X = x; Y = y0 }; { X = x; Y = y1 } ], None)
                 (this.MakeTickLabel(x, b.Y0 - labelOff, lab, HCenter, VTop)).Draw ctx.Renderer)
@@ -716,7 +779,7 @@ type Axes(rc: RcParams) =
 
         Array.iter2
             (fun tv lab ->
-                let y = (ctx.TransData.Transform { X = this.XLim.Lower; Y = tv }).Y
+                let y = (ctx.TransData.Transform { X = ctx.XView.Lower; Y = tv }).Y
                 let x0, x1 = AxesLayout.tickEndpoints b.X0 len dir
                 ctx.Renderer.DrawPath(gc, Path.polyline [ { X = x0; Y = y }; { X = x1; Y = y } ], None)
                 (this.MakeTickLabel(b.X0 - labelOff, y, lab, HRight, VCenter)).Draw ctx.Renderer)
@@ -736,12 +799,12 @@ type Axes(rc: RcParams) =
                 }
 
             for tv in ctx.XMinor do
-                let x = (ctx.TransData.Transform { X = tv; Y = this.YLim.Lower }).X
+                let x = (ctx.TransData.Transform { X = tv; Y = ctx.YView.Lower }).X
                 let y0, y1 = AxesLayout.tickEndpoints b.Y0 len dir
                 ctx.Renderer.DrawPath(gc, Path.polyline [ { X = x; Y = y0 }; { X = x; Y = y1 } ], None)
 
             for tv in ctx.YMinor do
-                let y = (ctx.TransData.Transform { X = this.XLim.Lower; Y = tv }).Y
+                let y = (ctx.TransData.Transform { X = ctx.XView.Lower; Y = tv }).Y
                 let x0, x1 = AxesLayout.tickEndpoints b.X0 len dir
                 ctx.Renderer.DrawPath(gc, Path.polyline [ { X = x0; Y = y }; { X = x1; Y = y } ], None)
 

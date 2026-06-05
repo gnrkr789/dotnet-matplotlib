@@ -102,6 +102,23 @@ type BBoxTransform(fromBox: BBox, toBox: BBox) =
 
         member _.Inverted() = BBoxTransform(toBox, fromBox) :> ITransform
 
+/// <summary>
+/// A separable transform applying an arbitrary scalar function to x and to y
+/// (e.g. <c>log10</c> for a log scale). Used as the <c>transScale</c> step.
+/// </summary>
+/// <remarks>Ported from the per-axis scale transforms in <c>matplotlib.scale</c>.</remarks>
+type FunctionalTransform
+    (forwardX: float -> float, forwardY: float -> float, inverseX: float -> float, inverseY: float -> float) =
+
+    interface ITransform with
+        member _.Transform(point: Point2D) =
+            {
+                X = forwardX point.X
+                Y = forwardY point.Y
+            }
+
+        member _.Inverted() = FunctionalTransform(inverseX, inverseY, forwardX, forwardY) :> ITransform
+
 /// <summary>Composition helpers for transforms.</summary>
 [<RequireQualifiedAccess>]
 module Transforms =
