@@ -42,6 +42,18 @@ type Pyplot() =
         with get () = rcParams.FontFamily
         and set (name: string) = rcParams <- { rcParams with FontFamily = name }
 
+    /// <summary>Apply a built-in style sheet to subsequent figures (Matplotlib's <c>plt.style.use</c>).</summary>
+    member _.UseStyle(name: string) = rcParams <- StyleSheet.byName name rcParams
+
+    /// <summary>Apply rcParams overrides from a matplotlibrc-style text block.</summary>
+    member _.UseStyleText(text: string) = rcParams <- StyleSheet.parseText text rcParams
+
+    /// <summary>Apply rcParams overrides from a matplotlibrc-style file.</summary>
+    member _.UseStyleFile(path: string) = rcParams <- StyleSheet.parseText (System.IO.File.ReadAllText path) rcParams
+
+    /// <summary>The available built-in style names.</summary>
+    member _.AvailableStyles = StyleSheet.names
+
     /// <summary>Create a new current figure (Matplotlib's <c>plt.figure</c>).</summary>
     member _.Figure(?width: float, ?height: float, ?dpi: float) : Figure =
         let fig = Figure(rcParams)

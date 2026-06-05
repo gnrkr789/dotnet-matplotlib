@@ -48,7 +48,7 @@ Status: ✅ done · 🚧 in progress · ⬜ planned.
 ## Phase 5 — Ecosystem parity
 - 🚧 `quiver` ✅, `hist2d` ✅, `boxplot` ✅, `violinplot` ✅ (Gaussian KDE),
   `streamplot` ✅ (arc-length integration); `3D` (mplot3d) ⬜
-- ⬜ Style sheets, `rcParams` file parsing
+- ✅ Style sheets, `rcParams` file parsing (`StyleSheet`, `Pyplot.UseStyle`/`UseStyleText`/`UseStyleFile`)
 - ⬜ Animation API
 
 Each item ships as a vertical slice per `Skills.md` Skill 8 (definition of done).
