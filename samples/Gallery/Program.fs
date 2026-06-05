@@ -4,6 +4,7 @@ open System
 open System.IO
 open Matplotlib
 open Matplotlib.Domain.Primitives
+open Matplotlib.Domain.Style
 open Matplotlib.Domain.Artists
 
 let private renderSine (outDir: string) =
@@ -161,6 +162,28 @@ let private renderCollections (outDir: string) =
     plt.Savefig path
     printfn "wrote %s" path
 
+let private renderSubplots (outDir: string) =
+    let plt = Pyplot()
+    let fig, axes = plt.Subplots(nrows = 2, ncols = 2)
+    let xs = [| for i in 0..40 -> float i / 4.0 |]
+    axes[0, 0].Plot(xs, xs |> Array.map sin) |> ignore
+    axes[0, 0].SetTitle "sin"
+    axes[0, 1].Plot(xs, xs |> Array.map cos) |> ignore
+    axes[0, 1].SetTitle "cos"
+    axes[1, 0].Bar([| 0.0; 1.0; 2.0; 3.0 |], [| 3.0; 1.0; 4.0; 2.0 |]) |> ignore
+    axes[1, 0].SetXLabel "x"
+    axes[1, 0].SetYLabel "y"
+
+    axes[1, 1]
+        .Scatter(xs, xs |> Array.map (fun x -> sin x * cos x), marker = MarkerStyle.Circle)
+    |> ignore
+
+    axes[1, 1].SetTitle "sin·cos"
+    fig.ConstrainedLayout()
+    let path = Path.Combine(outDir, "subplots.svg")
+    plt.Savefig path
+    printfn "wrote %s" path
+
 [<EntryPoint>]
 let main argv =
     let outDir = if argv.Length > 0 then argv[0] else "out"
@@ -175,4 +198,5 @@ let main argv =
     renderMarkers outDir
     renderAnnotate outDir
     renderCollections outDir
+    renderSubplots outDir
     0

@@ -15,13 +15,13 @@ Status: ✅ done · 🚧 in progress · ⬜ planned.
 - ✅ Backend: `SvgRenderer`, `FigureCanvas`
 - ✅ Facade: `Pyplot` (`Plot`, `Title`, `XLabel`, `YLabel`, `Legend`, `Savefig`)
 
-## Phase 2 — Plot types & styling breadth (essentially complete)
+## Phase 2 — Plot types & styling breadth (complete)
 - ✅ `scatter`, `bar`/`barh` (sticky baseline), `fill_between`, `step`, `errorbar`, `stem`
 - ✅ Patches: `Rectangle`, `Circle`, `Polygon`, `PathPatch`; `LineCollection`, `PolyCollection`
 - ✅ Markers: full set (circle, point, square, diamond, thin-diamond, triangles ▲▼◀▶, pentagon, hexagon, star, +, x, |, _)
 - ✅ Legend: box, `loc` (9 positions), auto-`best`; `text`, `Annotation` (basic arrow)
 - 🚧 Grid ✅; minor ticks ✅; tick params (direction ✅, rest ⬜); spine visibility ✅
-- 🚧 `subplots` ✅, `GridSpec` ✅, `tight_layout` ✅ (approx); `constrained_layout` ⬜
+- ✅ `subplots`, `GridSpec`, `tight_layout`, `constrained_layout` (approx)
 
 ## Phase 3 — Scales, color, data domains
 - ⬜ `LogScale`, `SymlogScale`, `LogitScale`; log locators/formatters

@@ -80,3 +80,30 @@ module CollectionLayoutTests =
         let ax = plt.CurrentAxes()
         Assert.True(ax.Position.X1 > 0.9)
         Assert.True(ax.Position.Y1 > 0.88)
+
+    [<Fact>]
+    let ``Constrained layout keeps grid cells non-overlapping`` () =
+        let fig = Figure()
+        let axes = fig.Subplots(2, 2)
+        axes[0, 0].SetYLabel "y"
+        axes[1, 0].SetXLabel "x"
+        fig.ConstrainedLayout()
+        // columns are ordered left-to-right without overlap
+        Assert.True(axes[0, 0].Position.X1 <= axes[0, 1].Position.X0 + 1e-9)
+        // rows are ordered top-to-bottom without overlap
+        Assert.True(axes[1, 0].Position.Y1 <= axes[0, 0].Position.Y0 + 1e-9)
+        // everything stays inside the figure
+        Assert.True(axes[0, 0].Position.X0 > 0.0)
+        Assert.True(axes[1, 1].Position.X1 < 1.0)
+
+    [<Fact>]
+    let ``Constrained layout fits a single axes with decorations`` () =
+        let plt = Pyplot()
+        plt.Plot([| 0.0; 1.0 |], [| 0.0; 1.0 |], color = "C0") |> ignore
+        plt.XLabel "x"
+        plt.YLabel "y"
+        plt.Title "t"
+        plt.ConstrainedLayout()
+        let ax = plt.CurrentAxes()
+        Assert.True(ax.Position.X0 > 0.0 && ax.Position.X0 < 0.3)
+        Assert.True(ax.Position.Y1 > 0.88)
