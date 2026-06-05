@@ -18,6 +18,7 @@
     <Compile Include="StepErrorbarTests.fs" />
     <Compile Include="TickStyleTests.fs" />
     <Compile Include="MarkerLegendTests.fs" />
+    <Compile Include="TextAnnotateTests.fs" />
     <Compile Include="SubplotTests.fs" />
     <Compile Include="RenderingTests.fs" />
   </ItemGroup>

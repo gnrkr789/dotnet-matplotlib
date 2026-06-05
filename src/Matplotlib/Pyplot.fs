@@ -3,6 +3,7 @@ namespace Matplotlib
 open Matplotlib.Domain
 open Matplotlib.Domain.Primitives
 open Matplotlib.Domain.Style
+open Matplotlib.Domain.Rendering
 open Matplotlib.Domain.Artists
 open Matplotlib.Backends
 
@@ -175,6 +176,59 @@ type Pyplot() =
     member this.Legend(?loc: string) =
         let locOpt = loc |> Option.map Styles.parseLegendLoc
         this.EnsureAxes().Legend(?loc = locOpt)
+
+    /// <summary>Add text at a data-space position (Matplotlib's <c>plt.text</c>).</summary>
+    member this.Text
+        (
+            x: float,
+            y: float,
+            content: string,
+            ?color: string,
+            ?fontSize: float,
+            ?rotation: float,
+            ?ha: string,
+            ?va: string
+        ) : Text =
+        let ax = this.EnsureAxes()
+        let colorOpt = color |> Option.map (fun c -> ColorResolver.Default.Resolve c)
+
+        let haOpt =
+            ha
+            |> Option.map (function
+                | "left" -> HLeft
+                | "center" -> HCenter
+                | "right" -> HRight
+                | o -> failwith $"Unknown horizontal alignment '{o}'.")
+
+        let vaOpt =
+            va
+            |> Option.map (function
+                | "top" -> VTop
+                | "center" -> VCenter
+                | "bottom" -> VBottom
+                | "baseline" -> VBaseline
+                | o -> failwith $"Unknown vertical alignment '{o}'.")
+
+        ax.Text(
+            x,
+            y,
+            content,
+            ?color = colorOpt,
+            ?fontSize = fontSize,
+            ?rotation = rotation,
+            ?hAlign = haOpt,
+            ?vAlign = vaOpt
+        )
+
+    /// <summary>Annotate a point with text and an optional arrow (Matplotlib's <c>plt.annotate</c>).</summary>
+    member this.Annotate
+        (content: string, xy: float * float, ?xytext: float * float, ?arrow: bool, ?color: string)
+        : Text =
+        let ax = this.EnsureAxes()
+        let colorOpt = color |> Option.map (fun c -> ColorResolver.Default.Resolve c)
+        let toPoint (a: float, b: float) : Point2D = { X = a; Y = b }
+        let xytextOpt = xytext |> Option.map toPoint
+        ax.Annotate(content, toPoint xy, ?xytext = xytextOpt, ?arrow = arrow, ?color = colorOpt)
 
     /// <summary>Toggle grid lines on the current axes.</summary>
     member this.Grid(?visible: bool) = this.EnsureAxes().Grid(defaultArg visible true)

@@ -177,6 +177,7 @@ type Axes(rc: RcParams) =
 
     let lines = ResizeArray<Line2D>()
     let patches = ResizeArray<Patch>()
+    let overlays = ResizeArray<Artist>()
     let stickyX = ResizeArray<float>()
     let stickyY = ResizeArray<float>()
     let cycler = PropertyCycler.CreateDefault()
@@ -425,6 +426,57 @@ type Axes(rc: RcParams) =
         this.Autoscale()
         markerLine
 
+    /// <summary>Add text at a data-space position (Matplotlib's <c>Axes.text</c>).</summary>
+    member _.Text
+        (
+            x: float,
+            y: float,
+            content: string,
+            ?color: Color,
+            ?fontSize: float,
+            ?rotation: float,
+            ?hAlign: HAlign,
+            ?vAlign: VAlign
+        ) : Text =
+        let t = Text(x, y, content)
+        t.Color <- defaultArg color rc.TextColor
+
+        t.Font <-
+            { FontProperties.Default with
+                Size = defaultArg fontSize rc.FontSize
+            }
+
+        t.Rotation <- defaultArg rotation 0.0
+        t.HAlign <- defaultArg hAlign HLeft
+        t.VAlign <- defaultArg vAlign VBaseline
+        overlays.Add t
+        t
+
+    /// <summary>Annotate the point <paramref name="xy"/> with text, optional arrow.</summary>
+    /// <remarks>Ported from <c>matplotlib.axes.Axes.annotate</c> (basic connector).</remarks>
+    member _.Annotate(content: string, xy: Point2D, ?xytext: Point2D, ?arrow: bool, ?color: Color) : Text =
+        let textPos = defaultArg xytext xy
+        let col = defaultArg color rc.TextColor
+
+        if defaultArg arrow false then
+            let connector = Line2D([| textPos.X; xy.X |], [| textPos.Y; xy.Y |])
+            connector.Color <- col
+            connector.LineWidth <- rc.LinesLineWidth
+            overlays.Add connector
+
+        let t = Text(textPos.X, textPos.Y, content)
+        t.Color <- col
+
+        t.Font <-
+            { FontProperties.Default with
+                Size = rc.FontSize
+            }
+
+        t.HAlign <- HLeft
+        t.VAlign <- VBaseline
+        overlays.Add t
+        t
+
     /// <summary>Enable minor ticks on both axes (Matplotlib's <c>minorticks_on</c>).</summary>
     member this.MinorTicksOn() = this.MinorTicksEnabled <- true
 
@@ -583,6 +635,11 @@ type Axes(rc: RcParams) =
         for line in lines do
             line.Transform <- ctx.TransData
             line.Draw ctx.Renderer
+
+    member private this.DrawTexts(ctx: AxesDrawContext) =
+        for artist in overlays do
+            artist.Transform <- ctx.TransData
+            artist.Draw ctx.Renderer
 
     member private this.DrawSpines(ctx: AxesDrawContext) =
         let edges =
@@ -867,4 +924,5 @@ type Axes(rc: RcParams) =
         this.DrawMinorTicks ctx
         this.DrawTicks ctx
         this.DrawAxisLabelsAndTitle ctx
+        this.DrawTexts ctx
         this.DrawLegend ctx

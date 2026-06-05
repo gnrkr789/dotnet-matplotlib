@@ -123,6 +123,23 @@ let private renderMarkers (outDir: string) =
     plt.Savefig path
     printfn "wrote %s" path
 
+let private renderAnnotate (outDir: string) =
+    let plt = Pyplot()
+    let xs = [| for i in 0..60 -> float i / 6.0 |]
+    let ys = xs |> Array.map sin
+    plt.Plot(xs, ys, color = "C0", label = "sin(x)") |> ignore
+
+    plt.Annotate("first peak", (1.5708, 1.0), xytext = (3.2, 0.7), arrow = true, color = "C3")
+    |> ignore
+
+    plt.Text(7.0, -0.85, "sine wave", color = "C0") |> ignore
+    plt.Title "dotnet-matplotlib: annotate"
+    plt.XLabel "x"
+    plt.Legend "lower left"
+    let path = Path.Combine(outDir, "annotate.svg")
+    plt.Savefig path
+    printfn "wrote %s" path
+
 [<EntryPoint>]
 let main argv =
     let outDir = if argv.Length > 0 then argv[0] else "out"
@@ -135,4 +152,5 @@ let main argv =
     renderErrorbar outDir
     renderStem outDir
     renderMarkers outDir
+    renderAnnotate outDir
     0
