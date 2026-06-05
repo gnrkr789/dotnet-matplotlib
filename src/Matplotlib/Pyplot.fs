@@ -172,6 +172,12 @@ type Pyplot() =
     /// <summary>Set the y view limits of the current axes.</summary>
     member this.YLim(lower: float, upper: float) = this.EnsureAxes().SetYLim(lower, upper)
 
+    /// <summary>Set the x-axis scale (<c>"linear"</c> / <c>"log"</c>).</summary>
+    member this.XScale(name: string) = this.EnsureAxes().SetXScale name
+
+    /// <summary>Set the y-axis scale (<c>"linear"</c> / <c>"log"</c>).</summary>
+    member this.YScale(name: string) = this.EnsureAxes().SetYScale name
+
     /// <summary>Show the legend on the current axes, optionally at a location.</summary>
     member this.Legend(?loc: string) =
         let locOpt = loc |> Option.map Styles.parseLegendLoc

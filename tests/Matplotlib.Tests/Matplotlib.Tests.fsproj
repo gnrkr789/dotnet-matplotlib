@@ -20,6 +20,7 @@
     <Compile Include="MarkerLegendTests.fs" />
     <Compile Include="TextAnnotateTests.fs" />
     <Compile Include="CollectionLayoutTests.fs" />
+    <Compile Include="LogScaleTests.fs" />
     <Compile Include="SubplotTests.fs" />
     <Compile Include="RenderingTests.fs" />
   </ItemGroup>
