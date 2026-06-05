@@ -12,6 +12,7 @@ open Matplotlib.Domain.Rendering
 type Figure(rc: RcParams) =
 
     let axesList = ResizeArray<Axes>()
+    let mutable subplotGrid: Axes[,] option = None
 
     /// <summary>Create a figure with the default <c>rcParams</c>.</summary>
     new() = Figure(RcParams.Default)
@@ -70,13 +71,17 @@ type Figure(rc: RcParams) =
         let sepW = ws * cellW
         let sepH = hs * cellH
 
-        Array2D.init nrows ncols (fun i j ->
-            let l = left + float j * (cellW + sepW)
-            let t = top - float i * (cellH + sepH)
-            let ax = Axes(rc)
-            ax.Position <- BBox.fromExtents l (t - cellH) (l + cellW) t
-            axesList.Add ax
-            ax)
+        let grid =
+            Array2D.init nrows ncols (fun i j ->
+                let l = left + float j * (cellW + sepW)
+                let t = top - float i * (cellH + sepH)
+                let ax = Axes(rc)
+                ax.Position <- BBox.fromExtents l (t - cellH) (l + cellW) t
+                axesList.Add ax
+                ax)
+
+        subplotGrid <- Some grid
+        grid
 
     /// <summary>
     /// Adjust the outer margins so axis labels, tick labels and titles are not
@@ -128,6 +133,79 @@ type Figure(rc: RcParams) =
                     (remap pos.Y0 rc.SubplotBottom rc.SubplotTop newB newT)
                     (remap pos.X1 rc.SubplotLeft rc.SubplotRight newL newR)
                     (remap pos.Y1 rc.SubplotBottom rc.SubplotTop newB newT)
+
+    /// <summary>
+    /// Lay out subplots so each one's decorations (labels, ticks, title) fit
+    /// inside its grid cell and adjacent subplots do not overlap.
+    /// </summary>
+    /// <remarks>
+    /// Ported (approximated) from <c>matplotlib</c>'s <c>constrained_layout</c>:
+    /// unlike <see cref="TightLayout"/> it reserves space per-subplot inside each
+    /// grid cell rather than remapping a single outer envelope.
+    /// </remarks>
+    member this.ConstrainedLayout(?pad: float, ?wPad: float, ?hPad: float) =
+        let figPx = this.PixelSize
+        let pt2px = this.Dpi / 72.0
+        let outer = defaultArg pad 1.08 * rc.FontSize * pt2px * 0.5
+        let wp = defaultArg wPad 1.0 * rc.FontSize * pt2px * 0.5
+        let hp = defaultArg hPad 1.0 * rc.FontSize * pt2px * 0.5
+
+        let deco (ax: Axes) =
+            let tickRoom = rc.TickMajorSize * pt2px + rc.TickPad * pt2px
+            let labelH = rc.AxesLabelSize * pt2px
+
+            let l =
+                tickRoom
+                + 4.0 * 0.6 * rc.TickLabelSize * pt2px
+                + (if ax.YAxis.Label <> "" then
+                       rc.AxesLabelPad * pt2px + labelH
+                   else
+                       0.0)
+
+            let b =
+                tickRoom
+                + rc.TickLabelSize * pt2px
+                + (if ax.XAxis.Label <> "" then
+                       rc.AxesLabelPad * pt2px + labelH
+                   else
+                       0.0)
+
+            let t =
+                if ax.Title <> "" then
+                    rc.AxesTitlePad * pt2px + rc.AxesTitleSize * pt2px
+                else
+                    0.0
+
+            l, b, t
+
+        let place (ax: Axes) (cellL: float) (cellB: float) (cellR: float) (cellT: float) =
+            let l, b, t = deco ax
+
+            ax.Position <-
+                BBox.fromExtents (cellL + l / figPx.Width) (cellB + b / figPx.Height) cellR (cellT - t / figPx.Height)
+
+        let gl = outer / figPx.Width
+        let gr = 1.0 - outer / figPx.Width
+        let gb = outer / figPx.Height
+        let gt = 1.0 - outer / figPx.Height
+
+        match subplotGrid with
+        | Some grid ->
+            let nrows = Array2D.length1 grid
+            let ncols = Array2D.length2 grid
+            let wpf = wp / figPx.Width
+            let hpf = hp / figPx.Height
+            let cellW = (gr - gl - wpf * float (ncols - 1)) / float ncols
+            let cellH = (gt - gb - hpf * float (nrows - 1)) / float nrows
+
+            for i in 0 .. nrows - 1 do
+                for j in 0 .. ncols - 1 do
+                    let cellL = gl + float j * (cellW + wpf)
+                    let cellT = gt - float i * (cellH + hpf)
+                    place grid[i, j] cellL (cellT - cellH) (cellL + cellW) cellT
+        | None ->
+            if axesList.Count = 1 then
+                place axesList[0] gl gb gr gt
 
     /// <summary>Render the figure background and every Axes onto the renderer.</summary>
     member this.Draw(renderer: IRenderer) =

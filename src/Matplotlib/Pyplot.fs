@@ -236,6 +236,10 @@ type Pyplot() =
     /// <summary>Tighten margins so labels/titles fit (Matplotlib's <c>plt.tight_layout</c>).</summary>
     member this.TightLayout(?pad: float) = this.CurrentFigure().TightLayout(?pad = pad)
 
+    /// <summary>Lay out subplots reserving per-subplot decoration space (<c>constrained_layout</c>).</summary>
+    member this.ConstrainedLayout(?pad: float, ?wPad: float, ?hPad: float) =
+        this.CurrentFigure().ConstrainedLayout(?pad = pad, ?wPad = wPad, ?hPad = hPad)
+
     /// <summary>Render the current figure to an SVG string.</summary>
     member this.ToSvg() : string = FigureCanvas(this.CurrentFigure()).RenderToSvg()
 
