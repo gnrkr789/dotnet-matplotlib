@@ -69,6 +69,7 @@ type internal AxesDrawContext =
 type Axes(rc: RcParams) =
 
     let lines = ResizeArray<Line2D>()
+    let patches = ResizeArray<Patch>()
     let cycler = PropertyCycler.CreateDefault()
 
     /// <summary>Create an Axes with the default <c>rcParams</c>.</summary>
@@ -107,6 +108,9 @@ type Axes(rc: RcParams) =
     /// <summary>The plotted lines.</summary>
     member _.Lines = lines
 
+    /// <summary>The plotted patches (bars, filled regions, shapes).</summary>
+    member _.Patches = patches
+
     /// <summary>Plot y versus x as a connected line (Matplotlib's <c>plot</c>).</summary>
     member this.Plot
         (
@@ -135,12 +139,79 @@ type Axes(rc: RcParams) =
         let line = Line2D(xs, ys)
         line.LineStyle <- NoLine
         line.Color <- defaultArg color (cycler.Next())
-        line.Marker <- defaultArg marker Circle
+        line.Marker <- defaultArg marker MarkerStyle.Circle
         line.MarkerSize <- defaultArg markerSize 6.0
         line.Label <- defaultArg label ""
         lines.Add line
         this.Autoscale()
         line
+
+    /// <summary>Draw a vertical bar chart (Matplotlib's <c>bar</c>, center-aligned).</summary>
+    member this.Bar
+        (x: float[], height: float[], ?width: float, ?bottom: float[], ?color: Color, ?label: string)
+        : Rectangle[] =
+        let w = defaultArg width 0.8
+        let bottoms = defaultArg bottom (Array.zeroCreate x.Length)
+        let faceColor = defaultArg color (cycler.Next())
+        let lbl = defaultArg label ""
+
+        let rects =
+            Array.init x.Length (fun i ->
+                let rect = Rectangle(x[i] - w / 2.0, bottoms[i], w, height[i])
+                rect.FaceColor <- faceColor
+                rect.Label <- if i = 0 then lbl else ""
+                rect)
+
+        for rect in rects do
+            patches.Add rect
+
+        this.Autoscale()
+        rects
+
+    /// <summary>Draw a horizontal bar chart (Matplotlib's <c>barh</c>, center-aligned).</summary>
+    member this.BarH
+        (y: float[], width: float[], ?height: float, ?left: float[], ?color: Color, ?label: string)
+        : Rectangle[] =
+        let h = defaultArg height 0.8
+        let lefts = defaultArg left (Array.zeroCreate y.Length)
+        let faceColor = defaultArg color (cycler.Next())
+        let lbl = defaultArg label ""
+
+        let rects =
+            Array.init y.Length (fun i ->
+                let rect = Rectangle(lefts[i], y[i] - h / 2.0, width[i], h)
+                rect.FaceColor <- faceColor
+                rect.Label <- if i = 0 then lbl else ""
+                rect)
+
+        for rect in rects do
+            patches.Add rect
+
+        this.Autoscale()
+        rects
+
+    /// <summary>Fill the area between two curves (Matplotlib's <c>fill_between</c>).</summary>
+    member this.FillBetween
+        (x: float[], y1: float[], ?y2: float[], ?color: Color, ?alpha: float, ?label: string)
+        : Polygon =
+        let lower = defaultArg y2 (Array.zeroCreate x.Length)
+        let faceColor = (defaultArg color (cycler.Next())).WithAlpha(defaultArg alpha 1.0)
+
+        let forward = Array.init x.Length (fun i -> { X = x[i]; Y = y1[i] })
+
+        let backward =
+            Array.init x.Length (fun i ->
+                {
+                    X = x[x.Length - 1 - i]
+                    Y = lower[x.Length - 1 - i]
+                })
+
+        let polygon = Polygon(Array.append forward backward)
+        polygon.FaceColor <- faceColor
+        polygon.Label <- defaultArg label ""
+        patches.Add polygon
+        this.Autoscale()
+        polygon
 
     /// <summary>Set the X view limits explicitly (disables x autoscale).</summary>
     member this.SetXLim(lower: float, upper: float) =
@@ -168,8 +239,13 @@ type Axes(rc: RcParams) =
 
     member private this.Autoscale() =
         let finite = Array.filter Double.IsFinite
-        let xs = lines |> Seq.collect (fun l -> l.XData) |> Seq.toArray |> finite
-        let ys = lines |> Seq.collect (fun l -> l.YData) |> Seq.toArray |> finite
+        let patchBounds = patches |> Seq.choose (fun p -> p.DataBounds()) |> Seq.toArray
+        let patchXs = patchBounds |> Array.collect (fun b -> [| b.XMin; b.XMax |])
+        let patchYs = patchBounds |> Array.collect (fun b -> [| b.YMin; b.YMax |])
+        let lineXs = lines |> Seq.collect (fun l -> l.XData) |> Seq.toArray
+        let lineYs = lines |> Seq.collect (fun l -> l.YData) |> Seq.toArray
+        let xs = Array.append lineXs patchXs |> finite
+        let ys = Array.append lineYs patchYs |> finite
 
         if this.XLimAuto && xs.Length > 0 then
             this.XLim <- AxesLayout.marginExpand (Array.min xs) (Array.max xs)
@@ -250,6 +326,11 @@ type Axes(rc: RcParams) =
                 ctx.Renderer.DrawPath(gc, Path.polyline [ { X = b.X0; Y = y }; { X = b.X1; Y = y } ], None)
 
     member private this.DrawData(ctx: AxesDrawContext) =
+        // Patches (zorder 1) are drawn beneath lines (zorder 2).
+        for patch in patches do
+            patch.Transform <- ctx.TransData
+            patch.Draw ctx.Renderer
+
         for line in lines do
             line.Transform <- ctx.TransData
             line.Draw ctx.Renderer
@@ -371,7 +452,19 @@ type Axes(rc: RcParams) =
             t.Draw ctx.Renderer
 
     member private this.DrawLegend(ctx: AxesDrawContext) =
-        let entries = lines |> Seq.filter (fun l -> l.Label <> "") |> Seq.toList
+        // A legend entry is (label, color, lineWidth option). Some => line sample,
+        // None => filled patch swatch.
+        let lineEntries =
+            lines
+            |> Seq.filter (fun l -> l.Label <> "")
+            |> Seq.map (fun l -> l.Label, l.Color, Some l.LineWidth)
+
+        let patchEntries =
+            patches
+            |> Seq.filter (fun p -> p.Label <> "")
+            |> Seq.map (fun p -> p.Label, p.FaceColor, None)
+
+        let entries = Seq.append lineEntries patchEntries |> Seq.toList
 
         if this.ShowLegend && not entries.IsEmpty then
             let b = ctx.Box
@@ -385,10 +478,11 @@ type Axes(rc: RcParams) =
             let pad = 0.4 * rc.FontSize * ctx.Pt2Px
             let sample = 2.0 * rc.FontSize * ctx.Pt2Px
             let gap = 0.5 * rc.FontSize * ctx.Pt2Px
+            let swatchH = 0.7 * rc.FontSize * ctx.Pt2Px
 
             let textW =
                 entries
-                |> List.map (fun l -> (ctx.Renderer.MeasureText(l.Label, font)).Width)
+                |> List.map (fun (label, _, _) -> (ctx.Renderer.MeasureText(label, font)).Width)
                 |> List.max
 
             let boxW = pad + sample + gap + textW + pad
@@ -415,23 +509,47 @@ type Axes(rc: RcParams) =
             ctx.Renderer.DrawPath(frameGc, Path.polygon corners, Some(Color.white.WithAlpha 0.9))
 
             entries
-            |> List.iteri (fun i line ->
+            |> List.iteri (fun i (label, color, lineWidth) ->
                 let cy = y1 - pad - lineH * (float i + 0.5)
                 let sx0 = x0 + pad
 
-                let sampleGc =
-                    { GraphicsContext.Default with
-                        StrokeColor = line.Color
-                        LineWidth = line.LineWidth * ctx.Pt2Px
-                    }
+                match lineWidth with
+                | Some lw ->
+                    let sampleGc =
+                        { GraphicsContext.Default with
+                            StrokeColor = color
+                            LineWidth = lw * ctx.Pt2Px
+                        }
 
-                ctx.Renderer.DrawPath(
-                    sampleGc,
-                    Path.polyline [ { X = sx0; Y = cy }; { X = sx0 + sample; Y = cy } ],
-                    None
-                )
+                    ctx.Renderer.DrawPath(
+                        sampleGc,
+                        Path.polyline [ { X = sx0; Y = cy }; { X = sx0 + sample; Y = cy } ],
+                        None
+                    )
+                | None ->
+                    let swatch =
+                        [
+                            { X = sx0; Y = cy - swatchH / 2.0 }
+                            {
+                                X = sx0 + sample
+                                Y = cy - swatchH / 2.0
+                            }
+                            {
+                                X = sx0 + sample
+                                Y = cy + swatchH / 2.0
+                            }
+                            { X = sx0; Y = cy + swatchH / 2.0 }
+                        ]
 
-                let t = Text(sx0 + sample + gap, cy, line.Label)
+                    let swatchGc =
+                        { GraphicsContext.Default with
+                            StrokeColor = Color.none
+                            LineWidth = 0.0
+                        }
+
+                    ctx.Renderer.DrawPath(swatchGc, Path.polygon swatch, Some color)
+
+                let t = Text(sx0 + sample + gap, cy, label)
                 t.Transform <- IdentityTransform.Instance
                 t.Font <- font
                 t.Color <- rc.TextColor

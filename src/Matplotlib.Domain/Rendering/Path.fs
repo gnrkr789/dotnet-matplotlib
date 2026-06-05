@@ -43,6 +43,19 @@ module Path =
                 Commands = p.Commands @ [ ClosePath ]
             }
 
+    /// <summary>Apply a point mapping to every vertex of a path (e.g. a transform).</summary>
+    let map (f: Point2D -> Point2D) (path: Path) : Path =
+        let mapCmd cmd =
+            match cmd with
+            | MoveTo p -> MoveTo(f p)
+            | LineTo p -> LineTo(f p)
+            | CurveTo(c1, c2, e) -> CurveTo(f c1, f c2, f e)
+            | ClosePath -> ClosePath
+
+        {
+            Commands = path.Commands |> List.map mapCmd
+        }
+
 /// <summary>Horizontal text anchoring.</summary>
 type HAlign =
     | HLeft

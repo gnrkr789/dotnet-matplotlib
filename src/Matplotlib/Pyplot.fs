@@ -85,6 +85,37 @@ type Pyplot() =
         let markerOpt = marker |> Option.map Styles.parseMarker
         ax.Scatter(xs, ys, ?color = colorOpt, ?marker = markerOpt, ?markerSize = markerSize, ?label = label)
 
+    /// <summary>Draw a vertical bar chart (Matplotlib's <c>plt.bar</c>).</summary>
+    member this.Bar
+        (x: float[], height: float[], ?width: float, ?bottom: float[], ?color: string, ?label: string)
+        : Rectangle[] =
+        let ax = this.EnsureAxes()
+        let colorOpt = color |> Option.map (fun s -> ColorResolver.Default.Resolve s)
+        ax.Bar(x, height, ?width = width, ?bottom = bottom, ?color = colorOpt, ?label = label)
+
+    /// <summary>Draw a horizontal bar chart (Matplotlib's <c>plt.barh</c>).</summary>
+    member this.BarH
+        (y: float[], width: float[], ?height: float, ?left: float[], ?color: string, ?label: string)
+        : Rectangle[] =
+        let ax = this.EnsureAxes()
+        let colorOpt = color |> Option.map (fun s -> ColorResolver.Default.Resolve s)
+        ax.BarH(y, width, ?height = height, ?left = left, ?color = colorOpt, ?label = label)
+
+    /// <summary>Fill the area between two curves (Matplotlib's <c>plt.fill_between</c>).</summary>
+    member this.FillBetween
+        (x: float[], y1: float[], ?y2: float[], ?color: string, ?alpha: float, ?label: string)
+        : Polygon =
+        let ax = this.EnsureAxes()
+        let colorOpt = color |> Option.map (fun s -> ColorResolver.Default.Resolve s)
+        ax.FillBetween(x, y1, ?y2 = y2, ?color = colorOpt, ?alpha = alpha, ?label = label)
+
+    /// <summary>Create a grid of subplots (Matplotlib's <c>plt.subplots</c>).</summary>
+    member this.Subplots(?nrows: int, ?ncols: int, ?width: float, ?height: float, ?dpi: float) : Figure * Axes[,] =
+        let fig = this.Figure(?width = width, ?height = height, ?dpi = dpi)
+        let axes = fig.Subplots(defaultArg nrows 1, defaultArg ncols 1)
+        currentAxes <- Some axes[0, 0]
+        fig, axes
+
     /// <summary>Set the title of the current axes.</summary>
     member this.Title(text: string) = this.EnsureAxes().SetTitle text
 

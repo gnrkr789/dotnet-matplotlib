@@ -35,10 +35,38 @@ let private renderScatter (outDir: string) =
     plt.Savefig path
     printfn "wrote %s" path
 
+let private renderBar (outDir: string) =
+    let plt = Pyplot()
+    let categories = [| 0.0; 1.0; 2.0; 3.0; 4.0 |]
+    let values = [| 5.0; 9.0; 3.0; 7.0; 6.0 |]
+    plt.Bar(categories, values, color = "C0", label = "count") |> ignore
+    plt.Title "dotnet-matplotlib: bar"
+    plt.XLabel "category"
+    plt.YLabel "count"
+    plt.Legend()
+    let path = Path.Combine(outDir, "bar.svg")
+    plt.Savefig path
+    printfn "wrote %s" path
+
+let private renderFillBetween (outDir: string) =
+    let plt = Pyplot()
+    let xs = [| for i in 0..60 -> float i / 6.0 |]
+    let ys = xs |> Array.map sin
+    plt.FillBetween(xs, ys, color = "C1", alpha = 0.4, label = "sin(x)") |> ignore
+    plt.Plot(xs, ys, color = "C1") |> ignore
+    plt.Title "dotnet-matplotlib: fill_between"
+    plt.XLabel "x"
+    plt.Legend()
+    let path = Path.Combine(outDir, "fill_between.svg")
+    plt.Savefig path
+    printfn "wrote %s" path
+
 [<EntryPoint>]
 let main argv =
     let outDir = if argv.Length > 0 then argv[0] else "out"
     Directory.CreateDirectory outDir |> ignore
     renderSine outDir
     renderScatter outDir
+    renderBar outDir
+    renderFillBetween outDir
     0
