@@ -31,14 +31,15 @@ jobs:
       - name: Restore
         run: dotnet restore src/Matplotlib/Matplotlib.fsproj
 
-      - name: Build
-        run: dotnet build src/Matplotlib/Matplotlib.fsproj -c Release --no-restore
-
+      # pack builds and packs in one step. We do NOT pass --no-build: the
+      # single-package bundling target (CopyProjectReferencesToPackage) resolves
+      # the referenced projects' outputs, which a --no-build pack would re-invoke
+      # the Build target for, failing with NETSDK1085.
       - name: Pack
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
           echo "Packing version $VERSION"
-          dotnet pack src/Matplotlib/Matplotlib.fsproj -c Release --no-build --output . -p:Version=$VERSION
+          dotnet pack src/Matplotlib/Matplotlib.fsproj -c Release --no-restore --output . -p:Version=$VERSION
 
       - name: Push
         env:

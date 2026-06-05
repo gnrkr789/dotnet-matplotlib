@@ -14,8 +14,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Matplotlib\Matplotlib.fsproj" />
-    <!-- Matplotlib bundles Domain/Backends privately, so reference Domain directly. -->
+    <!-- Matplotlib bundles Domain/Backends privately for the NuGet package, so a
+         project-reference consumer must reference them explicitly. -->
     <ProjectReference Include="..\..\src\Matplotlib.Domain\Matplotlib.Domain.fsproj" />
+    <ProjectReference Include="..\..\src\Matplotlib.Backends\Matplotlib.Backends.fsproj" />
   </ItemGroup>
 
 </Project>
