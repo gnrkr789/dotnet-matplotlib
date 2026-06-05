@@ -4,12 +4,13 @@ open Matplotlib.Domain.Primitives
 open Matplotlib.Domain.Rendering
 
 /// <summary>
-/// An image displaying a 2D scalar array, colormapped through a
-/// <see cref="Normalize"/> + <see cref="Colormap"/>. Each cell is drawn as a
-/// filled rectangle in data coordinates (origin upper: row 0 at the top).
+/// An image / quad mesh displaying a 2D scalar array, colormapped through a
+/// <see cref="Normalize"/> + <see cref="Colormap"/>. Each cell <c>(i, j)</c> is
+/// drawn as a filled quad spanning <c>[xEdges[j], xEdges[j+1]] ×
+/// [yEdges[i], yEdges[i+1]]</c> in data coordinates.
 /// </summary>
-/// <remarks>Ported from <c>matplotlib.image.AxesImage</c> (rect rasterization).</remarks>
-type AxesImage(data: float[,], colormap: Colormap, norm: Normalize) as this =
+/// <remarks>Ported from <c>matplotlib.image.AxesImage</c> / <c>QuadMesh</c>.</remarks>
+type AxesImage(data: float[,], colormap: Colormap, norm: Normalize, xEdges: float[], yEdges: float[]) as this =
     inherit Artist()
 
     do this.ZOrder <- 0.0
@@ -31,25 +32,22 @@ type AxesImage(data: float[,], colormap: Colormap, norm: Normalize) as this =
 
     override this.Draw(renderer: IRenderer) =
         if this.Visible then
-            let rows = this.Rows
-            let cols = this.Cols
-
             let gc =
                 { GraphicsContext.Default with
                     StrokeColor = Color.none
                     LineWidth = 0.0
                 }
 
-            for i in 0 .. rows - 1 do
-                for j in 0 .. cols - 1 do
+            for i in 0 .. this.Rows - 1 do
+                for j in 0 .. this.Cols - 1 do
                     let color = this.Colormap.Apply(this.Norm.Normalize data[i, j])
 
                     let corners =
                         [
-                            { X = float j - 0.5; Y = float i - 0.5 }
-                            { X = float j + 0.5; Y = float i - 0.5 }
-                            { X = float j + 0.5; Y = float i + 0.5 }
-                            { X = float j - 0.5; Y = float i + 0.5 }
+                            { X = xEdges[j]; Y = yEdges[i] }
+                            { X = xEdges[j + 1]; Y = yEdges[i] }
+                            { X = xEdges[j + 1]; Y = yEdges[i + 1] }
+                            { X = xEdges[j]; Y = yEdges[i + 1] }
                         ]
                         |> List.map this.Transform.Transform
 
