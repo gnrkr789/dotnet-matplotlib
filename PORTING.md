@@ -57,6 +57,7 @@ and is not part of this repository (it is git-ignored).
 | 2026-06-05 | 8 | `constrained_layout` | `Domain/Figure.ConstrainedLayout` + `Pyplot` | per-subplot decoration-aware grid layout (approx) |
 | 2026-06-06 | 9 | `scale.LogScale`, `ticker.LogLocator/LogFormatter` | `Domain/Scales/Scale`, `Transforms.FunctionalTransform` | base-10 log scale, decade ticks + log minor ticks, `set_xscale/yscale` |
 | 2026-06-06 | 10 | `colors.Colormap/Normalize`, `_cm_listed` viridis, `image.AxesImage` | `Domain/Primitives/{Colormap,ColormapData}`, `Artists/Image` | viridis (256-LUT) + gray/jet/hot, linear Normalize, `imshow` |
+| 2026-06-06 | 11 | `figure.colorbar` | `Domain/Figure.Colorbar` + `Pyplot.Colorbar` | gradient axes + value scale on the right; Axes gains XTicksVisible / YTickSide |
 
 Known deviations (to refine in later sprints):
 - `errorbar` draws the error lines only; caps (`capsize`) are not yet rendered

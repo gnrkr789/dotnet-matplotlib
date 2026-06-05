@@ -176,6 +176,9 @@ type Pyplot() =
     member this.Imshow(data: float[,], ?cmap: string, ?vmin: float, ?vmax: float) : AxesImage =
         this.EnsureAxes().Imshow(data, ?cmap = cmap, ?vmin = vmin, ?vmax = vmax)
 
+    /// <summary>Add a colorbar for an image (Matplotlib's <c>plt.colorbar</c>).</summary>
+    member this.Colorbar(image: AxesImage, ?ax: Axes) = this.CurrentFigure().Colorbar(image, ?ax = ax)
+
     /// <summary>Set the x-axis scale (<c>"linear"</c> / <c>"log"</c>).</summary>
     member this.XScale(name: string) = this.EnsureAxes().SetXScale name
 

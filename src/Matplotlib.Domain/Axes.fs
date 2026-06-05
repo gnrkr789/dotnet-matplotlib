@@ -263,6 +263,12 @@ type Axes(rc: RcParams) =
     /// <summary>Tick direction: <c>out</c> (default), <c>in</c> or <c>inout</c>.</summary>
     member val TickDirection = "out" with get, set
 
+    /// <summary>Whether x-axis ticks and tick labels are drawn.</summary>
+    member val XTicksVisible = true with get, set
+
+    /// <summary>Which side the y ticks/labels are on (<c>left</c> default, or <c>right</c>).</summary>
+    member val YTickSide = "left" with get, set
+
     /// <summary>Whether the top spine is drawn.</summary>
     member val SpineTop = true with get, set
 
@@ -798,21 +804,38 @@ type Axes(rc: RcParams) =
                 LineWidth = rc.TickMajorWidth * ctx.Pt2Px
             }
 
-        Array.iter2
-            (fun tv lab ->
-                let x = (ctx.TransData.Transform { X = tv; Y = ctx.YView.Lower }).X
-                let y0, y1 = AxesLayout.tickEndpoints b.Y0 len dir
-                ctx.Renderer.DrawPath(gc, Path.polyline [ { X = x; Y = y0 }; { X = x; Y = y1 } ], None)
-                (this.MakeTickLabel(x, b.Y0 - labelOff, lab, HCenter, VTop)).Draw ctx.Renderer)
-            ctx.XTicks
-            ctx.XLabels
+        if this.XTicksVisible then
+            Array.iter2
+                (fun tv lab ->
+                    let x = (ctx.TransData.Transform { X = tv; Y = ctx.YView.Lower }).X
+                    let y0, y1 = AxesLayout.tickEndpoints b.Y0 len dir
+                    ctx.Renderer.DrawPath(gc, Path.polyline [ { X = x; Y = y0 }; { X = x; Y = y1 } ], None)
+                    (this.MakeTickLabel(x, b.Y0 - labelOff, lab, HCenter, VTop)).Draw ctx.Renderer)
+                ctx.XTicks
+                ctx.XLabels
+
+        let onRight = this.YTickSide = "right"
+        let yBase = if onRight then b.X1 else b.X0
+        // mirror the tick direction for a right-side axis
+        let yDir =
+            if not onRight then
+                dir
+            else
+                match dir with
+                | "in" -> "out"
+                | "out" -> "in"
+                | other -> other
 
         Array.iter2
             (fun tv lab ->
                 let y = (ctx.TransData.Transform { X = ctx.XView.Lower; Y = tv }).Y
-                let x0, x1 = AxesLayout.tickEndpoints b.X0 len dir
+                let x0, x1 = AxesLayout.tickEndpoints yBase len yDir
+
                 ctx.Renderer.DrawPath(gc, Path.polyline [ { X = x0; Y = y }; { X = x1; Y = y } ], None)
-                (this.MakeTickLabel(b.X0 - labelOff, y, lab, HRight, VCenter)).Draw ctx.Renderer)
+
+                let labelX = if onRight then b.X1 + labelOff else b.X0 - labelOff
+                let labelHa = if onRight then HLeft else HRight
+                (this.MakeTickLabel(labelX, y, lab, labelHa, VCenter)).Draw ctx.Renderer)
             ctx.YTicks
             ctx.YLabels
 

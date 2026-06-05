@@ -4,6 +4,7 @@ open Xunit
 open Matplotlib
 open Matplotlib.Domain
 open Matplotlib.Domain.Primitives
+open Matplotlib.Backends
 
 module ColormapImageTests =
 
@@ -53,3 +54,26 @@ module ColormapImageTests =
         Assert.True((svg.Split("fill=\"#").Length - 1) > 60)
         // the minimum value maps to viridis[0] = #440154
         Assert.Contains("#440154", svg)
+
+    [<Fact>]
+    let ``Colorbar adds a gradient axes and shrinks the parent`` () =
+        let fig = Figure()
+        let ax = fig.AddSubplot()
+        let data = array2D [ [ 0.0; 1.0 ]; [ 2.0; 3.0 ] ]
+        let img = ax.Imshow data
+        let before = fig.Axes.Count
+        let cax = fig.Colorbar img
+        Assert.Equal(before + 1, fig.Axes.Count)
+        Assert.Equal(256, cax.Patches.Count)
+        Assert.False(cax.XTicksVisible)
+        Assert.Equal("right", cax.YTickSide)
+        Assert.True(ax.Position.X1 < 0.9)
+        Assert.Contains("#440154", FigureCanvas(fig).RenderToSvg())
+
+    [<Fact>]
+    let ``Pyplot colorbar renders value ticks`` () =
+        let plt = Pyplot()
+        let data = array2D [ for i in 0..3 -> [ for j in 0..3 -> float (i + j) ] ]
+        let img = plt.Imshow data
+        plt.Colorbar img |> ignore
+        Assert.Contains("<text", plt.ToSvg())
