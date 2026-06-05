@@ -24,7 +24,7 @@ Status: ✅ done · 🚧 in progress · ⬜ planned.
 - ✅ `subplots`, `GridSpec`, `tight_layout`, `constrained_layout` (approx)
 
 ## Phase 3 — Scales, color, data domains
-- 🚧 `LogScale` ✅ (decade locator/formatter, log minor ticks); `SymlogScale`, `LogitScale` ⬜
+- ✅ `LogScale`, `SymlogScale`, `LogitScale` (decade / symlog / logit locators)
 - ⬜ Date axis (`dates.py`) + locators/formatters
 - ⬜ Categorical axis (`category.py`)
 - 🚧 Colormaps: `viridis` ✅ (+ gray/jet/hot), `Normalize` ✅, `colorbar` ✅; more `_cm*` maps ⬜
