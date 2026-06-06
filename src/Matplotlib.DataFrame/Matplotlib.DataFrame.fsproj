@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Matplotlib.DataFrame</RootNamespace>
+    <AssemblyName>Matplotlib.DataFrame</AssemblyName>
+    <PackageId>DotnetMatplotlib.DataFrame</PackageId>
+    <Description>Microsoft.Data.Analysis DataFrame plotting extensions for DotnetMatplotlib: df.PlotLine / PlotScatter / PlotBar / PlotHist, returning a Pyplot (pandas .plot() style).</Description>
+    <PackageTags>matplotlib;dataframe;plotting;data-analysis;dataviz;fsharp</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Plotting.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Becomes a package dependency on DotnetMatplotlib. -->
+    <ProjectReference Include="..\Matplotlib\Matplotlib.fsproj" />
+    <!-- Compile-time only: these ship inside the DotnetMatplotlib package's lib. -->
+    <ProjectReference Include="..\Matplotlib.Domain\Matplotlib.Domain.fsproj" PrivateAssets="all" />
+    <ProjectReference Include="..\Matplotlib.Backends\Matplotlib.Backends.fsproj" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Analysis" Version="0.23.0" />
+  </ItemGroup>
+
+</Project>

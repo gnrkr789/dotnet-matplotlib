@@ -34,6 +34,7 @@ jobs:
           dotnet restore src/Matplotlib/Matplotlib.fsproj
           dotnet restore src/Matplotlib.Interactive/Matplotlib.Interactive.fsproj
           dotnet restore src/Matplotlib.Mcp/Matplotlib.Mcp.fsproj
+          dotnet restore src/Matplotlib.DataFrame/Matplotlib.DataFrame.fsproj
 
       # pack builds and packs in one step. We do NOT pass --no-build: the
       # single-package bundling target (CopyProjectReferencesToPackage) resolves
@@ -46,6 +47,7 @@ jobs:
           dotnet pack src/Matplotlib/Matplotlib.fsproj -c Release --no-restore --output . -p:Version=$VERSION
           dotnet pack src/Matplotlib.Interactive/Matplotlib.Interactive.fsproj -c Release --no-restore --output . -p:Version=$VERSION
           dotnet pack src/Matplotlib.Mcp/Matplotlib.Mcp.fsproj -c Release --no-restore --output . -p:Version=$VERSION
+          dotnet pack src/Matplotlib.DataFrame/Matplotlib.DataFrame.fsproj -c Release --no-restore --output . -p:Version=$VERSION
 
       - name: Push to nuget.org
         env:

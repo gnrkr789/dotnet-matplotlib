@@ -68,6 +68,12 @@ In a .NET Interactive / Polyglot / Jupyter notebook, add
 `Matplotlib.Interactive.Notebook.register ()` once — figures then render inline
 as SVG.
 
+## DataFrames
+
+`DotnetMatplotlib.DataFrame` adds pandas-style plotting extensions to
+`Microsoft.Data.Analysis.DataFrame`: `df.PlotLine("x","y")`, `PlotScatter`,
+`PlotBar`, `PlotHist` — each returns a `Pyplot`.
+
 ## AI agents (MCP)
 
 `DotnetMatplotlib.Mcp` is a Model Context Protocol server (install as a .NET tool:

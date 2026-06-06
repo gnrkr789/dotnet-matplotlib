@@ -76,6 +76,7 @@ and is not part of this repository (it is git-ignored).
 | 2026-06-06 | 26 | `.NET Interactive` notebook formatters | `Matplotlib.Interactive.Notebook.register` (package `DotnetMatplotlib.Interactive`) | inline SVG rendering of `Figure`/`Pyplot` in Polyglot/Jupyter notebooks via `Microsoft.DotNet.Interactive.Formatting` |
 | 2026-06-06 | 27 | Model Context Protocol server (new capability) | `Matplotlib.Mcp` (.NET tool `DotnetMatplotlib.Mcp`, command `matplotlib-mcp`) | MCP server exposing `plot_line`/`scatter`/`bar`/`heatmap` tools that render to PNG/SVG/PDF for AI agents (`ModelContextProtocol` SDK, stdio transport) |
 | 2026-06-06 | 28 | Browser rendering (Blazor WebAssembly) | `samples/BlazorDemo` | the pure-managed library runs in the browser via .NET WASM, rendering plots as inline SVG with no JS/native deps; implicit FSharp.Core floor lowered to 8.0.400 to avoid consumer NU1605 downgrades |
+| 2026-06-07 | 29 | `pandas.DataFrame.plot` | `Matplotlib.DataFrame` (package `DotnetMatplotlib.DataFrame`) | `Microsoft.Data.Analysis.DataFrame` extension methods `PlotLine`/`PlotScatter`/`PlotBar`/`PlotHist` returning a `Pyplot`; usable from C# and F# |
 
 Known deviations (to refine in later sprints):
 - `errorbar` draws the error lines only; caps (`capsize`) are not yet rendered

@@ -111,6 +111,24 @@ Because the library is pure-managed, it runs in the browser via .NET WebAssembly
 dotnet run --project samples/BlazorDemo
 ```
 
+## DataFrames
+
+Plot directly from a `Microsoft.Data.Analysis.DataFrame` (pandas `.plot()` style):
+
+```bash
+dotnet add package DotnetMatplotlib.DataFrame
+```
+
+```fsharp
+open Matplotlib.DataFrame   // adds df.PlotLine / PlotScatter / PlotBar / PlotHist
+
+df.PlotLine("x", "y").Savefig "line.png"
+df.PlotHist("value", 20).Savefig "hist.svg"
+```
+
+Each method plots the named column(s) and returns the `Pyplot`, so you can add a
+title or choose the output format. The same extension methods work from C#.
+
 ## AI agents (MCP)
 
 `DotnetMatplotlib.Mcp` is a [Model Context Protocol](https://modelcontextprotocol.io)
@@ -145,7 +163,7 @@ PNG / SVG / PDF file (chosen by the output extension) and return the saved path.
 - 3D: `plot3D`, `scatter3D`, `plot_wireframe`
 - Style sheets and `rcParams` parsing (`ggplot`, `dark_background`, …)
 - Backends: SVG, PNG and PDF (pure-managed), an interactive window (Windows), and animated GIF
-- Integrations: .NET Interactive / Jupyter notebooks, an MCP server for AI agents, and Blazor WebAssembly (runs in the browser)
+- Integrations: `Microsoft.Data.Analysis` DataFrames, .NET Interactive / Jupyter notebooks, an MCP server for AI agents, and Blazor WebAssembly (runs in the browser)
 
 See [PORTING.md](PORTING.md) for the parity log.
 
