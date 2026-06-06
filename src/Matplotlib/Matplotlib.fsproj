@@ -17,7 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <!-- Package README (no HTML gallery; NuGet does not render raw HTML tables/images). -->
+    <None Include="..\..\nuget\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup>
