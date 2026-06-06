@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <!--
+    A standalone Blazor WebAssembly demo. dotnet-matplotlib is pure-managed, so it
+    runs in the browser with no JavaScript charting and no native dependencies.
+    Not part of the solution / CI (Blazor WASM needs the web SDK and a browser).
+    Run it with: dotnet run from this folder.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Matplotlib\Matplotlib.fsproj" />
+    <ProjectReference Include="..\..\src\Matplotlib.Domain\Matplotlib.Domain.fsproj" />
+    <ProjectReference Include="..\..\src\Matplotlib.Backends\Matplotlib.Backends.fsproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.8" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>

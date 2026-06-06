@@ -75,6 +75,7 @@ and is not part of this repository (it is git-ignored).
 | 2026-06-06 | 25 | `matplotlib.animation.FuncAnimation` + GIF writer | `Backends.Raster.GifEncoder`, `Backends.Animation`, `Pyplot.SaveGif` | pure-managed animated GIF89a encoder (variable-width LZW, fixed 8-8-4 palette, looping) over raster frames rendered per frame index; `FigureCanvas.RenderToRgba` |
 | 2026-06-06 | 26 | `.NET Interactive` notebook formatters | `Matplotlib.Interactive.Notebook.register` (package `DotnetMatplotlib.Interactive`) | inline SVG rendering of `Figure`/`Pyplot` in Polyglot/Jupyter notebooks via `Microsoft.DotNet.Interactive.Formatting` |
 | 2026-06-06 | 27 | Model Context Protocol server (new capability) | `Matplotlib.Mcp` (.NET tool `DotnetMatplotlib.Mcp`, command `matplotlib-mcp`) | MCP server exposing `plot_line`/`scatter`/`bar`/`heatmap` tools that render to PNG/SVG/PDF for AI agents (`ModelContextProtocol` SDK, stdio transport) |
+| 2026-06-06 | 28 | Browser rendering (Blazor WebAssembly) | `samples/BlazorDemo` | the pure-managed library runs in the browser via .NET WASM, rendering plots as inline SVG with no JS/native deps; implicit FSharp.Core floor lowered to 8.0.400 to avoid consumer NU1605 downgrades |
 
 Known deviations (to refine in later sprints):
 - `errorbar` draws the error lines only; caps (`capsize`) are not yet rendered

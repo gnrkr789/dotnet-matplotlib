@@ -101,6 +101,16 @@ plt.Plot([| 0.0; 1.0; 2.0 |], [| 0.0; 1.0; 4.0 |], color = "C0") |> ignore
 plt   // the cell value renders as an inline SVG plot
 ```
 
+## Browser (Blazor WebAssembly)
+
+Because the library is pure-managed, it runs in the browser via .NET WebAssembly
+— no JavaScript charting library and no native dependencies. The standalone
+[Blazor WASM demo](samples/BlazorDemo) renders plots as inline SVG client-side:
+
+```bash
+dotnet run --project samples/BlazorDemo
+```
+
 ## AI agents (MCP)
 
 `DotnetMatplotlib.Mcp` is a [Model Context Protocol](https://modelcontextprotocol.io)
@@ -135,7 +145,7 @@ PNG / SVG / PDF file (chosen by the output extension) and return the saved path.
 - 3D: `plot3D`, `scatter3D`, `plot_wireframe`
 - Style sheets and `rcParams` parsing (`ggplot`, `dark_background`, …)
 - Backends: SVG, PNG and PDF (pure-managed), an interactive window (Windows), and animated GIF
-- Integrations: .NET Interactive / Jupyter notebooks, and an MCP server for AI agents
+- Integrations: .NET Interactive / Jupyter notebooks, an MCP server for AI agents, and Blazor WebAssembly (runs in the browser)
 
 See [PORTING.md](PORTING.md) for the parity log.
 

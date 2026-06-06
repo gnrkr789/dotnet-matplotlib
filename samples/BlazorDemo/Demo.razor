@@ -1,0 +1,69 @@
+@using Matplotlib
+@using Microsoft.FSharp.Core
+
+<div style="max-width: 760px; margin: 2rem auto; font-family: sans-serif;">
+    <h1>dotnet-matplotlib &mdash; Blazor WebAssembly</h1>
+    <p>
+        Rendered entirely in the browser with .NET WebAssembly &mdash; no JavaScript
+        charting library, no native dependencies. The plot below is an SVG produced
+        by the pure-managed <code>Pyplot</code> API.
+    </p>
+
+    <label>
+        Plot:
+        <select @onchange="OnChange">
+            <option value="sine">sine + cosine</option>
+            <option value="scatter">scatter</option>
+            <option value="bars">bar chart</option>
+        </select>
+    </label>
+
+    <div style="border: 1px solid #ddd; margin-top: 1rem;">@((MarkupString)_svg)</div>
+</div>
+
+@code {
+    private string _svg = "";
+
+    private static FSharpOption<T> Some<T>(T value) => FSharpOption<T>.Some(value);
+    private static FSharpOption<T> None<T>() => FSharpOption<T>.None;
+
+    protected override void OnInitialized() => Render("sine");
+
+    private void OnChange(ChangeEventArgs e) => Render(e.Value?.ToString() ?? "sine");
+
+    private void Render(string kind)
+    {
+        var plt = new Pyplot();
+
+        switch (kind)
+        {
+            case "scatter":
+                var rnd = new Random(0);
+                var sx = Enumerable.Range(0, 40).Select(_ => rnd.NextDouble()).ToArray();
+                var sy = sx.Select(v => v + (rnd.NextDouble() - 0.5) * 0.3).ToArray();
+                plt.Scatter(sx, sy, Some("C1"), None<string>(), None<double>(), None<string>());
+                plt.Title("scatter");
+                break;
+
+            case "bars":
+                plt.Bar(new[] { "A", "B", "C", "D" }, new[] { 3.0, 7.0, 4.0, 6.0 }, None<string>(), None<string>());
+                plt.Title("bar chart");
+                break;
+
+            default:
+                var xs = Enumerable.Range(0, 200).Select(i => i / 200.0 * 4 * Math.PI).ToArray();
+                var sin = xs.Select(Math.Sin).ToArray();
+                var cos = xs.Select(Math.Cos).ToArray();
+                plt.Plot(xs, sin, Some("C0"), None<string>(), None<string>(), None<double>(), Some("sin x"));
+                plt.Plot(xs, cos, Some("C1"), None<string>(), None<string>(), None<double>(), Some("cos x"));
+                plt.Title("sine + cosine");
+                plt.Legend(None<string>());
+                break;
+        }
+
+        plt.XLabel("x");
+        plt.YLabel("y");
+        plt.Grid(Some(true));
+        _svg = plt.ToSvg();
+    }
+}

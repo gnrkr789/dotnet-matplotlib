@@ -14,6 +14,12 @@
     <NeutralLanguage>en-US</NeutralLanguage>
     <!-- F# project output should be reproducible & analyzable; keep signatures tidy. -->
     <OtherFlags>$(OtherFlags) --nowarn:3511</OtherFlags>
+    <!--
+      Pin the implicit FSharp.Core to a low, widely-available floor so consumers
+      (and `dotnet fsi`) are never forced to upgrade it — avoids NU1605 downgrade
+      warnings. Uses the F# SDK property, not a duplicate PackageReference.
+    -->
+    <FSharpCoreImplicitPackageVersion>8.0.400</FSharpCoreImplicitPackageVersion>
   </PropertyGroup>
 
   <!-- Shared package/authoring metadata -->
