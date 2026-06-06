@@ -8,25 +8,23 @@ A **native .NET 10** port of [Matplotlib](https://matplotlib.org/) — the de-fa
 2D plotting library for Python — rebuilt in idiomatic **F#** following
 **Object-Oriented** and **Domain-Driven Design** principles.
 
-> Goal: faithful, 100% behavioral port of Matplotlib's plotting model
+> A faithful port of Matplotlib's plotting model
 > (`Figure` / `Axes` / `Artist` / `Transform` / `Backend`) with a familiar
 > `pyplot`-style facade, producing publication-quality output with **zero native
-> dependencies** (pure-managed SVG backend; raster/Agg backend on the roadmap).
+> dependencies** — pure-managed SVG, PNG and PDF backends.
 
 ## Gallery
 
 <table>
   <tr>
-    <td align="center"><img src="docs/gallery/imshow.svg" alt="imshow + colorbar" width="420"><br><sub><code>imshow</code> + <code>colorbar</code> (viridis)</sub></td>
-    <td align="center"><img src="docs/gallery/contour.svg" alt="contour" width="420"><br><sub><code>contour</code> (marching squares)</sub></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/gnrkr789/dotnet-matplotlib/main/docs/gallery/imshow.png" alt="imshow + colorbar" width="420"><br><sub><code>imshow</code> + <code>colorbar</code> (viridis)</sub></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/gnrkr789/dotnet-matplotlib/main/docs/gallery/contour.png" alt="contour" width="420"><br><sub><code>contour</code> (marching squares)</sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="docs/gallery/annotate.svg" alt="annotate" width="420"><br><sub><code>annotate</code> + <code>text</code></sub></td>
-    <td align="center"><img src="docs/gallery/collections.svg" alt="LineCollection" width="420"><br><sub><code>LineCollection</code></sub></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/gnrkr789/dotnet-matplotlib/main/docs/gallery/annotate.png" alt="annotate" width="420"><br><sub><code>annotate</code> + <code>text</code></sub></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/gnrkr789/dotnet-matplotlib/main/docs/gallery/collections.png" alt="collections" width="420"><br><sub>line <code>collections</code></sub></td>
   </tr>
 </table>
-
-More examples are produced by `dotnet run --project samples/Gallery -- out`.
 
 ## Install
 
@@ -47,12 +45,37 @@ plt.Legend()
 plt.Savefig "hello.svg"
 ```
 
+## Output formats
+
+`Savefig` chooses the format from the file extension. SVG, **PNG** and **PDF** are
+all pure-managed and cross-platform (zero native dependencies):
+
+```fsharp
+plt.Savefig "plot.svg"   // vector SVG
+plt.Savefig "plot.png"   // raster PNG (software rasterizer, anti-aliased)
+plt.Savefig "plot.pdf"   // vector PDF
+```
+
+Text uses TrueType fonts discovered from the system. To select a font, set the
+default family before plotting — the equivalent of Matplotlib's
+`rcParams["font.family"]`:
+
+```fsharp
+plt.FontFamily <- "serif"
+```
+
+Animations are written as looping GIFs:
+
+```fsharp
+// factory builds the Figure for each frame index
+plt.SaveGif("wave.gif", 30, (fun i -> buildFrame i), fps = 20)
+```
+
 ## Interactive window
 
-Besides saving files, figures can be shown in a live window — the equivalent of
-Matplotlib's `plt.show()`. This is an **opt-in, Windows-only** backend (WinForms +
-GDI+) that lives in `Matplotlib.Gui`, so the default SVG path stays free of any
-native/UI dependency.
+Figures can also be shown in a live window — the equivalent of Matplotlib's
+`plt.show()`. This is an **opt-in, Windows-only** backend (WinForms + GDI+) that
+lives in `Matplotlib.Gui`, so the default path stays free of any UI dependency:
 
 ```fsharp
 open Matplotlib
@@ -64,48 +87,35 @@ plt.Title "Hello, window"
 plt.Show()            // opens a window and blocks until it is closed; resizes re-layout
 ```
 
-Try it: `dotnet run --project samples/GuiDemo` (requires the Windows Desktop SDK).
-
-To render non-Latin text (e.g. Korean), set the default font family before
-plotting — the equivalent of Matplotlib's `rcParams["font.family"]`. It applies to
-both the SVG and window backends:
-
-```fsharp
-plt.FontFamily <- "맑은 고딕"   // Malgun Gothic
-```
-
-The same backend can also export a raster **PNG** (the opt-in counterpart of the
-default SVG writer):
-
-```fsharp
-open Matplotlib.Gui
-plt.SavePng "plot.png"          // GDI+ raster export (Windows)
-```
-
 ## Features
 
-Line / scatter / bar / barh / fill_between / step / errorbar / stem, the full
-marker set, patches & collections, images (`imshow` / `pcolormesh`) with
-colormaps + `colorbar`, `contour`/`contourf`, legends (with `best` placement),
-text & annotations, subplots with `tight_layout` / `constrained_layout`, and
-linear / log / symlog / logit / categorical / date axes. See
-[docs/ROADMAP.md](docs/ROADMAP.md) for the module-by-module parity status and
-[PORTING.md](PORTING.md) for the porting log.
+- Plots: `plot`, `scatter`, `bar`/`barh`, `fill_between`, `step`, `errorbar`, `stem`
+- Statistics & fields: `hist2d`, `boxplot`, `violinplot`, `quiver`, `streamplot`
+- Images: `imshow`, `pcolormesh` with colormaps (`viridis`, `gray`, `jet`, `hot`) and `colorbar`
+- Contours: `contour` (marching squares), `contourf`
+- Patches & line/poly collections, hatching, the full marker set
+- Legends (including automatic `best` placement), text & annotations
+- Subplots with `tight_layout` / `constrained_layout`
+- Scales: linear / log / symlog / logit; categorical & date axes
+- 3D: `plot3D`, `scatter3D`, `plot_wireframe`
+- Style sheets and `rcParams` parsing (`ggplot`, `dark_background`, …)
+- Backends: SVG, PNG and PDF (pure-managed), an interactive window (Windows), and animated GIF
+
+See [PORTING.md](PORTING.md) for the parity log.
 
 ## Building
 
 Requires the **.NET 10 SDK**.
 
 ```bash
-dotnet tool restore           # FSharpLint + Fantomas (one-time)
+dotnet tool restore           # Fantomas (one-time)
 dotnet build                  # whole solution (warnings are errors)
 dotnet test                   # all tests
 dotnet run --project samples/Gallery -- out   # render the sample gallery to ./out
 ```
 
-Style is enforced with **Fantomas**, and **FSharpLint** is the configured lint
-rule set — see [LINTING.md](LINTING.md). The engineering guide is in
-[CLAUDE.md](CLAUDE.md) and the porting playbook in [Skills.md](Skills.md).
+Code style is enforced with **Fantomas**; the lint configuration is described in
+[LINTING.md](LINTING.md).
 
 ## License
 

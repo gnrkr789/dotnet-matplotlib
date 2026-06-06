@@ -18,8 +18,8 @@ and is not part of this repository (it is git-ignored).
   arrays / immutable `[<Struct>]` value records. Code style is enforced with
   Fantomas; FSharpLint is the configured lint rule set (see `LINTING.md`).
 - **Rendering**: Matplotlib's C++ Agg default raster backend → a pure-managed
-  **SVG** default backend (zero native dependencies). An Agg-equivalent raster
-  backend is on the roadmap behind the same `IRenderer` port.
+  **SVG** default backend (zero native dependencies), plus pure-managed PNG
+  (software rasterizer) and PDF backends behind the same `IRenderer` port.
 - **API shape**: snake_case Python API → PascalCase F# API. The `pyplot`
   module becomes the `Pyplot` facade class; keyword arguments become F# optional
   parameters (`?arg`). Value objects are records; the artist/transform hierarchy
@@ -64,7 +64,7 @@ and is not part of this repository (it is git-ignored).
 | 2026-06-06 | 15 | `axes.contourf` | `Domain/Axes.Contourf` + `Pyplot.Contourf` | banded filled contours (cell quantization) |
 | 2026-06-06 | 16 | `pyplot.show`, interactive figure window | `Matplotlib.Gui` (`GdiRenderer`, `PlotWindow`, `Pyplot.Show`) | opt-in Windows GDI+/WinForms window; live resize re-layout (not on the default zero-dependency path) |
 | 2026-06-06 | 16 | `rcParams["font.family"]` | `RcParams.FontFamily`, `Pyplot.FontFamily` | configurable default font family for all text (e.g. `"맑은 고딕"`); honored by SVG + GDI backends |
-| 2026-06-06 | 17 | `FigureCanvasAgg.print_png` (raster → PNG) | `Matplotlib.Gui` (`Raster.toBitmap`/`savePng`, `Pyplot.SavePng`) | opt-in GDI+ raster export to PNG (Windows); reuses `GdiRenderer`. Pure-managed cross-platform rasterizer still on the roadmap |
+| 2026-06-06 | 17 | `FigureCanvasAgg.print_png` (raster → PNG) | `Matplotlib.Gui` (`Raster.toBitmap`/`savePng`, `Pyplot.SavePng`) | opt-in GDI+ raster export to PNG (Windows); reuses `GdiRenderer`. (A pure-managed cross-platform rasterizer follows in sprint 18.) |
 | 2026-06-06 | 18 | `backend_agg` + PNG output (pure-managed) | `Matplotlib.Backends.Raster` (`PngEncoder`, `RasterImage`, `RasterRenderer`); `FigureCanvas.RenderToPng`/`SavePng` | cross-platform PNG with zero native deps: managed PNG encoder (`ZLibStream` + CRC-32), even-odd polygon fill, thick-line stroke (round joins), supersampled anti-aliasing |
 | 2026-06-06 | 19 | `font_manager` + FreeType glyph loading (TrueType) | `Domain/Text/TrueTypeFont` (pure parser), `Backends/Text/FontManager` (I/O) | pure-managed TTF reader (cmap 4/12, simple + composite glyphs, quadratic flattening); raster backend now renders anti-aliased text via glyph outlines; `Pyplot.Savefig` writes PNG for `.png` paths |
 | 2026-06-06 | 20 | `backend_pdf` | `Matplotlib.Backends.Pdf.PdfRenderer`, `FigureCanvas.RenderToPdf`/`SavePdf` | pure-managed single-page PDF 1.4 writer: path operators, standard Helvetica text, alpha via `ExtGState`, xref table; `Pyplot.Savefig` writes PDF for `.pdf` paths |

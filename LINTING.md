@@ -56,4 +56,4 @@ DOTNET_ROLL_FORWARD=LatestMajor dotnet dotnet-fsharplint lint \
 ```
 
 The F# sources in this repo are written to comply with `fsharplint.json`
-regardless. See [CLAUDE.md](CLAUDE.md) §Definition of done.
+regardless, and every change must pass `dotnet fantomas --check`.
