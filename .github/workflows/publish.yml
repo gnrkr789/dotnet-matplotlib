@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: read
+  packages: write # required to publish to GitHub Packages
 
 jobs:
   publish-nuget:
@@ -41,11 +42,22 @@ jobs:
           echo "Packing version $VERSION"
           dotnet pack src/Matplotlib/Matplotlib.fsproj -c Release --no-restore --output . -p:Version=$VERSION
 
-      - name: Push
+      - name: Push to nuget.org
         env:
           TOKEN: ${{ secrets.NUGET_TOKEN }}
         run: |
           dotnet nuget push *.nupkg \
             --source "https://api.nuget.org/v3/index.json" \
+            --api-key "${TOKEN}" \
+            --skip-duplicate
+
+      # Also publish to this repository's GitHub Packages NuGet feed. GITHUB_TOKEN
+      # is provided automatically and authorized by `permissions: packages: write`.
+      - name: Push to GitHub Packages
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          dotnet nuget push *.nupkg \
+            --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
             --api-key "${TOKEN}" \
             --skip-duplicate
