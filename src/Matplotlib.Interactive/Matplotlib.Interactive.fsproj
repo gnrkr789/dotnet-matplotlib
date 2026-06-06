@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Matplotlib.Interactive</RootNamespace>
+    <AssemblyName>Matplotlib.Interactive</AssemblyName>
+    <PackageId>DotnetMatplotlib.Interactive</PackageId>
+    <Description>.NET Interactive / Polyglot / Jupyter notebook integration for DotnetMatplotlib: inline SVG rendering of figures in notebook cells.</Description>
+    <PackageTags>matplotlib;plotting;notebook;dotnet-interactive;polyglot;jupyter;fsharp</PackageTags>
+    <!-- Microsoft.DotNet.Interactive.Formatting only ships prerelease builds. -->
+    <NoWarn>$(NoWarn);NU5104</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Notebook.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Becomes a package dependency on DotnetMatplotlib. -->
+    <ProjectReference Include="..\Matplotlib\Matplotlib.fsproj" />
+    <!-- Compile-time only: these ship inside the DotnetMatplotlib package's lib. -->
+    <ProjectReference Include="..\Matplotlib.Domain\Matplotlib.Domain.fsproj" PrivateAssets="all" />
+    <ProjectReference Include="..\Matplotlib.Backends\Matplotlib.Backends.fsproj" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.Interactive.Formatting" Version="1.0.0-beta.26120.1" />
+  </ItemGroup>
+
+</Project>

@@ -63,7 +63,7 @@ and is not part of this repository (it is git-ignored).
 | 2026-06-06 | 14 | `ticker.FixedLocator/FixedFormatter`, `dates.DateFormatter`, `category` | `Domain/Ticking`, `Domain/Axis` (overrides), `Domain/Axes` | categorical axis (`SetXCategories`) + date axis (`PlotDate`, OADate); per-axis locator/formatter overrides |
 | 2026-06-06 | 15 | `axes.contourf` | `Domain/Axes.Contourf` + `Pyplot.Contourf` | banded filled contours (cell quantization) |
 | 2026-06-06 | 16 | `pyplot.show`, interactive figure window | `Matplotlib.Gui` (`GdiRenderer`, `PlotWindow`, `Pyplot.Show`) | opt-in Windows GDI+/WinForms window; live resize re-layout (not on the default zero-dependency path) |
-| 2026-06-06 | 16 | `rcParams["font.family"]` | `RcParams.FontFamily`, `Pyplot.FontFamily` | configurable default font family for all text (e.g. `"맑은 고딕"`); honored by SVG + GDI backends |
+| 2026-06-06 | 16 | `rcParams["font.family"]` | `RcParams.FontFamily`, `Pyplot.FontFamily` | configurable default font family for all text; honored by SVG + GDI backends |
 | 2026-06-06 | 17 | `FigureCanvasAgg.print_png` (raster → PNG) | `Matplotlib.Gui` (`Raster.toBitmap`/`savePng`, `Pyplot.SavePng`) | opt-in GDI+ raster export to PNG (Windows); reuses `GdiRenderer`. (A pure-managed cross-platform rasterizer follows in sprint 18.) |
 | 2026-06-06 | 18 | `backend_agg` + PNG output (pure-managed) | `Matplotlib.Backends.Raster` (`PngEncoder`, `RasterImage`, `RasterRenderer`); `FigureCanvas.RenderToPng`/`SavePng` | cross-platform PNG with zero native deps: managed PNG encoder (`ZLibStream` + CRC-32), even-odd polygon fill, thick-line stroke (round joins), supersampled anti-aliasing |
 | 2026-06-06 | 19 | `font_manager` + FreeType glyph loading (TrueType) | `Domain/Text/TrueTypeFont` (pure parser), `Backends/Text/FontManager` (I/O) | pure-managed TTF reader (cmap 4/12, simple + composite glyphs, quadratic flattening); raster backend now renders anti-aliased text via glyph outlines; `Pyplot.Savefig` writes PNG for `.png` paths |
@@ -73,6 +73,7 @@ and is not part of this repository (it is git-ignored).
 | 2026-06-06 | 23 | `matplotlib.style` / `rcsetup` (matplotlibrc) | `Domain/Style/StyleSheet`, `Pyplot.UseStyle`/`UseStyleText`/`UseStyleFile` | rcParams text parser (subset of figure/axes/lines/font/tick/grid keys) + built-in styles (`ggplot`, `dark_background`, `grayscale`, `seaborn`) |
 | 2026-06-06 | 24 | `mpl_toolkits.mplot3d.Axes3D` | `Domain/Axes3D`, `Figure.AddAxes3D`, `Pyplot.Axes3D`/`Plot3D`/`Scatter3D`/`PlotWireframe` | 3D axes with orthographic elev/azim projection, unit-cube normalization + auto-fit, reference cube frame, line/scatter/wireframe, title & axis labels |
 | 2026-06-06 | 25 | `matplotlib.animation.FuncAnimation` + GIF writer | `Backends.Raster.GifEncoder`, `Backends.Animation`, `Pyplot.SaveGif` | pure-managed animated GIF89a encoder (variable-width LZW, fixed 8-8-4 palette, looping) over raster frames rendered per frame index; `FigureCanvas.RenderToRgba` |
+| 2026-06-06 | 26 | `.NET Interactive` notebook formatters | `Matplotlib.Interactive.Notebook.register` (package `DotnetMatplotlib.Interactive`) | inline SVG rendering of `Figure`/`Pyplot` in Polyglot/Jupyter notebooks via `Microsoft.DotNet.Interactive.Formatting` |
 
 Known deviations (to refine in later sprints):
 - `errorbar` draws the error lines only; caps (`capsize`) are not yet rendered

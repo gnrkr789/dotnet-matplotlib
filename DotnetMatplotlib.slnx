@@ -6,6 +6,7 @@
     <Project Path="src/Matplotlib.Backends/Matplotlib.Backends.fsproj" />
     <Project Path="src/Matplotlib.Domain/Matplotlib.Domain.fsproj" />
     <Project Path="src/Matplotlib/Matplotlib.fsproj" />
+    <Project Path="src/Matplotlib.Interactive/Matplotlib.Interactive.fsproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Matplotlib.Tests/Matplotlib.Tests.fsproj" />

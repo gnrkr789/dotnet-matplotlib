@@ -61,6 +61,13 @@ Animations are written as looping GIFs:
 plt.SaveGif("wave.gif", 30, (fun i -> buildFrame i), fps = 20)
 ```
 
+## Notebooks
+
+In a .NET Interactive / Polyglot / Jupyter notebook, add
+`#r "nuget: DotnetMatplotlib.Interactive"` and call
+`Matplotlib.Interactive.Notebook.register ()` once — figures then render inline
+as SVG.
+
 ## Features
 
 - Plots: `plot`, `scatter`, `bar`/`barh`, `fill_between`, `step`, `errorbar`, `stem`

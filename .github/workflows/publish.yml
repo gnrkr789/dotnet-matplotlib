@@ -30,7 +30,9 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Restore
-        run: dotnet restore src/Matplotlib/Matplotlib.fsproj
+        run: |
+          dotnet restore src/Matplotlib/Matplotlib.fsproj
+          dotnet restore src/Matplotlib.Interactive/Matplotlib.Interactive.fsproj
 
       # pack builds and packs in one step. We do NOT pass --no-build: the
       # single-package bundling target (CopyProjectReferencesToPackage) resolves
@@ -41,6 +43,7 @@ jobs:
           VERSION=${GITHUB_REF#refs/tags/v}
           echo "Packing version $VERSION"
           dotnet pack src/Matplotlib/Matplotlib.fsproj -c Release --no-restore --output . -p:Version=$VERSION
+          dotnet pack src/Matplotlib.Interactive/Matplotlib.Interactive.fsproj -c Release --no-restore --output . -p:Version=$VERSION
 
       - name: Push to nuget.org
         env:

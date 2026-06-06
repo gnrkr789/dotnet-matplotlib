@@ -87,6 +87,20 @@ plt.Title "Hello, window"
 plt.Show()            // opens a window and blocks until it is closed; resizes re-layout
 ```
 
+## Notebooks
+
+In a .NET Interactive / Polyglot / Jupyter notebook, figures render inline as SVG:
+
+```fsharp
+#r "nuget: DotnetMatplotlib.Interactive"
+open Matplotlib
+Matplotlib.Interactive.Notebook.register ()   // once per session
+
+let plt = Pyplot()
+plt.Plot([| 0.0; 1.0; 2.0 |], [| 0.0; 1.0; 4.0 |], color = "C0") |> ignore
+plt   // the cell value renders as an inline SVG plot
+```
+
 ## Features
 
 - Plots: `plot`, `scatter`, `bar`/`barh`, `fill_between`, `step`, `errorbar`, `stem`
