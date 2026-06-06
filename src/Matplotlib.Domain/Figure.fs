@@ -13,6 +13,7 @@ open Matplotlib.Domain.Artists
 type Figure(rc: RcParams) =
 
     let axesList = ResizeArray<Axes>()
+    let axes3dList = ResizeArray<Axes3D>()
     let mutable subplotGrid: Axes[,] option = None
 
     /// <summary>Create a figure with the default <c>rcParams</c>.</summary>
@@ -51,6 +52,12 @@ type Figure(rc: RcParams) =
     member _.AddSubplot() : Axes =
         let ax = Axes(rc)
         axesList.Add ax
+        ax
+
+    /// <summary>Add a 3D Axes filling the default subplot area (Matplotlib's <c>add_subplot(projection='3d')</c>).</summary>
+    member _.AddAxes3D() : Axes3D =
+        let ax = Axes3D(rc)
+        axes3dList.Add ax
         ax
 
     /// <summary>
@@ -269,3 +276,6 @@ type Figure(rc: RcParams) =
 
         for ax in axesList do
             ax.Draw renderer
+
+        for ax3d in axes3dList do
+            ax3d.Draw renderer

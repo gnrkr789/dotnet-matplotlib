@@ -50,6 +50,7 @@
     <!-- Containers -->
     <Compile Include="Axis.fs" />
     <Compile Include="Axes.fs" />
+    <Compile Include="Axes3D.fs" />
     <Compile Include="Figure.fs" />
   </ItemGroup>
 

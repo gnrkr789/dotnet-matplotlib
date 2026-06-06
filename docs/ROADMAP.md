@@ -46,8 +46,9 @@ Status: ✅ done · 🚧 in progress · ⬜ planned.
   PDF 1.4 (paths, Helvetica text, alpha via ExtGState)
 
 ## Phase 5 — Ecosystem parity
-- 🚧 `quiver` ✅, `hist2d` ✅, `boxplot` ✅, `violinplot` ✅ (Gaussian KDE),
-  `streamplot` ✅ (arc-length integration); `3D` (mplot3d) ⬜
+- ✅ `quiver`, `hist2d`, `boxplot`, `violinplot` (Gaussian KDE),
+  `streamplot` (arc-length integration), `3D` (`Axes3D`: projection, `plot3D`,
+  `scatter3D`, `plot_wireframe`)
 - ✅ Style sheets, `rcParams` file parsing (`StyleSheet`, `Pyplot.UseStyle`/`UseStyleText`/`UseStyleFile`)
 - ⬜ Animation API
 

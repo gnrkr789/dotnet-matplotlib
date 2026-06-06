@@ -20,6 +20,7 @@ type Pyplot() =
 
     let mutable currentFigure: Figure option = None
     let mutable currentAxes: Axes option = None
+    let mutable currentAxes3D: Axes3D option = None
     let mutable rcParams = RcParams.Default
 
     member private this.EnsureAxes() : Axes =
@@ -65,6 +66,7 @@ type Pyplot() =
         dpi |> Option.iter (fun d -> fig.Dpi <- d)
         currentFigure <- Some fig
         currentAxes <- None
+        currentAxes3D <- None
         fig
 
     /// <summary>The current figure, creating one if necessary.</summary>
@@ -246,6 +248,38 @@ type Pyplot() =
     member this.Streamplot(x: float[], y: float[], u: float[,], v: float[,], ?density: int, ?color: string) : unit =
         let colorOpt = color |> Option.map (fun s -> ColorResolver.Default.Resolve s)
         this.EnsureAxes().Streamplot(x, y, u, v, ?density = density, ?color = colorOpt)
+
+    /// <summary>Add a 3D axes to the current figure (Matplotlib's <c>add_subplot(projection='3d')</c>).</summary>
+    member this.Axes3D() : Axes3D =
+        let ax = this.CurrentFigure().AddAxes3D()
+        currentAxes3D <- Some ax
+        ax
+
+    member private this.Ensure3D() : Axes3D =
+        match currentAxes3D with
+        | Some a -> a
+        | None -> this.Axes3D()
+
+    /// <summary>Plot a 3D line (Matplotlib's <c>plt.plot</c> on a 3D axes).</summary>
+    member this.Plot3D(xs: float[], ys: float[], zs: float[], ?color: string) : Axes3D =
+        let c = color |> Option.map (fun s -> ColorResolver.Default.Resolve s)
+        let ax = this.Ensure3D()
+        ax.Plot3D(xs, ys, zs, ?color = c)
+        ax
+
+    /// <summary>Scatter 3D points (Matplotlib's <c>plt.scatter</c> on a 3D axes).</summary>
+    member this.Scatter3D(xs: float[], ys: float[], zs: float[], ?color: string) : Axes3D =
+        let c = color |> Option.map (fun s -> ColorResolver.Default.Resolve s)
+        let ax = this.Ensure3D()
+        ax.Scatter3D(xs, ys, zs, ?color = c)
+        ax
+
+    /// <summary>Draw a 3D wireframe surface (Matplotlib's <c>plot_wireframe</c>).</summary>
+    member this.PlotWireframe(x: float[], y: float[], z: float[,], ?color: string) : Axes3D =
+        let c = color |> Option.map (fun s -> ColorResolver.Default.Resolve s)
+        let ax = this.Ensure3D()
+        ax.PlotWireframe(x, y, z, ?color = c)
+        ax
 
     /// <summary>Plot y versus dates with a date-formatted x axis (Matplotlib's <c>plt.plot_date</c>).</summary>
     member this.PlotDate(dates: DateTime[], ys: float[], ?format: string, ?color: string, ?label: string) : Line2D =
