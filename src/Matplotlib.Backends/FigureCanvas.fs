@@ -32,11 +32,11 @@ type FigureCanvas(figure: Figure) =
         File.WriteAllText(path, this.RenderToSvg())
 
     /// <summary>
-    /// Render the figure to PNG bytes with the pure-managed raster backend.
-    /// <paramref name="scale"/> is the supersampling factor for anti-aliasing
-    /// (default 3). Text is not yet drawn by this backend (see <c>RasterRenderer</c>).
+    /// Render the figure to a downsampled RGBA buffer with the pure-managed raster
+    /// backend. <paramref name="scale"/> is the supersampling factor for
+    /// anti-aliasing (default 3). Returns <c>(width, height, rgba)</c>.
     /// </summary>
-    member _.RenderToPng(?scale: int) : byte[] =
+    member _.RenderToRgba(?scale: int) : int * int * byte[] =
         let s = max 1 (defaultArg scale 3)
         let px = figure.PixelSize
         let w = max 1 (int (System.Math.Round px.Width))
@@ -48,7 +48,12 @@ type FigureCanvas(figure: Figure) =
         let renderer = RasterRenderer(surface, logical, figure.Dpi, s)
         figure.Draw renderer
         let final = surface.Downsample s
-        PngEncoder.encode final.Width final.Height final.Data
+        (final.Width, final.Height, final.Data)
+
+    /// <summary>Render the figure to PNG bytes with the pure-managed raster backend.</summary>
+    member this.RenderToPng(?scale: int) : byte[] =
+        let (w, h, rgba) = this.RenderToRgba(?scale = scale)
+        PngEncoder.encode w h rgba
 
     /// <summary>Render the figure and write it to a PNG file (pure-managed).</summary>
     member this.SavePng(path: string, ?scale: int) =

@@ -33,6 +33,7 @@
     <Compile Include="Phase5PlotsTests.fs" />
     <Compile Include="StyleSheetTests.fs" />
     <Compile Include="Axes3DTests.fs" />
+    <Compile Include="AnimationTests.fs" />
   </ItemGroup>
 
   <ItemGroup>

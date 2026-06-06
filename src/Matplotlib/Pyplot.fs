@@ -380,5 +380,13 @@ type Pyplot() =
         elif ext ".pdf" then canvas.SavePdf path
         else canvas.SaveSvg path
 
+    /// <summary>
+    /// Render <paramref name="frameCount"/> figures and save them as a looping
+    /// animated GIF (Matplotlib's <c>FuncAnimation(...).save(gif)</c>).
+    /// <paramref name="factory"/> builds the figure for each frame index.
+    /// </summary>
+    member _.SaveGif(path: string, frameCount: int, factory: int -> Figure, ?fps: int, ?scale: int) =
+        Animation(frameCount, factory).SaveGif(path, ?fps = fps, ?scale = scale)
+
     /// <summary>A fresh, independent pyplot state.</summary>
     static member Instance = Pyplot()

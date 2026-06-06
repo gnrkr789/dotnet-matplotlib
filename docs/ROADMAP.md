@@ -50,6 +50,7 @@ Status: ✅ done · 🚧 in progress · ⬜ planned.
   `streamplot` (arc-length integration), `3D` (`Axes3D`: projection, `plot3D`,
   `scatter3D`, `plot_wireframe`)
 - ✅ Style sheets, `rcParams` file parsing (`StyleSheet`, `Pyplot.UseStyle`/`UseStyleText`/`UseStyleFile`)
-- ⬜ Animation API
+- ✅ Animation API (`Animation`, `Pyplot.SaveGif`): pure-managed animated-GIF
+  encoder (LZW + fixed palette) over rendered raster frames
 
 Each item ships as a vertical slice per `Skills.md` Skill 8 (definition of done).

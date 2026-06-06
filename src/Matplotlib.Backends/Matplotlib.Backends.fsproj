@@ -12,8 +12,10 @@
     <Compile Include="Raster/PngEncoder.fs" />
     <Compile Include="Raster/RasterImage.fs" />
     <Compile Include="Raster/RasterRenderer.fs" />
+    <Compile Include="Raster/GifEncoder.fs" />
     <Compile Include="Pdf/PdfRenderer.fs" />
     <Compile Include="FigureCanvas.fs" />
+    <Compile Include="Animation.fs" />
   </ItemGroup>
 
   <ItemGroup>
