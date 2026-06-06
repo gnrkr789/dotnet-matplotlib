@@ -101,6 +101,27 @@ plt.Plot([| 0.0; 1.0; 2.0 |], [| 0.0; 1.0; 4.0 |], color = "C0") |> ignore
 plt   // the cell value renders as an inline SVG plot
 ```
 
+## AI agents (MCP)
+
+`DotnetMatplotlib.Mcp` is a [Model Context Protocol](https://modelcontextprotocol.io)
+server that lets AI agents create plots with this library. Install it as a .NET
+tool and point your MCP client at the `matplotlib-mcp` command:
+
+```bash
+dotnet tool install -g DotnetMatplotlib.Mcp
+```
+
+```json
+{
+  "mcpServers": {
+    "matplotlib": { "command": "matplotlib-mcp" }
+  }
+}
+```
+
+It exposes `plot_line`, `scatter`, `bar` and `heatmap` tools that render to a
+PNG / SVG / PDF file (chosen by the output extension) and return the saved path.
+
 ## Features
 
 - Plots: `plot`, `scatter`, `bar`/`barh`, `fill_between`, `step`, `errorbar`, `stem`
@@ -114,6 +135,7 @@ plt   // the cell value renders as an inline SVG plot
 - 3D: `plot3D`, `scatter3D`, `plot_wireframe`
 - Style sheets and `rcParams` parsing (`ggplot`, `dark_background`, …)
 - Backends: SVG, PNG and PDF (pure-managed), an interactive window (Windows), and animated GIF
+- Integrations: .NET Interactive / Jupyter notebooks, and an MCP server for AI agents
 
 See [PORTING.md](PORTING.md) for the parity log.
 

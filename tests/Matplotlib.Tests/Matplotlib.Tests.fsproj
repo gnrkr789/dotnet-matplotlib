@@ -35,6 +35,7 @@
     <Compile Include="Axes3DTests.fs" />
     <Compile Include="AnimationTests.fs" />
     <Compile Include="NotebookTests.fs" />
+    <Compile Include="McpToolsTests.fs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -48,6 +49,7 @@
     <ProjectReference Include="..\..\src\Matplotlib.Domain\Matplotlib.Domain.fsproj" />
     <ProjectReference Include="..\..\src\Matplotlib.Backends\Matplotlib.Backends.fsproj" />
     <ProjectReference Include="..\..\src\Matplotlib.Interactive\Matplotlib.Interactive.fsproj" />
+    <ProjectReference Include="..\..\src\Matplotlib.Mcp\Matplotlib.Mcp.fsproj" />
   </ItemGroup>
 
 </Project>

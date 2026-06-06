@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Matplotlib.Mcp</RootNamespace>
+    <AssemblyName>Matplotlib.Mcp</AssemblyName>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>matplotlib-mcp</ToolCommandName>
+    <PackageId>DotnetMatplotlib.Mcp</PackageId>
+    <Description>A Model Context Protocol (MCP) server that lets AI agents create plots with DotnetMatplotlib (matplotlib-style API) and save them as PNG / SVG / PDF.</Description>
+    <PackageTags>matplotlib;mcp;model-context-protocol;ai;agent;plotting;fsharp</PackageTags>
+    <!-- The MCP SDK is prerelease-only. -->
+    <NoWarn>$(NoWarn);NU5104</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="PlotTools.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Matplotlib\Matplotlib.fsproj" />
+    <ProjectReference Include="..\Matplotlib.Domain\Matplotlib.Domain.fsproj" />
+    <ProjectReference Include="..\Matplotlib.Backends\Matplotlib.Backends.fsproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.8" />
+    <PackageReference Include="ModelContextProtocol" Version="1.4.0" />
+  </ItemGroup>
+
+</Project>

@@ -68,6 +68,12 @@ In a .NET Interactive / Polyglot / Jupyter notebook, add
 `Matplotlib.Interactive.Notebook.register ()` once — figures then render inline
 as SVG.
 
+## AI agents (MCP)
+
+`DotnetMatplotlib.Mcp` is a Model Context Protocol server (install as a .NET tool:
+`dotnet tool install -g DotnetMatplotlib.Mcp`, command `matplotlib-mcp`) that lets
+AI agents create line / scatter / bar / heatmap plots saved as PNG / SVG / PDF.
+
 ## Features
 
 - Plots: `plot`, `scatter`, `bar`/`barh`, `fill_between`, `step`, `errorbar`, `stem`

@@ -74,6 +74,7 @@ and is not part of this repository (it is git-ignored).
 | 2026-06-06 | 24 | `mpl_toolkits.mplot3d.Axes3D` | `Domain/Axes3D`, `Figure.AddAxes3D`, `Pyplot.Axes3D`/`Plot3D`/`Scatter3D`/`PlotWireframe` | 3D axes with orthographic elev/azim projection, unit-cube normalization + auto-fit, reference cube frame, line/scatter/wireframe, title & axis labels |
 | 2026-06-06 | 25 | `matplotlib.animation.FuncAnimation` + GIF writer | `Backends.Raster.GifEncoder`, `Backends.Animation`, `Pyplot.SaveGif` | pure-managed animated GIF89a encoder (variable-width LZW, fixed 8-8-4 palette, looping) over raster frames rendered per frame index; `FigureCanvas.RenderToRgba` |
 | 2026-06-06 | 26 | `.NET Interactive` notebook formatters | `Matplotlib.Interactive.Notebook.register` (package `DotnetMatplotlib.Interactive`) | inline SVG rendering of `Figure`/`Pyplot` in Polyglot/Jupyter notebooks via `Microsoft.DotNet.Interactive.Formatting` |
+| 2026-06-06 | 27 | Model Context Protocol server (new capability) | `Matplotlib.Mcp` (.NET tool `DotnetMatplotlib.Mcp`, command `matplotlib-mcp`) | MCP server exposing `plot_line`/`scatter`/`bar`/`heatmap` tools that render to PNG/SVG/PDF for AI agents (`ModelContextProtocol` SDK, stdio transport) |
 
 Known deviations (to refine in later sprints):
 - `errorbar` draws the error lines only; caps (`capsize`) are not yet rendered
