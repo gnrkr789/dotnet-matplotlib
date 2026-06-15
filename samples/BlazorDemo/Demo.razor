@@ -41,7 +41,8 @@
                 var rnd = new Random(0);
                 var sx = Enumerable.Range(0, 40).Select(_ => rnd.NextDouble()).ToArray();
                 var sy = sx.Select(v => v + (rnd.NextDouble() - 0.5) * 0.3).ToArray();
-                plt.Scatter(sx, sy, Some("C1"), None<string>(), None<double>(), None<string>());
+                plt.Scatter(sx, sy, Some("C1"), None<string>(), None<double>(), None<string>(),
+                            None<double[]>(), None<string>(), None<double>(), None<double>(), None<double[]>());
                 plt.Title("scatter");
                 break;
 
