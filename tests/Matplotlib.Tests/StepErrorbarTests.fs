@@ -48,6 +48,30 @@ module StepErrorbarTests =
         Assert.True(ax.YLim.Upper > 1.0)
 
     [<Fact>]
+    let ``Errorbar capsize adds a cap-marker line`` () =
+        let ax = Axes()
+
+        ax.Errorbar([| 0.0; 1.0 |], [| 0.0; 0.0 |], yerr = [| 1.0; 1.0 |], capsize = 5.0)
+        |> ignore
+        // main line + 2 vertical error segments + 1 cap-marker line ('_' caps)
+        Assert.Equal(4, ax.Lines.Count)
+        let caps = ax.Lines[ax.Lines.Count - 1]
+        Assert.Equal(MarkerStyle.HLine, caps.Marker)
+        Assert.Equal(LineStyle.NoLine, caps.LineStyle)
+
+    [<Fact>]
+    let ``Bar with yerr adds error-bar lines on top of the bars`` () =
+        let ax = Axes()
+
+        ax.Bar([| 0.0; 1.0 |], [| 2.0; 3.0 |], yerr = [| 0.5; 0.5 |], capsize = 4.0)
+        |> ignore
+
+        Assert.Equal(2, ax.Patches.Count) // the two bars
+        Assert.Equal(3, ax.Lines.Count) // 2 error segments + 1 cap-marker line
+        // the y range expands to include the upper error (3 + 0.5)
+        Assert.True(ax.YLim.Upper >= 3.5)
+
+    [<Fact>]
     let ``Pyplot step and errorbar render to SVG`` () =
         let plt = Pyplot()
 

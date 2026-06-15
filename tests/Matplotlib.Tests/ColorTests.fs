@@ -35,6 +35,16 @@ module ColorTests =
         Assert.Equal("#1f77b4", c.ToHex())
 
     [<Fact>]
+    let ``Resolver treats lowercase c as cyan, not a cycle reference`` () =
+        // 'c' is the cyan base color; 'c0' is not a valid matplotlib spec.
+        let cyan = ColorResolver.Default.Resolve "c"
+        assertClose 0.0 cyan.R
+        assertClose 0.75 cyan.G
+        assertClose 0.75 cyan.B
+        let ok, _ = ColorResolver.Default.TryResolve "c0"
+        Assert.False ok
+
+    [<Fact>]
     let ``Resolver maps tableau and css4 names`` () =
         Assert.Equal("#1f77b4", (ColorResolver.Default.Resolve "tab:blue").ToHex())
         Assert.Equal("#008000", (ColorResolver.Default.Resolve "green").ToHex())

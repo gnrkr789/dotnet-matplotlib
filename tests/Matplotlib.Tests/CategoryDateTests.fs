@@ -15,6 +15,13 @@ module CategoryDateTests =
         Assert.Equal<string[]>([| "b" |], f.FormatTicks [| 1.0 |])
 
     [<Fact>]
+    let ``Labeled-ticks formatter matches arbitrary positions to labels`` () =
+        let f = LabeledTicksFormatter([| 0.0; 1.5708; 3.1416 |], [| "0"; "pi/2"; "pi" |]) :> ITickFormatter
+        // each label follows its value, independent of order; unknown values are blank
+        Assert.Equal<string[]>([| "pi/2"; "0"; "pi" |], f.FormatTicks [| 1.5708; 0.0; 3.1416 |])
+        Assert.Equal<string[]>([| ""; "pi" |], f.FormatTicks [| 9.9; 3.1416 |])
+
+    [<Fact>]
     let ``Fixed locator keeps positions within the view`` () =
         let l = FixedLocator([| 0.0; 1.0; 2.0; 3.0 |]) :> ITickLocator
         Assert.Equal<float[]>([| 1.0; 2.0 |], l.TickValues { Lower = 0.5; Upper = 2.5 })

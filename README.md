@@ -24,6 +24,14 @@ A **native .NET 10** port of [Matplotlib](https://matplotlib.org/) — the de-fa
     <td align="center"><img src="https://raw.githubusercontent.com/gnrkr789/dotnet-matplotlib/main/docs/gallery/annotate.png" alt="annotate" width="420"><br><sub><code>annotate</code> + <code>text</code></sub></td>
     <td align="center"><img src="https://raw.githubusercontent.com/gnrkr789/dotnet-matplotlib/main/docs/gallery/collections.png" alt="collections" width="420"><br><sub>line <code>collections</code></sub></td>
   </tr>
+  <tr>
+    <td align="center"><img src="https://raw.githubusercontent.com/gnrkr789/dotnet-matplotlib/main/docs/gallery/scatter_colormap.png" alt="scatter with colormap" width="420"><br><sub><code>scatter</code> (colormapped <code>c</code>, sized <code>s</code>)</sub></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/gnrkr789/dotnet-matplotlib/main/docs/gallery/pie.png" alt="pie" width="420"><br><sub><code>pie</code> (<code>set_aspect('equal')</code>)</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="https://raw.githubusercontent.com/gnrkr789/dotnet-matplotlib/main/docs/gallery/hist.png" alt="hist" width="420"><br><sub><code>hist</code></sub></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/gnrkr789/dotnet-matplotlib/main/docs/gallery/stackplot.png" alt="stackplot" width="420"><br><sub><code>stackplot</code></sub></td>
+  </tr>
 </table>
 
 ## Install
@@ -152,7 +160,8 @@ PNG / SVG / PDF file (chosen by the output extension) and return the saved path.
 
 ## Features
 
-- Plots: `plot`, `scatter`, `bar`/`barh`, `fill_between`, `step`, `errorbar`, `stem`
+- Plots: `plot`, `scatter` (colormapped `c`, per-point `s`), `bar`/`barh`, `hist`, `pie`, `stackplot`, `fill_between`/`fill_betweenx`, `step`, `stem`, `errorbar` (with `capsize`), `vlines`/`hlines`
+- Axis control: `set_aspect('equal')`, `axis('off')`
 - Statistics & fields: `hist2d`, `boxplot`, `violinplot`, `quiver`, `streamplot`
 - Images: `imshow`, `pcolormesh` with colormaps (`viridis`, `gray`, `jet`, `hot`) and `colorbar`
 - Contours: `contour` (marching squares), `contourf`
@@ -166,6 +175,23 @@ PNG / SVG / PDF file (chosen by the output extension) and return the saved path.
 - Integrations: `Microsoft.Data.Analysis` DataFrames, .NET Interactive / Jupyter notebooks, an MCP server for AI agents, and Blazor WebAssembly (runs in the browser)
 
 See [PORTING.md](PORTING.md) for the parity log.
+
+## Roadmap
+
+A few areas are still being refined toward fuller Matplotlib parity (tracked in
+[PORTING.md](PORTING.md) under *Known deviations / TODO*, and marked with `TODO`
+comments in the source):
+
+- **`ScalarFormatter` scientific notation / shared offset** — very large or small
+  tick values currently render in full; the common `×10ⁿ` offset label is planned.
+- **Real glyph-advance text metrics** — text sizing in layout (`tight_layout`,
+  label / legend placement) uses a fixed-width approximation; switching to measured
+  TrueType advances is in progress.
+- **Non-zero winding raster fill** — the software rasterizer fills with the even-odd
+  rule, whereas Matplotlib/Agg use non-zero winding (affects self-intersecting and
+  holey fills).
+
+Contributions welcome.
 
 ## Building
 

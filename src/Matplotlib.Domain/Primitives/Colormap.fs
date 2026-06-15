@@ -40,19 +40,10 @@ type Colormap(name: string, lut: Color[]) =
         if n = 0 then
             Color.black
         else
-            let x = Math.Clamp(t, 0.0, 1.0) * float (n - 1)
-            let i0 = int (floor x)
-            let i1 = min (i0 + 1) (n - 1)
-            let f = x - float i0
-            let a = lut[i0]
-            let b = lut[i1]
-
-            {
-                R = a.R + (b.R - a.R) * f
-                G = a.G + (b.G - a.G) * f
-                B = a.B + (b.B - a.B) * f
-                A = 1.0
-            }
+            // matplotlib quantizes to N discrete entries: index = int(t * N),
+            // with t = 1.0 mapping to the last entry (a flat lookup, not a blend).
+            let i = min (n - 1) (int (Math.Clamp(t, 0.0, 1.0) * float n))
+            lut[i]
 
 /// <summary>The built-in colormaps.</summary>
 [<RequireQualifiedAccess>]
@@ -93,6 +84,39 @@ module Colormap =
                 A = 1.0
             })
 
+    /// <summary>
+    /// Builds a 256-entry lookup table from independent per-channel breakpoint
+    /// lists, mirroring matplotlib's <c>LinearSegmentedColormap</c> segmentdata
+    /// (each channel carries its own node positions).
+    /// </summary>
+    let private buildLutSegmented
+        (red: (float * float) list)
+        (green: (float * float) list)
+        (blue: (float * float) list)
+        : Color[] =
+        let channel (stops: (float * float) list) =
+            let arr = List.toArray stops
+
+            fun (t: float) ->
+                let mutable k = 0
+
+                while k < arr.Length - 1 && fst arr[k + 1] < t do
+                    k <- k + 1
+
+                let x0, y0 = arr[k]
+                let x1, y1 = arr[min (k + 1) (arr.Length - 1)]
+
+                if x1 = x0 then
+                    y0
+                else
+                    y0 + (y1 - y0) * (t - x0) / (x1 - x0)
+
+        let r, g, b = channel red, channel green, channel blue
+
+        Array.init 256 (fun i ->
+            let t = float i / 255.0
+            { R = r t; G = g t; B = b t; A = 1.0 })
+
     /// <summary>The default perceptually-uniform colormap.</summary>
     let viridis = fromFlat "viridis" ColormapData.viridis
 
@@ -106,25 +130,21 @@ module Colormap =
         )
 
     /// <summary>The classic "jet" rainbow colormap.</summary>
+    /// <remarks>Ported from matplotlib's <c>_jet_data</c> (independent per-channel segments).</remarks>
     let jet =
-        buildLut
-            [
-                0.0, (0.0, 0.0, 0.5)
-                0.125, (0.0, 0.0, 1.0)
-                0.375, (0.0, 1.0, 1.0)
-                0.625, (1.0, 1.0, 0.0)
-                0.875, (1.0, 0.0, 0.0)
-                1.0, (0.5, 0.0, 0.0)
-            ]
+        buildLutSegmented
+            [ 0.0, 0.0; 0.35, 0.0; 0.66, 1.0; 0.89, 1.0; 1.0, 0.5 ] // red
+            [ 0.0, 0.0; 0.125, 0.0; 0.375, 1.0; 0.64, 1.0; 0.91, 0.0; 1.0, 0.0 ] // green
+            [ 0.0, 0.5; 0.11, 1.0; 0.34, 1.0; 0.65, 0.0; 1.0, 0.0 ] // blue
         |> fun lut -> Colormap("jet", lut)
 
     /// <summary>The "hot" black-red-yellow-white colormap.</summary>
     let hot =
         buildLut
             [
-                0.0, (0.0, 0.0, 0.0)
-                0.365, (1.0, 0.0, 0.0)
-                0.746, (1.0, 1.0, 0.0)
+                0.0, (0.0416, 0.0, 0.0)
+                0.365079, (1.0, 0.0, 0.0)
+                0.746032, (1.0, 1.0, 0.0)
                 1.0, (1.0, 1.0, 1.0)
             ]
         |> fun lut -> Colormap("hot", lut)

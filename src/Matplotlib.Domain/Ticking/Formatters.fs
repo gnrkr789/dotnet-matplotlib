@@ -23,6 +23,9 @@ type ITickFormatter =
 /// A faithful subset of <c>matplotlib.ticker.ScalarFormatter</c> covering the
 /// common non-scientific, no-offset case used by linear axes.
 /// </remarks>
+// TODO(roadmap): scientific notation + a shared "×10ⁿ" offset label for very
+// large/small values (matplotlib's axes.formatter.limits powerlimits). Needs an
+// OffsetText surface on the formatter + axis rendering. See README Roadmap.
 type ScalarFormatter() =
 
     let decimalsFor (v: float) : int =
@@ -52,7 +55,7 @@ type ScalarFormatter() =
                     rounded.ToString("F" + string decimals, CultureInfo.InvariantCulture))
 
 /// <summary>Labels ticks from a fixed list, indexed by the (rounded) tick position.</summary>
-/// <remarks>Ported from <c>matplotlib.ticker.FixedFormatter</c> (used for categories).</remarks>
+/// <remarks>Ported from <c>matplotlib.ticker.FixedFormatter</c> (used for 0..n-1 categories).</remarks>
 type FixedFormatter(labels: string[]) =
 
     interface ITickFormatter with
@@ -61,6 +64,21 @@ type FixedFormatter(labels: string[]) =
             |> Array.map (fun v ->
                 let i = int (Math.Round v)
                 if i >= 0 && i < labels.Length then labels[i] else "")
+
+/// <summary>
+/// Labels ticks by matching each tick value to a known position (within tolerance),
+/// so arbitrary <c>set_xticks</c>/<c>set_yticks</c> positions get the right label
+/// regardless of order or which ticks fall in view.
+/// </summary>
+type LabeledTicksFormatter(positions: float[], labels: string[]) =
+
+    interface ITickFormatter with
+        member _.FormatTicks(locs: float[]) : string[] =
+            locs
+            |> Array.map (fun v ->
+                match positions |> Array.tryFindIndex (fun p -> abs (p - v) <= 1e-9 + 1e-9 * abs p) with
+                | Some i when i < labels.Length -> labels[i]
+                | _ -> "")
 
 /// <summary>Formats tick values (OLE Automation date numbers) as dates.</summary>
 /// <remarks>Ported from <c>matplotlib.dates.DateFormatter</c> (numeric-day formatting).</remarks>

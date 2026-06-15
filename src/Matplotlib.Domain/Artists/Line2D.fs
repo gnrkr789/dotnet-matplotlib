@@ -87,9 +87,9 @@ module internal MarkerPaths =
         ]
         |> Path.polygon
 
-    /// <summary>An n-pointed star (inner radius ratio 0.382).</summary>
+    /// <summary>An n-pointed star (matplotlib's inner radius ratio 0.381966).</summary>
     let private starShape (center: Point2D) (r: float) (n: int) (startDeg: float) : Path =
-        let inner = r * 0.382
+        let inner = r * 0.381966
 
         [
             for k in 0 .. (2 * n - 1) ->
@@ -175,6 +175,21 @@ type Line2D(xData: float[], yData: float[]) as this =
     /// <summary>Marker edge color (defaults to the line color).</summary>
     member val MarkerEdgeColor: Color option = None with get, set
 
+    /// <summary>
+    /// Per-point marker colors (Matplotlib's <c>scatter</c> with a mapped <c>c</c>
+    /// array); when set, each marker uses its own color for both face and edge.
+    /// </summary>
+    member val MarkerColors: Color[] option = None with get, set
+
+    /// <summary>
+    /// Per-point marker diameters in points (Matplotlib's <c>scatter</c> with an
+    /// array <c>s</c>); when set, each marker is sized individually.
+    /// </summary>
+    member val MarkerSizes: float[] option = None with get, set
+
+    /// <summary>The colormap + normalization that produced this artist's colors (consumed by <c>colorbar</c>).</summary>
+    member val ScalarMappable: (Colormap * Normalize) option = None with get, set
+
     /// <summary>Marker edge width in points.</summary>
     member val MarkerEdgeWidth = 1.0 with get, set
 
@@ -186,21 +201,35 @@ type Line2D(xData: float[], yData: float[]) as this =
 
     member private this.DrawMarkers(renderer: IRenderer, points: Point2D[]) =
         let dpiScale = renderer.Dpi / 72.0
-        let r = this.MarkerSize / 2.0 * dpiScale
-        let face = defaultArg this.MarkerFaceColor this.Color
-        let edge = defaultArg this.MarkerEdgeColor this.Color
+        let baseR = this.MarkerSize / 2.0 * dpiScale
+        let baseFace = defaultArg this.MarkerFaceColor this.Color
+        let baseEdge = defaultArg this.MarkerEdgeColor this.Color
         let edgeWidthPx = this.MarkerEdgeWidth * dpiScale
 
-        let strokeGc =
-            { GraphicsContext.Default with
-                StrokeColor = edge
-                LineWidth = edgeWidthPx
-            }
+        let drawAt (i: int) (pt: Point2D) =
+            // Per-point sizes (scatter with an array s) override the scalar radius.
+            let r =
+                match this.MarkerSizes with
+                | Some ss when ss.Length > 0 -> ss[min i (ss.Length - 1)] / 2.0 * dpiScale
+                | _ -> baseR
+            // Per-point colors (scatter c+cmap) override face/edge; matplotlib's
+            // default for mapped scatters is edgecolors='face'.
+            let face, edge =
+                match this.MarkerColors with
+                | Some cs when cs.Length > 0 ->
+                    let c = cs[min i (cs.Length - 1)]
+                    c, c
+                | _ -> baseFace, baseEdge
 
-        let fill (path: Path) = renderer.DrawPath(strokeGc, path, Some face)
-        let stroke (path: Path) = renderer.DrawPath(strokeGc, path, None)
+            let gc =
+                { GraphicsContext.Default with
+                    StrokeColor = edge
+                    LineWidth = edgeWidthPx
+                }
 
-        for pt in points do
+            let fill (path: Path) = renderer.DrawPath(gc, path, Some face)
+            let stroke (path: Path) = renderer.DrawPath(gc, path, None)
+
             match this.Marker with
             | NoMarker -> ()
             | Circle -> fill (MarkerPaths.circle pt r)
@@ -219,6 +248,8 @@ type Line2D(xData: float[], yData: float[]) as this =
             | Cross -> stroke (MarkerPaths.cross pt r)
             | VLine -> stroke (MarkerPaths.vline pt r)
             | HLine -> stroke (MarkerPaths.hline pt r)
+
+        points |> Array.iteri drawAt
 
     override this.Draw(renderer: IRenderer) =
         if this.Visible && this.XData.Length > 0 then

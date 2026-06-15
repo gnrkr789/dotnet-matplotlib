@@ -19,6 +19,49 @@ module ColormapImageTests =
         assertCloseTol 1e-6 0.143936 c1.B
 
     [<Fact>]
+    let ``Colormap lookup is quantized (no interpolation between LUT entries)`` () =
+        // matplotlib indexes the LUT with int(t * N); Apply must return that exact
+        // entry, not a blend of neighbours.
+        let c = Colormap.viridis
+        Assert.Equal(c.Lut[0], c.Apply 0.0)
+        Assert.Equal(c.Lut[128], c.Apply 0.5)
+        Assert.Equal(c.Lut[255], c.Apply 1.0)
+
+    [<Fact>]
+    let ``Hot colormap starts at matplotlib's dark red`` () =
+        let c = Colormap.hot.Apply 0.0
+        assertCloseTol 1e-6 0.0416 c.R
+        assertCloseTol 1e-6 0.0 c.G
+        assertCloseTol 1e-6 0.0 c.B
+
+    [<Fact>]
+    let ``Jet colormap uses matplotlib's per-channel breakpoints`` () =
+        // Endpoints: jet(0) = (0, 0, 0.5), jet(1) = (0.5, 0, 0).
+        let lo = Colormap.jet.Apply 0.0
+        assertCloseTol 1e-6 0.0 lo.R
+        assertCloseTol 1e-6 0.5 lo.B
+        let hi = Colormap.jet.Apply 1.0
+        assertCloseTol 1e-6 0.5 hi.R
+        assertCloseTol 1e-6 0.0 hi.B
+        // Green ramps down over [0.64, 0.91]; distinct from the old shared-node jet.
+        let g = Colormap.jet.Apply 0.75
+        assertCloseTol 1e-2 0.5817 g.G
+
+    [<Fact>]
+    let ``Scatter c maps values through a colormap`` () =
+        let ax = Axes()
+
+        let line = ax.Scatter([| 0.0; 1.0; 2.0 |], [| 0.0; 1.0; 2.0 |], c = [| 0.0; 0.5; 1.0 |], cmap = "viridis")
+
+        Assert.True line.MarkerColors.IsSome
+        let colors = line.MarkerColors.Value
+        Assert.Equal(3, colors.Length)
+        // c is normalized over [0, 1]; the endpoints hit viridis[0] and viridis[255].
+        Assert.Equal(Colormap.viridis.Apply 0.0, colors[0])
+        Assert.Equal(Colormap.viridis.Apply 1.0, colors[2])
+        Assert.NotEqual(colors[0], colors[1])
+
+    [<Fact>]
     let ``Normalize maps and clamps to [0,1]`` () =
         let n = Normalize(0.0, 10.0)
         assertClose 0.5 (n.Normalize 5.0)
@@ -76,4 +119,17 @@ module ColormapImageTests =
         let data = array2D [ for i in 0..3 -> [ for j in 0..3 -> float (i + j) ] ]
         let img = plt.Imshow data
         plt.Colorbar img |> ignore
+        Assert.Contains("<text", plt.ToSvg())
+
+    [<Fact>]
+    let ``Colorbar works for a colormapped scatter`` () =
+        let plt = Pyplot()
+
+        let sc = plt.Scatter([| 0.0; 1.0; 2.0 |], [| 0.0; 1.0; 2.0 |], c = [| 0.0; 5.0; 10.0 |], cmap = "viridis")
+
+        Assert.True sc.ScalarMappable.IsSome
+        let before = plt.CurrentFigure().Axes.Count
+        plt.Colorbar sc |> ignore
+        // a colorbar axes was added with the scatter's 0..10 value scale
+        Assert.Equal(before + 1, plt.CurrentFigure().Axes.Count)
         Assert.Contains("<text", plt.ToSvg())

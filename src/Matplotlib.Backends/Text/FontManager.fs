@@ -2,7 +2,7 @@ namespace Matplotlib.Backends.Text
 
 open System
 open System.IO
-open System.Collections.Generic
+open System.Collections.Concurrent
 open Matplotlib.Domain.Text
 
 /// <summary>
@@ -13,7 +13,9 @@ open Matplotlib.Domain.Text
 /// <remarks>Loosely mirrors <c>matplotlib.font_manager.FontManager</c>.</remarks>
 type FontManager() =
 
-    let cache = Dictionary<string, TrueTypeFont option>()
+    // Process-wide singleton accessed concurrently (xUnit runs test classes in
+    // parallel, and renderers share it), so the cache must be thread-safe.
+    let cache = ConcurrentDictionary<string, TrueTypeFont option>()
 
     let fontDirs =
         [

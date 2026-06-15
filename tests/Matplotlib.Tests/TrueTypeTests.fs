@@ -29,3 +29,13 @@ module TrueTypeTests =
             // 'H' spans a meaningful fraction of the em square
             let ys = outline |> Array.collect (Array.map snd)
             Assert.True(Array.max ys - Array.min ys > float font.UnitsPerEm * 0.3)
+
+    [<Fact>]
+    let ``FontManager.Resolve is thread-safe under concurrent access`` () =
+        // Distinct keys force concurrent cache writes — the path that used to race
+        // on a plain Dictionary and intermittently throw. Must complete cleanly.
+        let fm = FontManager.Default
+
+        Array.init 256 (fun i -> $"missing-family-{i}")
+        |> Array.Parallel.map fm.Resolve
+        |> ignore
