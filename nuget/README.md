@@ -74,6 +74,13 @@ as SVG.
 `Microsoft.Data.Analysis.DataFrame`: `df.PlotLine("x","y")`, `PlotScatter`,
 `PlotBar`, `PlotHist` — each returns a `Pyplot`.
 
+## Reports (server-side, deterministic)
+
+`DotnetMatplotlib.Reports` composes multi-panel SVG/PNG/PDF reports for
+server-side and regulated/cloud-native use: pure-managed (runs in serverless /
+Linux / Native AOT where native graphics stacks fail) with **byte-reproducible**
+output that can be checksummed (`report.Sha256()`) for audit and compliance.
+
 ## AI agents (MCP)
 
 `DotnetMatplotlib.Mcp` is a Model Context Protocol server (install as a .NET tool:

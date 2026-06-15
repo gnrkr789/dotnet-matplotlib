@@ -37,6 +37,7 @@
     <Compile Include="NotebookTests.fs" />
     <Compile Include="McpToolsTests.fs" />
     <Compile Include="DataFrameTests.fs" />
+    <Compile Include="ReportTests.fs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -52,6 +53,7 @@
     <ProjectReference Include="..\..\src\Matplotlib.Interactive\Matplotlib.Interactive.fsproj" />
     <ProjectReference Include="..\..\src\Matplotlib.Mcp\Matplotlib.Mcp.fsproj" />
     <ProjectReference Include="..\..\src\Matplotlib.DataFrame\Matplotlib.DataFrame.fsproj" />
+    <ProjectReference Include="..\..\src\Matplotlib.Reports\Matplotlib.Reports.fsproj" />
   </ItemGroup>
 
 </Project>

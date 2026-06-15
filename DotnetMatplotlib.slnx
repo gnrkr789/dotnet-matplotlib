@@ -9,6 +9,7 @@
     <Project Path="src/Matplotlib.Interactive/Matplotlib.Interactive.fsproj" />
     <Project Path="src/Matplotlib.Mcp/Matplotlib.Mcp.fsproj" />
     <Project Path="src/Matplotlib.DataFrame/Matplotlib.DataFrame.fsproj" />
+    <Project Path="src/Matplotlib.Reports/Matplotlib.Reports.fsproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Matplotlib.Tests/Matplotlib.Tests.fsproj" />

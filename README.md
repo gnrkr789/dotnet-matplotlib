@@ -137,6 +137,36 @@ df.PlotHist("value", 20).Savefig "hist.svg"
 Each method plots the named column(s) and returns the `Pyplot`, so you can add a
 title or choose the output format. The same extension methods work from C#.
 
+## Reports (server-side, deterministic)
+
+`DotnetMatplotlib.Reports` composes multi-panel reports — a grid of titled charts
+under a report title — and renders them to SVG / PNG / PDF. It is built for
+server-side and regulated / cloud-native use:
+
+- **Runs where native graphics stacks can't** — pure-managed, so it works in AWS
+  Lambda, Azure Functions, Linux containers and Native AOT, where `SkiaSharp` and
+  `System.Drawing.Common` routinely fail to load native libraries.
+- **Deterministic output** — the same input renders **byte-for-byte identical**
+  vector output, so a report can be checksummed (`report.Sha256()`) for audit
+  trails, change detection and compliance.
+
+```bash
+dotnet add package DotnetMatplotlib.Reports
+```
+
+```fsharp
+open Matplotlib.Reports
+
+let report =
+    Report("Q4 2026 Performance")
+        .AddLine("Revenue ($K)", months, revenue)
+        .AddBar("Units by region", regions, units)
+        .AddScatter("Price vs demand", price, demand)
+
+report.Save "q4.pdf"               // deterministic PDF (also .png / .svg)
+let fingerprint = report.Sha256()  // stable SHA-256 for audit
+```
+
 ## AI agents (MCP)
 
 `DotnetMatplotlib.Mcp` is a [Model Context Protocol](https://modelcontextprotocol.io)
@@ -172,7 +202,7 @@ PNG / SVG / PDF file (chosen by the output extension) and return the saved path.
 - 3D: `plot3D`, `scatter3D`, `plot_wireframe`
 - Style sheets and `rcParams` parsing (`ggplot`, `dark_background`, …)
 - Backends: SVG, PNG and PDF (pure-managed), an interactive window (Windows), and animated GIF
-- Integrations: `Microsoft.Data.Analysis` DataFrames, .NET Interactive / Jupyter notebooks, an MCP server for AI agents, and Blazor WebAssembly (runs in the browser)
+- Integrations: a deterministic server-side **reporting engine**, `Microsoft.Data.Analysis` DataFrames, .NET Interactive / Jupyter notebooks, an MCP server for AI agents, and Blazor WebAssembly (runs in the browser)
 
 See [PORTING.md](PORTING.md) for the parity log.
 
