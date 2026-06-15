@@ -470,6 +470,24 @@ let private renderStreamplot (outDir: string) =
     plt.Savefig path
     printfn "wrote %s" path
 
+let private renderTable (outDir: string) =
+    let plt = Pyplot()
+    let headers = [| "Region"; "Q3"; "Q4"; "YoY" |]
+
+    let rows =
+        [|
+            [| "NA"; "120"; "138"; "+15%" |]
+            [| "EU"; "90"; "96"; "+7%" |]
+            [| "APAC"; "150"; "171"; "+14%" |]
+            [| "LATAM"; "60"; "66"; "+10%" |]
+        |]
+
+    plt.Table(rows, colLabels = headers)
+    plt.Title "dotnet-matplotlib: table"
+    let path = Path.Combine(outDir, "table.png")
+    plt.Savefig path
+    printfn "wrote %s" path
+
 [<EntryPoint>]
 let main argv =
     let outDir = if argv.Length > 0 then argv[0] else "out"
@@ -502,4 +520,5 @@ let main argv =
     renderTwinx outDir
     renderStreamplot outDir
     renderContourf outDir
+    renderTable outDir
     0

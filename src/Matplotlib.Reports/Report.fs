@@ -40,6 +40,10 @@ type Report(title: string) =
     member this.AddScatter(panelTitle: string, xs: float[], ys: float[]) : Report =
         this.AddChart(panelTitle, Action<Axes>(fun ax -> ax.Scatter(xs, ys) |> ignore))
 
+    /// <summary>Add a table panel (header row + text cells).</summary>
+    member this.AddTable(panelTitle: string, headers: string[], rows: string[][]) : Report =
+        this.AddChart(panelTitle, Action<Axes>(fun ax -> ax.Table(rows, colLabels = headers)))
+
     /// <summary>Add a bar-chart panel over named categories.</summary>
     member this.AddBar(panelTitle: string, categories: string[], values: float[]) : Report =
         this.AddChart(

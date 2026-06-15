@@ -38,6 +38,7 @@
     <Compile Include="McpToolsTests.fs" />
     <Compile Include="DataFrameTests.fs" />
     <Compile Include="ReportTests.fs" />
+    <Compile Include="TableTests.fs" />
   </ItemGroup>
 
   <ItemGroup>

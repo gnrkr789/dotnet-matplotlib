@@ -858,6 +858,51 @@ type Axes(rc: RcParams) =
         this.SetAxisOff()
         wedges.ToArray()
 
+    /// <summary>Render a grid of text cells filling the axes (Matplotlib's <c>table</c>).</summary>
+    /// <remarks>An optional header row (<paramref name="colLabels"/>) is shaded; the axes frame and ticks are dropped.</remarks>
+    member this.Table(cellText: string[][], ?colLabels: string[]) : unit =
+        let nrows = cellText.Length
+        let ncols = if nrows = 0 then 0 else cellText[0].Length
+        let headerRows = if colLabels.IsSome then 1 else 0
+        let totalRows = nrows + headerRows
+
+        this.SetAxisOff()
+        this.SetXLim(0.0, 1.0)
+        this.SetYLim(0.0, 1.0)
+
+        if totalRows > 0 && ncols > 0 then
+            let rowH = 1.0 / float totalRows
+            let colW = 1.0 / float ncols
+            let edge = Color.fromHex "#cccccc"
+            let headerFill = Color.fromHex "#dddddd"
+
+            let cell (rowIndex: int) (c: int) (text: string) (isHeader: bool) =
+                let x = float c * colW
+                let y = 1.0 - float (rowIndex + 1) * rowH
+                let rect = Rectangle(x, y, colW, rowH)
+                rect.EdgeColor <- Some edge
+                rect.Fill <- isHeader
+
+                if isHeader then
+                    rect.FaceColor <- headerFill
+
+                patches.Add rect
+
+                this.Text(x + colW / 2.0, y + rowH / 2.0, text, fontSize = rc.FontSize * 0.9, hAlign = HCenter, vAlign = VCenter)
+                |> ignore
+
+            match colLabels with
+            | Some labels ->
+                for c in 0 .. ncols - 1 do
+                    cell 0 c (if c < labels.Length then labels[c] else "") true
+            | None -> ()
+
+            for r in 0 .. nrows - 1 do
+                let row = cellText[r]
+
+                for c in 0 .. ncols - 1 do
+                    cell (r + headerRows) c (if c < row.Length then row[c] else "") false
+
     /// <summary>Draw a horizontal reference line at <paramref name="y"/> spanning the axes (Matplotlib's <c>axhline</c>).</summary>
     member this.AxHLine(y: float, ?xmin: float, ?xmax: float, ?color: Color) =
         refHLines.Add(y, defaultArg xmin 0.0, defaultArg xmax 1.0, defaultArg color (cycler.Next()))

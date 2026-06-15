@@ -32,6 +32,10 @@ A **native .NET 10** port of [Matplotlib](https://matplotlib.org/) — the de-fa
     <td align="center"><img src="https://raw.githubusercontent.com/gnrkr789/dotnet-matplotlib/main/docs/gallery/hist.png" alt="hist" width="420"><br><sub><code>hist</code></sub></td>
     <td align="center"><img src="https://raw.githubusercontent.com/gnrkr789/dotnet-matplotlib/main/docs/gallery/stackplot.png" alt="stackplot" width="420"><br><sub><code>stackplot</code></sub></td>
   </tr>
+  <tr>
+    <td align="center"><img src="https://raw.githubusercontent.com/gnrkr789/dotnet-matplotlib/main/docs/gallery/table.png" alt="table" width="420"><br><sub><code>table</code></sub></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/gnrkr789/dotnet-matplotlib/main/docs/gallery/report.png" alt="multi-panel report" width="420"><br><sub>multi-panel <code>Report</code></sub></td>
+  </tr>
 </table>
 
 ## Install
@@ -195,7 +199,7 @@ PNG / SVG / PDF file (chosen by the output extension) and return the saved path.
 - Statistics & fields: `hist2d`, `boxplot`, `violinplot`, `quiver`, `streamplot`
 - Images: `imshow`, `pcolormesh` with colormaps (`viridis`, `gray`, `jet`, `hot`) and `colorbar`
 - Contours: `contour` (marching squares), `contourf`
-- Patches & line/poly collections, hatching, the full marker set
+- Patches & line/poly collections, hatching, data `table`s, the full marker set
 - Legends (including automatic `best` placement), text & annotations
 - Subplots with `tight_layout` / `constrained_layout`
 - Scales: linear / log / symlog / logit; categorical & date axes

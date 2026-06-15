@@ -228,6 +228,10 @@ type Pyplot() =
     member this.Pie(values: float[], ?labels: string[], ?startAngle: float) : Polygon[] =
         this.EnsureAxes().Pie(values, ?labels = labels, ?startAngle = startAngle)
 
+    /// <summary>Render a table of text cells (Matplotlib's <c>plt.table</c>), with an optional header row.</summary>
+    member this.Table(cellText: string[][], ?colLabels: string[]) =
+        this.EnsureAxes().Table(cellText, ?colLabels = colLabels)
+
     /// <summary>Configure the axis (Matplotlib's <c>plt.axis</c>): "off", "equal", "auto", or "on".</summary>
     member this.Axis(mode: string) =
         let ax = this.EnsureAxes()
