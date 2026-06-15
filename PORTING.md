@@ -16,7 +16,7 @@ and is not part of this repository (it is git-ignored).
 
 - **Language/runtime**: Python/NumPy → **F# / .NET 10**. NumPy arrays become F#
   arrays / immutable `[<Struct>]` value records. Code style is enforced with
-  Fantomas; FSharpLint is the configured lint rule set (see `LINTING.md`).
+  Fantomas.
 - **Rendering**: Matplotlib's C++ Agg default raster backend → a pure-managed
   **SVG** default backend (zero native dependencies), plus pure-managed PNG
   (software rasterizer) and PDF backends behind the same `IRenderer` port.

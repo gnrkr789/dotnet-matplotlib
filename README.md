@@ -204,8 +204,7 @@ dotnet test                   # all tests
 dotnet run --project samples/Gallery -- out   # render the sample gallery to ./out
 ```
 
-Code style is enforced with **Fantomas**; the lint configuration is described in
-[LINTING.md](LINTING.md).
+Code style is enforced with **Fantomas** (`dotnet fantomas --check src tests samples`).
 
 ## License
 

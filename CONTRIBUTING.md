@@ -8,7 +8,7 @@ kinds are welcome — bug reports, feature requests, documentation, and code.
 You need the **.NET 10 SDK**.
 
 ```bash
-dotnet tool restore     # one-time: restores Fantomas (and the lint tooling)
+dotnet tool restore     # one-time: restores Fantomas
 dotnet build            # builds the whole solution (warnings are errors)
 dotnet test             # runs the test suite
 ```
