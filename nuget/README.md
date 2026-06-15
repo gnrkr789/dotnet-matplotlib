@@ -77,9 +77,9 @@ as SVG.
 ## Reports (server-side, deterministic)
 
 `DotnetMatplotlib.Reports` composes multi-panel SVG/PNG/PDF reports for
-server-side and regulated/cloud-native use: pure-managed (runs in serverless /
-Linux / Native AOT where native graphics stacks fail) with **byte-reproducible**
-output that can be checksummed (`report.Sha256()`) for audit and compliance.
+server-side use: pure-managed with zero native dependencies (builds and tests on
+Linux; SVG and PDF need no system fonts) and **byte-reproducible** output that can
+be checksummed (`report.Sha256()`) for audit and compliance.
 
 ## AI agents (MCP)
 

@@ -147,9 +147,9 @@ title or choose the output format. The same extension methods work from C#.
 under a report title — and renders them to SVG / PNG / PDF. It is built for
 server-side and regulated / cloud-native use:
 
-- **Runs where native graphics stacks can't** — pure-managed, so it works in AWS
-  Lambda, Azure Functions, Linux containers and Native AOT, where `SkiaSharp` and
-  `System.Drawing.Common` routinely fail to load native libraries.
+- **Pure-managed, zero native dependencies** — it builds and runs on Linux (the
+  CI builds and tests it there) and needs no UI or native graphics components.
+  SVG and PDF output need no system fonts.
 - **Deterministic output** — the same input renders **byte-for-byte identical**
   vector output, so a report can be checksummed (`report.Sha256()`) for audit
   trails, change detection and compliance.

@@ -13,12 +13,11 @@ open Matplotlib.Backends
 /// of titled chart panels under a report title and renders to SVG / PNG / PDF.
 /// </summary>
 /// <remarks>
-/// Designed for server-side and regulated/cloud-native use: it is pure-managed
-/// (no native dependencies, so it runs in AWS Lambda / Azure Functions / Linux
-/// containers / Native AOT where native graphics stacks fail) and its vector
-/// output is <b>deterministic</b> — the same input renders byte-for-byte
-/// identical bytes, so a report can be checksummed for audit/compliance
-/// (<see cref="Sha256"/>). Fluent and usable from C# and F#.
+/// Designed for server-side use: it is pure-managed with zero native
+/// dependencies, so it builds and runs on Linux with no UI or native graphics
+/// components. Its vector output is <b>deterministic</b> — the same input renders
+/// byte-for-byte identical bytes, so a report can be checksummed for
+/// audit/compliance (<see cref="Sha256"/>). Fluent and usable from C# and F#.
 /// </remarks>
 type Report(title: string) =
 
