@@ -8,7 +8,6 @@ kinds are welcome — bug reports, feature requests, documentation, and code.
 You need the **.NET 10 SDK**.
 
 ```bash
-dotnet tool restore     # one-time: restores Fantomas
 dotnet build            # builds the whole solution (warnings are errors)
 dotnet test             # runs the test suite
 ```
@@ -35,13 +34,12 @@ strictly inward:
 
 ## Before opening a pull request
 
-1. **Format**: `dotnet fantomas src tests samples` (CI enforces `--check`).
-2. **Build**: `dotnet build` must be clean — warnings are treated as errors.
-3. **Test**: `dotnet test` must be green. Add tests for new behavior — unit tests
+1. **Build**: `dotnet build` must be clean — warnings are treated as errors.
+2. **Test**: `dotnet test` must be green. Add tests for new behavior — unit tests
    for domain math, and render/serialization checks for backend changes.
-4. Keep changes focused and the public API close to Matplotlib's where it maps
+3. Keep changes focused and the public API close to Matplotlib's where it maps
    cleanly. New domain files must be added to the `.fsproj` in dependency order
-   (F# compiles files top to bottom).
+   (F# compiles files top to bottom). Match the surrounding code style.
 
 ## Commit messages
 

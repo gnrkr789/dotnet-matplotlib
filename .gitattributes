@@ -1,5 +1,4 @@
-# Normalize line endings to LF in the repository (keeps Fantomas deterministic
-# across platforms).
+# Normalize line endings to LF in the repository (consistent across platforms).
 * text=auto eol=lf
 
 *.fs    text eol=lf

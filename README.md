@@ -198,13 +198,10 @@ Contributions welcome.
 Requires the **.NET 10 SDK**.
 
 ```bash
-dotnet tool restore           # Fantomas (one-time)
 dotnet build                  # whole solution (warnings are errors)
 dotnet test                   # all tests
 dotnet run --project samples/Gallery -- out   # render the sample gallery to ./out
 ```
-
-Code style is enforced with **Fantomas** (`dotnet fantomas --check src tests samples`).
 
 ## License
 

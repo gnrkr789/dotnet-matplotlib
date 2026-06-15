@@ -38,21 +38,3 @@ jobs:
 
       - name: Test
         run: dotnet test DotnetMatplotlib.slnx --configuration Release --no-build --verbosity normal
-
-  style:
-    name: Style (Fantomas)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 10.0.x
-
-      - name: Restore tools
-        run: dotnet tool restore
-
-      # Enforced gate: the whole tree must be Fantomas-formatted.
-      - name: Fantomas format check
-        run: dotnet fantomas --check src tests samples
