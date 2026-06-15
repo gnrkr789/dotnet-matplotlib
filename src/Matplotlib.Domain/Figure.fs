@@ -220,15 +220,8 @@ type Figure(rc: RcParams) =
     /// showing the colormap gradient with a value scale on the right.
     /// </summary>
     /// <remarks>Ported from <c>matplotlib.figure.Figure.colorbar</c> (vertical, right).</remarks>
-    member _.Colorbar(image: AxesImage, ?ax: Axes) : Axes =
-        let parent =
-            match ax with
-            | Some a -> a
-            | None ->
-                axesList
-                |> Seq.tryFind (fun a -> a.Images.Contains image)
-                |> Option.defaultValue axesList[0]
-
+    /// <summary>Shared colorbar construction: a 256-band gradient axes on the parent's right.</summary>
+    member private _.AddColorbar(colormap: Colormap, norm: Normalize, parent: Axes) : Axes =
         let p = parent.Position
         let cbWidth = 0.04
         let gap = 0.02
@@ -238,8 +231,7 @@ type Figure(rc: RcParams) =
         cax.Position <- BBox.fromExtents (p.X1 - cbWidth) p.Y0 p.X1 p.Y1
         cax.XTicksVisible <- false
         cax.YTickSide <- "right"
-        let vmin = image.Norm.VMin
-        let vmax = image.Norm.VMax
+        let vmin, vmax = norm.VMin, norm.VMax
         cax.SetXLim(0.0, 1.0)
         cax.SetYLim(vmin, vmax)
         let n = 256
@@ -248,11 +240,46 @@ type Figure(rc: RcParams) =
             let y0 = vmin + float k / float n * (vmax - vmin)
             let y1 = vmin + float (k + 1) / float n * (vmax - vmin)
             let rect = Rectangle(0.0, y0, 1.0, y1 - y0)
-            rect.FaceColor <- image.Colormap.Apply(image.Norm.Normalize((y0 + y1) / 2.0))
+            rect.FaceColor <- colormap.Apply(norm.Normalize((y0 + y1) / 2.0))
             cax.Patches.Add rect
 
         axesList.Add cax
         cax
+
+    /// <summary>Add a colorbar for an image (Matplotlib's <c>figure.colorbar</c>).</summary>
+    member this.Colorbar(image: AxesImage, ?ax: Axes) : Axes =
+        let parent =
+            match ax with
+            | Some a -> a
+            | None ->
+                axesList
+                |> Seq.tryFind (fun a -> a.Images.Contains image)
+                |> Option.defaultValue axesList[0]
+
+        this.AddColorbar(image.Colormap, image.Norm, parent)
+
+    /// <summary>Add a colorbar for a colormapped artist such as a <c>scatter</c> (Matplotlib's <c>figure.colorbar</c>).</summary>
+    member this.Colorbar(mappable: Line2D, ?ax: Axes) : Axes =
+        let parent = defaultArg ax axesList[0]
+
+        match mappable.ScalarMappable with
+        | Some(colormap, norm) -> this.AddColorbar(colormap, norm, parent)
+        | None -> invalidArg (nameof mappable) "artist has no colormap mapping (use scatter with a `c` array)"
+
+    /// <summary>Create a twin axes sharing the x-axis, with an independent right-hand y-axis (Matplotlib's <c>twinx</c>).</summary>
+    member _.AddTwinX(parent: Axes) : Axes =
+        let twin = Axes(rc)
+        twin.Position <- parent.Position
+        twin.SharedXFrom <- Some parent
+        twin.FaceColor <- Color.none // transparent, so the parent shows through
+        twin.YTickSide <- "right"
+        twin.XTicksVisible <- false // the parent owns the shared x ticks
+        twin.SpineTop <- false
+        twin.SpineBottom <- false
+        twin.SpineLeft <- false
+        twin.SpineRight <- true
+        axesList.Add twin
+        twin
 
     /// <summary>Render the figure background and every Axes onto the renderer.</summary>
     member this.Draw(renderer: IRenderer) =

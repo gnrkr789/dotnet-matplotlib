@@ -33,7 +33,7 @@ type ColorResolver(propertyCycle: IReadOnlyList<Color>) =
             Color.fromHex s
         elif
             s.Length >= 2
-            && (s[0] = 'C' || s[0] = 'c')
+            && s[0] = 'C' // only the uppercase "CN" cycle form, as in matplotlib ('c' is cyan)
             && (let ok, _ = Int32.TryParse(s.Substring 1, NumberStyles.None, CultureInfo.InvariantCulture)
 
                 ok)

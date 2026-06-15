@@ -29,6 +29,16 @@ module TickStyleTests =
         Assert.DoesNotContain(minors, fun v -> abs (v - 1.0) < 1e-9)
 
     [<Fact>]
+    let ``set_xticks and set_yticklabels override the locator and formatter`` () =
+        let ax = Axes()
+        ax.Plot([| 0.0; 1.0; 2.0 |], [| 0.0; 1.0; 2.0 |]) |> ignore
+        ax.SetXTicks [| 0.0; 1.0; 2.0 |]
+        ax.SetYTickLabels([| 0.0; 1.0 |], [| "lo"; "hi" |])
+        Assert.True ax.XAxis.MajorLocator.IsSome
+        Assert.True ax.YAxis.MajorLocator.IsSome
+        Assert.True ax.YAxis.MajorFormatter.IsSome
+
+    [<Fact>]
     let ``Stem builds stems, a baseline and a marker line`` () =
         let ax = Axes()
         let markerLine = ax.Stem([| 0.0; 1.0; 2.0 |], [| 1.0; 2.0; 3.0 |])

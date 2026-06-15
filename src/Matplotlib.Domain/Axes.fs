@@ -99,7 +99,7 @@ module internal AxesLayout =
     /// </summary>
     /// <remarks>
     /// Ported from <c>matplotlib.ticker.AutoMinorLocator</c>: the major interval
-    /// is split into 5 sub-intervals when its mantissa is 1/2.5/5/10, else 4.
+    /// is split into 5 sub-intervals when round(mantissa) is 1/5/10, else 4.
     /// </remarks>
     let minorTicks (majors: float[]) (view: Interval) : float[] =
         if majors.Length < 2 then
@@ -112,11 +112,14 @@ module internal AxesLayout =
             else
                 let mantissa = 10.0 ** flooredMod (log10 majorStep) 1.0
 
+                // matplotlib's AutoMinorLocator: 5 sub-intervals when round(mantissa)
+                // is 1, 5 or 10, else 4 (round-half-to-even, as in numpy).
                 let ndivs =
-                    if [ 1.0; 2.5; 5.0; 10.0 ] |> List.exists (fun v -> abs (mantissa - v) < 1e-6) then
-                        5
-                    else
-                        4
+                    match round mantissa with
+                    | 1.0
+                    | 5.0
+                    | 10.0 -> 5
+                    | _ -> 4
 
                 let minorStep = majorStep / float ndivs
                 let lo = view.Min
@@ -210,11 +213,26 @@ module internal AxesLayout =
                 | 7
                 | 8 -> result.Add(pL, pT)
                 | 5 ->
-                    result.Add(pL, pB)
-                    result.Add(pR, pT)
+                    // Saddle: disambiguate with the cell-centre value (mean of the
+                    // four corners), as matplotlib's mpl2014 contour generator does.
+                    // A high centre encloses the two low corners; a low centre the high.
+                    let center = (blV + brV + trV + tlV) / 4.0
+
+                    if center >= level then
+                        result.Add(pB, pR)
+                        result.Add(pT, pL)
+                    else
+                        result.Add(pL, pB)
+                        result.Add(pR, pT)
                 | 10 ->
-                    result.Add(pB, pR)
-                    result.Add(pT, pL)
+                    let center = (blV + brV + trV + tlV) / 4.0
+
+                    if center >= level then
+                        result.Add(pL, pB)
+                        result.Add(pR, pT)
+                    else
+                        result.Add(pB, pR)
+                        result.Add(pT, pL)
                 | _ -> ()
 
         List.ofSeq result
@@ -275,6 +293,12 @@ type Axes(rc: RcParams) =
     let overlays = ResizeArray<Artist>()
     let stickyX = ResizeArray<float>()
     let stickyY = ResizeArray<float>()
+    // reference lines/spans drawn with a blended transform (data on one axis,
+    // axes-fraction on the other): axhline / axvline / axhspan / axvspan.
+    let refHLines = ResizeArray<float * float * float * Color>() // y, xminFrac, xmaxFrac, color
+    let refVLines = ResizeArray<float * float * float * Color>() // x, yminFrac, ymaxFrac, color
+    let refHSpans = ResizeArray<float * float * Color>() // ymin, ymax, color (full width)
+    let refVSpans = ResizeArray<float * float * Color>() // xmin, xmax, color (full height)
     let cycler = PropertyCycler.CreateDefault()
 
     /// <summary>Create an Axes with the default <c>rcParams</c>.</summary>
@@ -288,6 +312,9 @@ type Axes(rc: RcParams) =
 
     /// <summary>Background (face) color of the data area.</summary>
     member val FaceColor = rc.AxesFaceColor with get, set
+
+    /// <summary>When set (a <c>twinx</c> overlay), this axes draws against the source axes' shared x range/scale.</summary>
+    member val SharedXFrom: Axes option = None with get, set
 
     /// <summary>The X axis.</summary>
     member val XAxis = Axis(XAxis) with get
@@ -321,6 +348,12 @@ type Axes(rc: RcParams) =
 
     /// <summary>Whether x-axis ticks and tick labels are drawn.</summary>
     member val XTicksVisible = true with get, set
+
+    /// <summary>Whether y-axis ticks and tick labels are drawn.</summary>
+    member val YTicksVisible = true with get, set
+
+    /// <summary>Data aspect: <c>auto</c> (default) or <c>equal</c> (one data unit spans equal pixels on both axes).</summary>
+    member val Aspect = "auto" with get, set
 
     /// <summary>Which side the y ticks/labels are on (<c>left</c> default, or <c>right</c>).</summary>
     member val YTickSide = "left" with get, set
@@ -418,24 +451,62 @@ type Axes(rc: RcParams) =
         let boundaries = defaultArg levels [| for k in 0..10 -> lo + float k / 10.0 * (hi - lo) |]
         let rows = Array2D.length1 data
         let cols = Array2D.length2 data
-
-        let bandMid (v: float) =
-            let mutable b = 0
-
-            while b < boundaries.Length - 2 && v >= boundaries[b + 1] do
-                b <- b + 1
-
-            (boundaries[b] + boundaries[b + 1]) / 2.0
-
-        let quantized = Array2D.init rows cols (fun i j -> bandMid data[i, j])
         let colormap = Colormap.byName (defaultArg cmap "viridis")
+        let norm = Normalize(lo, hi)
 
-        let img =
-            AxesImage(quantized, colormap, Normalize(lo, hi), Array.init (cols + 1) float, Array.init (rows + 1) float)
+        // Sutherland–Hodgman clip: keep the part of a (x,y,z) polygon on one side of
+        // the plane z = level (the band edge), interpolating z linearly along edges.
+        let clip (level: float) (keepBelow: bool) (poly: (float * float * float)[]) : (float * float * float)[] =
+            if poly.Length = 0 then
+                [||]
+            else
+                let inside (_, _, z) = if keepBelow then z <= level else z >= level
+                let result = ResizeArray<float * float * float>()
 
-        images.Add img
-        this.SetXLim(0.0, float cols)
-        this.SetYLim(0.0, float rows)
+                for i in 0 .. poly.Length - 1 do
+                    let cur = poly[i]
+                    let nxt = poly[(i + 1) % poly.Length]
+                    let (cx, cy, cz) = cur
+                    let (nx2, ny2, nz) = nxt
+                    let curIn = inside cur
+
+                    if curIn then
+                        result.Add cur
+
+                    if curIn <> inside nxt then
+                        let t = if nz = cz then 0.0 else (level - cz) / (nz - cz)
+                        result.Add(cx + t * (nx2 - cx), cy + t * (ny2 - cy), level)
+
+                result.ToArray()
+
+        // each grid cell is clipped to every band it overlaps, producing iso-bands
+        // whose boundaries follow the contour lines (not the cell grid).
+        for i in 0 .. rows - 2 do
+            for j in 0 .. cols - 2 do
+                let corners =
+                    [|
+                        float j, float i, data[i, j]
+                        float (j + 1), float i, data[i, j + 1]
+                        float (j + 1), float (i + 1), data[i + 1, j + 1]
+                        float j, float (i + 1), data[i + 1, j]
+                    |]
+
+                let zs = corners |> Array.map (fun (_, _, z) -> z)
+                let cellMin, cellMax = Array.min zs, Array.max zs
+
+                for k in 0 .. boundaries.Length - 2 do
+                    let a, b = boundaries[k], boundaries[k + 1]
+
+                    if cellMax >= a && cellMin <= b then
+                        let band = clip b true (clip a false corners)
+
+                        if band.Length >= 3 then
+                            let poly = Polygon(band |> Array.map (fun (x, y, _) -> { X = x; Y = y }))
+                            poly.FaceColor <- colormap.Apply(norm.Normalize((a + b) / 2.0))
+                            patches.Add poly
+
+        this.SetXLim(0.0, float (cols - 1))
+        this.SetYLim(0.0, float (rows - 1))
         boundaries
 
     /// <summary>Add a collection and rescale to include it (Matplotlib's <c>add_collection</c>).</summary>
@@ -466,23 +537,62 @@ type Axes(rc: RcParams) =
         line
 
     /// <summary>Draw a scatter of markers (Matplotlib's <c>scatter</c>).</summary>
+    /// <param name="s">Marker area in points squared (Matplotlib/MATLAB <c>s</c>/<c>sz</c>; default 36).</param>
+    /// <param name="c">Per-point values mapped to colors through <paramref name="cmap"/>.</param>
     member this.Scatter
-        (xs: float[], ys: float[], ?color: Color, ?marker: MarkerStyle, ?markerSize: float, ?label: string)
-        : Line2D =
+        (
+            xs: float[],
+            ys: float[],
+            ?color: Color,
+            ?marker: MarkerStyle,
+            ?s: float,
+            ?label: string,
+            ?c: float[],
+            ?cmap: string,
+            ?vmin: float,
+            ?vmax: float,
+            ?sizes: float[]
+        ) : Line2D =
         let line = Line2D(xs, ys)
         line.LineStyle <- NoLine
         line.Color <- defaultArg color (cycler.Next())
         line.Marker <- defaultArg marker MarkerStyle.Circle
-        line.MarkerSize <- defaultArg markerSize 6.0
+        // `s` is an AREA in points^2 (default 36), so the marker diameter is sqrt(s).
+        line.MarkerSize <- sqrt (defaultArg s 36.0)
         line.Label <- defaultArg label ""
+
+        // Per-point sizes (an array of areas in points^2) -> per-point diameters.
+        match sizes with
+        | Some areas when areas.Length > 0 -> line.MarkerSizes <- Some(areas |> Array.map sqrt)
+        | _ -> ()
+
+        // A numeric `c` array is mapped through a colormap + Normalize (default viridis).
+        match c with
+        | Some values when values.Length > 0 ->
+            let lo = defaultArg vmin (Array.min values)
+            let hi = defaultArg vmax (Array.max values)
+            let colormap = Colormap.byName (defaultArg cmap "viridis")
+            let norm = Normalize(lo, hi)
+            line.MarkerColors <- Some(values |> Array.map (fun v -> colormap.Apply(norm.Normalize v)))
+            line.ScalarMappable <- Some(colormap, norm) // lets plt.colorbar(sc) read the mapping
+        | _ -> ()
+
         lines.Add line
         this.Autoscale()
         line
 
     /// <summary>Draw a vertical bar chart (Matplotlib's <c>bar</c>, center-aligned).</summary>
     member this.Bar
-        (x: float[], height: float[], ?width: float, ?bottom: float[], ?color: Color, ?label: string)
-        : Rectangle[] =
+        (
+            x: float[],
+            height: float[],
+            ?width: float,
+            ?bottom: float[],
+            ?color: Color,
+            ?label: string,
+            ?yerr: float[],
+            ?capsize: float
+        ) : Rectangle[] =
         let w = defaultArg width 0.8
         let bottoms = defaultArg bottom (Array.zeroCreate x.Length)
         let faceColor = defaultArg color (cycler.Next())
@@ -497,6 +607,35 @@ type Axes(rc: RcParams) =
 
         for rect in rects do
             patches.Add rect
+
+        // y error bars at the bar tops (Matplotlib draws these in black by default)
+        match yerr with
+        | Some err ->
+            let cap = defaultArg capsize 0.0
+            let tops = Array.init x.Length (fun i -> bottoms[i] + height[i])
+
+            for i in 0 .. x.Length - 1 do
+                let bar = Line2D([| x[i]; x[i] |], [| tops[i] - err[i]; tops[i] + err[i] |])
+                bar.Color <- Color.black
+                bar.LineWidth <- rc.LinesLineWidth
+                lines.Add bar
+
+            if cap > 0.0 then
+                let caps =
+                    Line2D(
+                        Array.append x x,
+                        Array.append
+                            (Array.init x.Length (fun i -> tops[i] - err[i]))
+                            (Array.init x.Length (fun i -> tops[i] + err[i]))
+                    )
+
+                caps.LineStyle <- NoLine
+                caps.Marker <- MarkerStyle.HLine
+                caps.MarkerSize <- cap
+                caps.Color <- Color.black
+                caps.MarkerEdgeColor <- Some Color.black
+                lines.Add caps
+        | None -> ()
 
         for bm in bottoms do
             stickyY.Add bm // bars stick to their baseline (no y margin there)
@@ -529,6 +668,56 @@ type Axes(rc: RcParams) =
         this.Autoscale()
         rects
 
+    /// <summary>Draw a histogram of <paramref name="x"/> (Matplotlib's <c>hist</c>, <c>histtype='bar'</c>).</summary>
+    /// <returns>The bar heights (counts, or densities) and the bin edges.</returns>
+    member this.Hist
+        (x: float[], ?bins: int, ?range: float * float, ?density: bool, ?color: Color, ?label: string)
+        : float[] * float[] =
+        let nbins = max 1 (defaultArg bins 10)
+
+        let lo, hi =
+            match range with
+            | Some(a, b) -> a, b
+            | None when x.Length > 0 -> Array.min x, Array.max x
+            | None -> 0.0, 1.0
+
+        // Guard a degenerate range so the bin width stays positive.
+        let lo, hi = if hi > lo then lo, hi else lo, lo + 1.0
+        let binWidth = (hi - lo) / float nbins
+        let edges = Array.init (nbins + 1) (fun i -> lo + float i * binWidth)
+        let counts = Array.zeroCreate nbins
+
+        for v in x do
+            // Values land in [edge[i], edge[i+1]); the last bin is closed at hi (like numpy).
+            if v >= lo && v <= hi then
+                let idx = min (nbins - 1) (int ((v - lo) / binWidth))
+                counts[idx] <- counts[idx] + 1.0
+
+        // density=True normalizes so the total area is 1: count / (N * binWidth).
+        let heights =
+            if defaultArg density false then
+                let n = float x.Length
+                counts |> Array.map (fun cnt -> if n > 0.0 then cnt / (n * binWidth) else 0.0)
+            else
+                counts
+
+        let faceColor = defaultArg color (cycler.Next())
+        let lbl = defaultArg label ""
+
+        let rects =
+            Array.init nbins (fun i ->
+                let rect = Rectangle(edges[i], 0.0, binWidth, heights[i])
+                rect.FaceColor <- faceColor
+                rect.Label <- if i = 0 then lbl else ""
+                rect)
+
+        for rect in rects do
+            patches.Add rect
+
+        stickyY.Add 0.0 // the bars rest on the baseline (no y margin there)
+        this.Autoscale()
+        heights, edges
+
     /// <summary>Fill the area between two curves (Matplotlib's <c>fill_between</c>).</summary>
     member this.FillBetween
         (x: float[], y1: float[], ?y2: float[], ?color: Color, ?alpha: float, ?label: string)
@@ -552,6 +741,143 @@ type Axes(rc: RcParams) =
         this.Autoscale()
         polygon
 
+    /// <summary>Fill the area between two vertical curves (Matplotlib's <c>fill_betweenx</c>).</summary>
+    member this.FillBetweenx
+        (y: float[], x1: float[], ?x2: float[], ?color: Color, ?alpha: float, ?label: string)
+        : Polygon =
+        let left = defaultArg x2 (Array.zeroCreate y.Length)
+        let faceColor = (defaultArg color (cycler.Next())).WithAlpha(defaultArg alpha 1.0)
+
+        let forward = Array.init y.Length (fun i -> { X = x1[i]; Y = y[i] })
+
+        let backward =
+            Array.init y.Length (fun i ->
+                {
+                    X = left[y.Length - 1 - i]
+                    Y = y[y.Length - 1 - i]
+                })
+
+        let polygon = Polygon(Array.append forward backward)
+        polygon.FaceColor <- faceColor
+        polygon.Label <- defaultArg label ""
+        patches.Add polygon
+        this.Autoscale()
+        polygon
+
+    /// <summary>Draw stacked filled areas (Matplotlib's <c>stackplot</c>).</summary>
+    member this.Stackplot(x: float[], ys: float[][], ?colors: Color[], ?labels: string[]) : Polygon[] =
+        let n = x.Length
+        let cols = defaultArg colors [||]
+        let lbls = defaultArg labels [||]
+        let baseline = Array.zeroCreate n // running cumulative top of the stack
+        let polys = ResizeArray<Polygon>()
+
+        ys
+        |> Array.iteri (fun k y ->
+            let top = Array.init n (fun i -> baseline[i] + y[i])
+            let forward = Array.init n (fun i -> { X = x[i]; Y = top[i] })
+
+            let backward =
+                Array.init n (fun i ->
+                    {
+                        X = x[n - 1 - i]
+                        Y = baseline[n - 1 - i]
+                    })
+
+            let poly = Polygon(Array.append forward backward)
+            poly.FaceColor <- if k < cols.Length then cols[k] else cycler.Next()
+            poly.Label <- if k < lbls.Length then lbls[k] else ""
+            patches.Add poly
+            polys.Add poly
+            Array.blit top 0 baseline 0 n)
+
+        this.Autoscale()
+        polys.ToArray()
+
+    /// <summary>Draw vertical line segments (Matplotlib's <c>vlines</c>).</summary>
+    member this.Vlines(x: float[], ymin: float[], ymax: float[], ?color: Color, ?label: string) : unit =
+        let col = defaultArg color (cycler.Next())
+
+        for i in 0 .. x.Length - 1 do
+            let seg = Line2D([| x[i]; x[i] |], [| ymin[i]; ymax[i] |])
+            seg.Color <- col
+            seg.LineWidth <- rc.LinesLineWidth
+            seg.Label <- if i = 0 then defaultArg label "" else ""
+            lines.Add seg
+
+        this.Autoscale()
+
+    /// <summary>Draw horizontal line segments (Matplotlib's <c>hlines</c>).</summary>
+    member this.Hlines(y: float[], xmin: float[], xmax: float[], ?color: Color, ?label: string) : unit =
+        let col = defaultArg color (cycler.Next())
+
+        for i in 0 .. y.Length - 1 do
+            let seg = Line2D([| xmin[i]; xmax[i] |], [| y[i]; y[i] |])
+            seg.Color <- col
+            seg.LineWidth <- rc.LinesLineWidth
+            seg.Label <- if i = 0 then defaultArg label "" else ""
+            lines.Add seg
+
+        this.Autoscale()
+
+    /// <summary>Draw a pie chart of <paramref name="values"/> (Matplotlib's <c>pie</c>).</summary>
+    member this.Pie(values: float[], ?labels: string[], ?colors: Color[], ?startAngle: float) : Polygon[] =
+        let total = Array.sum values
+        let cols = defaultArg colors [||]
+        let lbls = defaultArg labels [||]
+        let wedges = ResizeArray<Polygon>()
+        let mutable theta0 = (defaultArg startAngle 0.0) * Math.PI / 180.0
+
+        values
+        |> Array.iteri (fun k v ->
+            let frac = if total > 0.0 then v / total else 0.0
+            let theta1 = theta0 + 2.0 * Math.PI * frac
+            // flatten the arc to ~5-degree segments
+            let steps = max 2 (int (ceil (abs (theta1 - theta0) / (Math.PI / 36.0))))
+
+            let arc =
+                [|
+                    for s in 0..steps ->
+                        let a = theta0 + (theta1 - theta0) * float s / float steps
+                        { X = cos a; Y = sin a }
+                |]
+
+            let wedge = Polygon(Array.append [| { X = 0.0; Y = 0.0 } |] arc)
+            wedge.FaceColor <- if k < cols.Length then cols[k] else cycler.Next()
+            wedge.EdgeColor <- Some(Color.rgb 1.0 1.0 1.0)
+            wedge.Label <- if k < lbls.Length then lbls[k] else ""
+            patches.Add wedge
+            wedges.Add wedge
+            theta0 <- theta1)
+
+        // the pie lives in the unit circle; equal aspect keeps it round, and the
+        // axes frame and ticks are dropped.
+        this.SetXLim(-1.3, 1.3)
+        this.SetYLim(-1.3, 1.3)
+        this.SetAspect "equal"
+        this.SetAxisOff()
+        wedges.ToArray()
+
+    /// <summary>Draw a horizontal reference line at <paramref name="y"/> spanning the axes (Matplotlib's <c>axhline</c>).</summary>
+    member this.AxHLine(y: float, ?xmin: float, ?xmax: float, ?color: Color) =
+        refHLines.Add(y, defaultArg xmin 0.0, defaultArg xmax 1.0, defaultArg color (cycler.Next()))
+        this.Autoscale()
+
+    /// <summary>Draw a vertical reference line at <paramref name="x"/> spanning the axes (Matplotlib's <c>axvline</c>).</summary>
+    member this.AxVLine(x: float, ?ymin: float, ?ymax: float, ?color: Color) =
+        refVLines.Add(x, defaultArg ymin 0.0, defaultArg ymax 1.0, defaultArg color (cycler.Next()))
+        this.Autoscale()
+
+    /// <summary>Shade a full-width horizontal band between <paramref name="ymin"/>/<paramref name="ymax"/> (Matplotlib's <c>axhspan</c>).</summary>
+    member this.AxHSpan(ymin: float, ymax: float, ?color: Color, ?alpha: float) =
+        refHSpans.Add(ymin, ymax, (defaultArg color (cycler.Next())).WithAlpha(defaultArg alpha 0.5))
+        this.Autoscale()
+
+    /// <summary>Shade a full-height vertical band between <paramref name="xmin"/>/<paramref name="xmax"/> (Matplotlib's <c>axvspan</c>).</summary>
+    member this.AxVSpan(xmin: float, xmax: float, ?color: Color, ?alpha: float) =
+        refVSpans.Add(xmin, xmax, (defaultArg color (cycler.Next())).WithAlpha(defaultArg alpha 0.5))
+        this.Autoscale()
+
     /// <summary>Draw a step plot (Matplotlib's <c>step</c>, default <c>where = pre</c>).</summary>
     member this.Step
         (x: float[], y: float[], ?where: StepWhere, ?color: Color, ?lineStyle: LineStyle, ?label: string)
@@ -569,6 +895,7 @@ type Axes(rc: RcParams) =
             ?color: Color,
             ?marker: MarkerStyle,
             ?lineStyle: LineStyle,
+            ?capsize: float,
             ?label: string
         ) : Line2D =
         let col = defaultArg color (cycler.Next())
@@ -586,16 +913,45 @@ type Axes(rc: RcParams) =
             bar.LineWidth <- rc.LinesLineWidth
             lines.Add bar
 
+        // capsize is the cap length in points; drawn as '_'/'|' markers (which are
+        // sized in points at draw time), as matplotlib does. Default 0 -> no caps.
+        let cap = defaultArg capsize 0.0
+
+        let addCaps (markerStyle: MarkerStyle) (cxs: float[]) (cys: float[]) =
+            if cap > 0.0 then
+                let caps = Line2D(cxs, cys)
+                caps.Color <- col
+                caps.LineStyle <- NoLine
+                caps.Marker <- markerStyle
+                caps.MarkerSize <- cap
+                caps.MarkerEdgeColor <- Some col
+                caps.MarkerEdgeWidth <- rc.LinesLineWidth
+                lines.Add caps
+
         match yerr with
         | Some err ->
             for i in 0 .. x.Length - 1 do
                 addBar [| x[i]; x[i] |] [| y[i] - err[i]; y[i] + err[i] |]
+
+            addCaps
+                MarkerStyle.HLine
+                (Array.append x x)
+                (Array.append
+                    (Array.init x.Length (fun i -> y[i] - err[i]))
+                    (Array.init x.Length (fun i -> y[i] + err[i])))
         | None -> ()
 
         match xerr with
         | Some err ->
             for i in 0 .. x.Length - 1 do
                 addBar [| x[i] - err[i]; x[i] + err[i] |] [| y[i]; y[i] |]
+
+            addCaps
+                MarkerStyle.VLine
+                (Array.append
+                    (Array.init x.Length (fun i -> x[i] - err[i]))
+                    (Array.init x.Length (fun i -> x[i] + err[i])))
+                (Array.append y y)
         | None -> ()
 
         this.Autoscale()
@@ -788,10 +1144,13 @@ type Axes(rc: RcParams) =
             if d.Length > 1 then
                 let n = float d.Length
                 let mean = Array.average d
-                let std = sqrt (Array.sumBy (fun v -> (v - mean) * (v - mean)) d / n)
-                let h = if std <= 0.0 then 1.0 else 1.06 * std * (n ** -0.2) // Silverman's rule
+                // Sample standard deviation (ddof = 1), matching numpy's
+                // np.cov(bias=False) used by matplotlib's GaussianKDE.
+                let std = sqrt (Array.sumBy (fun v -> (v - mean) * (v - mean)) d / (n - 1.0))
+                // Scott's factor (GaussianKDE's default): bandwidth = std * n^(-1/(d+4)), d = 1.
+                let h = if std <= 0.0 then 1.0 else std * (n ** -0.2)
                 let lo, hi = Array.min d, Array.max d
-                let grid = 50
+                let grid = 100
                 let ys = Array.init grid (fun k -> lo + (hi - lo) * float k / float (grid - 1))
 
                 let dens =
@@ -813,7 +1172,7 @@ type Axes(rc: RcParams) =
         this.Autoscale()
 
     /// <summary>Draw streamlines of a vector field on a grid (Matplotlib's <c>streamplot</c>).</summary>
-    /// <remarks>Forward arc-length integration (RK1) from a coarse seed grid; bilinear field sampling.</remarks>
+    /// <remarks>RK4 integration (forward + backward) with a density occupancy mask for evenly spaced, non-overlapping lines; bilinear field sampling.</remarks>
     member this.Streamplot(x: float[], y: float[], u: float[,], v: float[,], ?density: int, ?color: Color) : unit =
         let col = defaultArg color (cycler.Next())
         let nx, ny = x.Length, y.Length
@@ -832,40 +1191,126 @@ type Axes(rc: RcParams) =
             (grid[r0, c0] * (1.0 - tc) + grid[r0, c0 + 1] * tc) * (1.0 - tr)
             + (grid[r0 + 1, c0] * (1.0 - tc) + grid[r0 + 1, c0 + 1] * tc) * tr
 
+        // unit-speed (normalized) velocity at a point, or None off-domain / at a stagnation point
+        let field px py =
+            if not (inDomain px py) then
+                None
+            else
+                let uu = interp u px py
+                let vv = interp v px py
+                let sp = sqrt (uu * uu + vv * vv)
+                if sp < 1e-9 then None else Some(uu / sp, vv / sp)
+
         let dt = (x1 - x0) / float (nx - 1) * 0.5
-        let step = max 1 (defaultArg density (max 1 (nx / 10)))
-        let maxSteps = 200
+        let dens = max 1 (defaultArg density 1)
+        let res = max 8 (12 * dens) // occupancy-mask resolution (coarser -> longer lines)
+        let mask = Array2D.zeroCreate res res // 0 = free, else the claiming trajectory id
+        let maxSteps = 1000
 
-        for ri in 0..step .. ny - 1 do
-            for ci in 0..step .. nx - 1 do
-                let pxs = ResizeArray<float>()
-                let pys = ResizeArray<float>()
-                let mutable px, py = x[ci], y[ri]
-                let mutable alive = true
-                let mutable k = 0
-                pxs.Add px
-                pys.Add py
+        let maskOf px py =
+            let mc = min (res - 1) (max 0 (int ((px - x0) / (x1 - x0) * float res)))
+            let mr = min (res - 1) (max 0 (int ((py - y0) / (y1 - y0) * float res)))
+            mr, mc
 
-                while alive && k < maxSteps do
-                    let uu = interp u px py
-                    let vv = interp v px py
-                    let sp = sqrt (uu * uu + vv * vv)
-                    let nxp, nyp = px + uu / sp * dt, py + vv / sp * dt
+        // one classic-RK4 step in direction sgn (+1 forward / -1 backward) on the
+        // unit-speed field; None if it leaves the domain or hits a stagnation point.
+        let rk4 (sgn: float) px py =
+            match field px py with
+            | None -> None
+            | Some(k1x, k1y) ->
+                let h = sgn * dt
 
-                    if sp < 1e-9 || not (inDomain nxp nyp) then
-                        alive <- false
-                    else
+                match field (px + 0.5 * h * k1x) (py + 0.5 * h * k1y) with
+                | None -> None
+                | Some(k2x, k2y) ->
+                    match field (px + 0.5 * h * k2x) (py + 0.5 * h * k2y) with
+                    | None -> None
+                    | Some(k3x, k3y) ->
+                        match field (px + h * k3x) (py + h * k3y) with
+                        | None -> None
+                        | Some(k4x, k4y) ->
+                            let nxp = px + h / 6.0 * (k1x + 2.0 * k2x + 2.0 * k3x + k4x)
+                            let nyp = py + h / 6.0 * (k1y + 2.0 * k2y + 2.0 * k3y + k4y)
+                            if inDomain nxp nyp then Some(nxp, nyp) else None
+
+        // integrate from the seed in direction sgn, claiming mask cells for `tid`; stops on
+        // leaving the domain, entering another streamline's cell, or closing a loop.
+        let traceDir (tid: int) (claimed: ResizeArray<int * int>) (sgn: float) (sx: float) (sy: float) =
+            let pts = ResizeArray<float * float>()
+            let seedCell = maskOf sx sy
+            let mutable px, py = sx, sy
+            let mutable cell = seedCell
+            let mutable leftSeed = false
+            let mutable alive = true
+            let mutable k = 0
+
+            while alive && k < maxSteps do
+                match rk4 sgn px py with
+                | None -> alive <- false
+                | Some(nxp, nyp) ->
+                    let nc = maskOf nxp nyp
+
+                    if nc = cell then
                         px <- nxp
                         py <- nyp
-                        pxs.Add px
-                        pys.Add py
+                        pts.Add(px, py)
+                    elif nc = seedCell && leftSeed then
+                        alive <- false // closed orbit -> stop after one loop
+                    else
+                        let (mr, mc) = nc
 
-                    k <- k + 1
+                        if mask[mr, mc] <> 0 && mask[mr, mc] <> tid then
+                            alive <- false // ran into another streamline's territory
+                        else
+                            mask[mr, mc] <- tid
+                            claimed.Add(mr, mc)
+                            cell <- nc
+                            leftSeed <- true
+                            px <- nxp
+                            py <- nyp
+                            pts.Add(px, py)
 
-                if pxs.Count > 2 then
-                    let line = Line2D(pxs.ToArray(), pys.ToArray())
-                    line.Color <- col
-                    lines.Add line
+                k <- k + 1
+
+            pts
+
+        let mutable tid = 0
+
+        // seed from each free mask cell; a trajectory claims the cells it passes through, so
+        // later seeds in occupied cells are skipped -> evenly spaced, non-overlapping lines.
+        for smr in 0 .. res - 1 do
+            for smc in 0 .. res - 1 do
+                if mask[smr, smc] = 0 then
+                    tid <- tid + 1
+                    let sx = x0 + (float smc + 0.5) / float res * (x1 - x0)
+                    let sy = y0 + (float smr + 0.5) / float res * (y1 - y0)
+                    let claimed = ResizeArray<int * int>()
+                    mask[smr, smc] <- tid
+                    claimed.Add(smr, smc)
+                    let bwd = traceDir tid claimed -1.0 sx sy
+                    let fwd = traceDir tid claimed 1.0 sx sy
+                    let xs2 = ResizeArray<float>()
+                    let ys2 = ResizeArray<float>()
+
+                    for i in bwd.Count - 1 .. -1 .. 0 do
+                        xs2.Add(fst bwd[i])
+                        ys2.Add(snd bwd[i])
+
+                    xs2.Add sx
+                    ys2.Add sy
+
+                    for i in 0 .. fwd.Count - 1 do
+                        xs2.Add(fst fwd[i])
+                        ys2.Add(snd fwd[i])
+
+                    if xs2.Count > 10 then
+                        let line = Line2D(xs2.ToArray(), ys2.ToArray())
+                        line.Color <- col
+                        lines.Add line
+                    else
+                        // too short to keep -> free its cells so the space can be re-used
+                        for (r, c) in claimed do
+                            mask[r, c] <- 0
 
         this.SetXLim(x0, x1)
         this.SetYLim(y0, y1)
@@ -941,6 +1386,18 @@ type Axes(rc: RcParams) =
         | "right" -> this.SpineRight <- visible
         | other -> failwith $"Unknown spine '{other}'."
 
+    /// <summary>Hide all ticks, tick labels and spines (Matplotlib's <c>axis('off')</c>).</summary>
+    member this.SetAxisOff() =
+        this.XTicksVisible <- false
+        this.YTicksVisible <- false
+        this.SpineTop <- false
+        this.SpineBottom <- false
+        this.SpineLeft <- false
+        this.SpineRight <- false
+
+    /// <summary>Set the data aspect ratio (Matplotlib's <c>set_aspect</c>: <c>"equal"</c> or <c>"auto"</c>).</summary>
+    member this.SetAspect(aspect: string) = this.Aspect <- aspect
+
     /// <summary>Set the X view limits explicitly (disables x autoscale).</summary>
     member this.SetXLim(lower: float, upper: float) =
         this.XLim <- { Lower = lower; Upper = upper }
@@ -973,7 +1430,18 @@ type Axes(rc: RcParams) =
     /// <summary>Fix the X tick positions and labels (Matplotlib's <c>set_xticks</c>+labels).</summary>
     member this.SetXTickLabels(positions: float[], labels: string[]) =
         this.XAxis.MajorLocator <- Some(FixedLocator positions :> ITickLocator)
-        this.XAxis.MajorFormatter <- Some(FixedFormatter labels :> ITickFormatter)
+        this.XAxis.MajorFormatter <- Some(LabeledTicksFormatter(positions, labels) :> ITickFormatter)
+
+    /// <summary>Fix the X tick positions, keeping the default labels (Matplotlib's <c>set_xticks</c>).</summary>
+    member this.SetXTicks(positions: float[]) = this.XAxis.MajorLocator <- Some(FixedLocator positions :> ITickLocator)
+
+    /// <summary>Fix the Y tick positions, keeping the default labels (Matplotlib's <c>set_yticks</c>).</summary>
+    member this.SetYTicks(positions: float[]) = this.YAxis.MajorLocator <- Some(FixedLocator positions :> ITickLocator)
+
+    /// <summary>Fix the Y tick positions and labels (Matplotlib's <c>set_yticks</c>+labels).</summary>
+    member this.SetYTickLabels(positions: float[], labels: string[]) =
+        this.YAxis.MajorLocator <- Some(FixedLocator positions :> ITickLocator)
+        this.YAxis.MajorFormatter <- Some(LabeledTicksFormatter(positions, labels) :> ITickFormatter)
 
     /// <summary>Label the X axis with categories at integer positions 0..n-1.</summary>
     /// <remarks>Ported from <c>matplotlib.category</c> (string-to-index mapping).</remarks>
@@ -1012,8 +1480,23 @@ type Axes(rc: RcParams) =
         let boundsYs = bounds |> Array.collect (fun b -> [| b.YMin; b.YMax |])
         let lineXs = lines |> Seq.collect (fun l -> l.XData) |> Seq.toArray
         let lineYs = lines |> Seq.collect (fun l -> l.YData) |> Seq.toArray
-        let xs = Array.append lineXs boundsXs |> finite
-        let ys = Array.append lineYs boundsYs |> finite
+
+        // reference lines/spans contribute only on their data axis (the other axis
+        // is in axes-fraction coordinates and must not drive autoscale).
+        let refXs =
+            Seq.append
+                (refVLines |> Seq.map (fun (x, _, _, _) -> x))
+                (refVSpans |> Seq.collect (fun (a, b, _) -> [ a; b ]))
+            |> Seq.toArray
+
+        let refYs =
+            Seq.append
+                (refHLines |> Seq.map (fun (y, _, _, _) -> y))
+                (refHSpans |> Seq.collect (fun (a, b, _) -> [ a; b ]))
+            |> Seq.toArray
+
+        let xs = Array.concat [ lineXs; boundsXs; refXs ] |> finite
+        let ys = Array.concat [ lineYs; boundsYs; refYs ] |> finite
 
         if this.XLimAuto && xs.Length > 0 then
             this.XLim <-
@@ -1033,29 +1516,45 @@ type Axes(rc: RcParams) =
         let canvas = renderer.CanvasSizePx
         let pos = this.Position
 
-        let box =
+        let fullBox =
             BBox.fromExtents
                 (pos.X0 * canvas.Width)
                 (pos.Y0 * canvas.Height)
                 (pos.X1 * canvas.Width)
                 (pos.Y1 * canvas.Height)
 
-        let transAxes = BBoxTransform(BBox.unit, box) :> ITransform
-        let xScale = this.XAxis.Scale
+        // a twinx overlay borrows the source axes' x range and scale (shared x).
+        let xSource = defaultArg this.SharedXFrom this
+        let xScale = xSource.XAxis.Scale
         let yScale = this.YAxis.Scale
-        let xView = xScale.ClampLimits this.XLim
+        let xView = xScale.ClampLimits xSource.XLim
         let yView = yScale.ClampLimits this.YLim
+        let sxLo, sxHi = xScale.TransformValue xView.Lower, xScale.TransformValue xView.Upper
+        let syLo, syHi = yScale.TransformValue yView.Lower, yScale.TransformValue yView.Upper
+
+        // aspect='equal': shrink the axes box so one (scaled) data unit spans the
+        // same number of pixels on both axes (adjustable='box'), centred in place.
+        let box =
+            let xr = abs (sxHi - sxLo)
+            let yr = abs (syHi - syLo)
+
+            if this.Aspect = "equal" && xr > 0.0 && yr > 0.0 then
+                let s = min (abs fullBox.Width / xr) (abs fullBox.Height / yr)
+                let w = s * xr
+                let h = s * yr
+                let cx = (fullBox.X0 + fullBox.X1) / 2.0
+                let cy = (fullBox.Y0 + fullBox.Y1) / 2.0
+                BBox.fromExtents (cx - w / 2.0) (cy - h / 2.0) (cx + w / 2.0) (cy + h / 2.0)
+            else
+                fullBox
+
+        let transAxes = BBoxTransform(BBox.unit, box) :> ITransform
 
         let transScale =
             FunctionalTransform(xScale.TransformValue, yScale.TransformValue, xScale.InverseValue, yScale.InverseValue)
             :> ITransform
 
-        let scaledBox =
-            BBox.fromExtents
-                (xScale.TransformValue xView.Lower)
-                (yScale.TransformValue yView.Lower)
-                (xScale.TransformValue xView.Upper)
-                (yScale.TransformValue yView.Upper)
+        let scaledBox = BBox.fromExtents sxLo syLo sxHi syHi
 
         let transLimits = BBoxTransform(scaledBox, BBox.unit) :> ITransform
         let transData = Transforms.compose (Transforms.compose transScale transLimits) transAxes
@@ -1122,7 +1621,60 @@ type Axes(rc: RcParams) =
                 let y = (ctx.TransData.Transform { X = ctx.XView.Lower; Y = tv }).Y
                 ctx.Renderer.DrawPath(gc, Path.polyline [ { X = b.X0; Y = y }; { X = b.X1; Y = y } ], None)
 
+    member private this.DrawRefSpans(ctx: AxesDrawContext) =
+        let b = ctx.Box
+
+        let fillRect x0 y0 x1 y1 (c: Color) =
+            let gc =
+                { GraphicsContext.Default with
+                    StrokeColor = c
+                }
+
+            ctx.Renderer.DrawPath(
+                gc,
+                Path.polygon
+                    [
+                        { X = x0; Y = y0 }
+                        { X = x1; Y = y0 }
+                        { X = x1; Y = y1 }
+                        { X = x0; Y = y1 }
+                    ],
+                Some c
+            )
+
+        for (ymin, ymax, c) in refHSpans do
+            let y0 = (ctx.TransData.Transform { X = 0.0; Y = ymin }).Y
+            let y1 = (ctx.TransData.Transform { X = 0.0; Y = ymax }).Y
+            fillRect b.X0 y0 b.X1 y1 c
+
+        for (xmin, xmax, c) in refVSpans do
+            let x0 = (ctx.TransData.Transform { X = xmin; Y = 0.0 }).X
+            let x1 = (ctx.TransData.Transform { X = xmax; Y = 0.0 }).X
+            fillRect x0 b.Y0 x1 b.Y1 c
+
+    member private this.DrawRefLines(ctx: AxesDrawContext) =
+        let lineGc (c: Color) =
+            { GraphicsContext.Default with
+                StrokeColor = c
+                LineWidth = rc.LinesLineWidth * ctx.Pt2Px
+            }
+
+        for (y, xminF, xmaxF, c) in refHLines do
+            let yp = (ctx.TransData.Transform { X = 0.0; Y = y }).Y
+            let x0 = (ctx.TransAxes.Transform { X = xminF; Y = 0.0 }).X
+            let x1 = (ctx.TransAxes.Transform { X = xmaxF; Y = 0.0 }).X
+            ctx.Renderer.DrawPath(lineGc c, Path.polyline [ { X = x0; Y = yp }; { X = x1; Y = yp } ], None)
+
+        for (x, yminF, ymaxF, c) in refVLines do
+            let xp = (ctx.TransData.Transform { X = x; Y = 0.0 }).X
+            let y0 = (ctx.TransAxes.Transform { X = 0.0; Y = yminF }).Y
+            let y1 = (ctx.TransAxes.Transform { X = 0.0; Y = ymaxF }).Y
+            ctx.Renderer.DrawPath(lineGc c, Path.polyline [ { X = xp; Y = y0 }; { X = xp; Y = y1 } ], None)
+
     member private this.DrawData(ctx: AxesDrawContext) =
+        // reference spans (axhspan/axvspan) form a backdrop behind the data.
+        this.DrawRefSpans ctx
+
         // Images (zorder 0) sit beneath everything else.
         for image in images do
             image.Transform <- ctx.TransData
@@ -1140,6 +1692,9 @@ type Axes(rc: RcParams) =
         for line in lines do
             line.Transform <- ctx.TransData
             line.Draw ctx.Renderer
+
+        // reference lines (axhline/axvline) are drawn on top of the data.
+        this.DrawRefLines ctx
 
     member private this.DrawTexts(ctx: AxesDrawContext) =
         for artist in overlays do
@@ -1213,18 +1768,19 @@ type Axes(rc: RcParams) =
                 | "out" -> "in"
                 | other -> other
 
-        Array.iter2
-            (fun tv lab ->
-                let y = (ctx.TransData.Transform { X = ctx.XView.Lower; Y = tv }).Y
-                let x0, x1 = AxesLayout.tickEndpoints yBase len yDir
+        if this.YTicksVisible then
+            Array.iter2
+                (fun tv lab ->
+                    let y = (ctx.TransData.Transform { X = ctx.XView.Lower; Y = tv }).Y
+                    let x0, x1 = AxesLayout.tickEndpoints yBase len yDir
 
-                ctx.Renderer.DrawPath(gc, Path.polyline [ { X = x0; Y = y }; { X = x1; Y = y } ], None)
+                    ctx.Renderer.DrawPath(gc, Path.polyline [ { X = x0; Y = y }; { X = x1; Y = y } ], None)
 
-                let labelX = if onRight then b.X1 + labelOff else b.X0 - labelOff
-                let labelHa = if onRight then HLeft else HRight
-                (this.MakeTickLabel(labelX, y, lab, labelHa, VCenter)).Draw ctx.Renderer)
-            ctx.YTicks
-            ctx.YLabels
+                    let labelX = if onRight then b.X1 + labelOff else b.X0 - labelOff
+                    let labelHa = if onRight then HLeft else HRight
+                    (this.MakeTickLabel(labelX, y, lab, labelHa, VCenter)).Draw ctx.Renderer)
+                ctx.YTicks
+                ctx.YLabels
 
     member private this.DrawMinorTicks(ctx: AxesDrawContext) =
         if this.MinorTicksEnabled then

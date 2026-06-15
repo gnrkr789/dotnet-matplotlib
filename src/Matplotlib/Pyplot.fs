@@ -106,19 +106,65 @@ type Pyplot() =
 
     /// <summary>Draw a scatter of markers (Matplotlib's <c>plt.scatter</c>).</summary>
     member this.Scatter
-        (xs: float[], ys: float[], ?color: string, ?marker: string, ?markerSize: float, ?label: string)
-        : Line2D =
+        (
+            xs: float[],
+            ys: float[],
+            ?color: string,
+            ?marker: string,
+            ?s: float,
+            ?label: string,
+            ?c: float[],
+            ?cmap: string,
+            ?vmin: float,
+            ?vmax: float,
+            ?sizes: float[]
+        ) : Line2D =
         let ax = this.EnsureAxes()
-        let colorOpt = color |> Option.map (fun s -> ColorResolver.Default.Resolve s)
+        let colorOpt = color |> Option.map (fun col -> ColorResolver.Default.Resolve col)
         let markerOpt = marker |> Option.map Styles.parseMarker
-        ax.Scatter(xs, ys, ?color = colorOpt, ?marker = markerOpt, ?markerSize = markerSize, ?label = label)
+
+        ax.Scatter(
+            xs,
+            ys,
+            ?color = colorOpt,
+            ?marker = markerOpt,
+            ?s = s,
+            ?label = label,
+            ?c = c,
+            ?cmap = cmap,
+            ?vmin = vmin,
+            ?vmax = vmax,
+            ?sizes = sizes
+        )
 
     /// <summary>Draw a vertical bar chart (Matplotlib's <c>plt.bar</c>).</summary>
     member this.Bar
-        (x: float[], height: float[], ?width: float, ?bottom: float[], ?color: string, ?label: string, ?hatch: string) : Rectangle[] =
+        (
+            x: float[],
+            height: float[],
+            ?width: float,
+            ?bottom: float[],
+            ?color: string,
+            ?label: string,
+            ?hatch: string,
+            ?yerr: float[],
+            ?capsize: float
+        ) : Rectangle[] =
         let ax = this.EnsureAxes()
         let colorOpt = color |> Option.map (fun s -> ColorResolver.Default.Resolve s)
-        let rects = ax.Bar(x, height, ?width = width, ?bottom = bottom, ?color = colorOpt, ?label = label)
+
+        let rects =
+            ax.Bar(
+                x,
+                height,
+                ?width = width,
+                ?bottom = bottom,
+                ?color = colorOpt,
+                ?label = label,
+                ?yerr = yerr,
+                ?capsize = capsize
+            )
+
         hatch |> Option.iter (fun h -> rects |> Array.iter (fun r -> r.Hatch <- Some h))
         rects
 
@@ -138,6 +184,14 @@ type Pyplot() =
         let colorOpt = color |> Option.map (fun s -> ColorResolver.Default.Resolve s)
         ax.BarH(y, width, ?height = height, ?left = left, ?color = colorOpt, ?label = label)
 
+    /// <summary>Draw a histogram (Matplotlib's <c>plt.hist</c>).</summary>
+    member this.Hist
+        (x: float[], ?bins: int, ?range: float * float, ?density: bool, ?color: string, ?label: string)
+        : float[] * float[] =
+        let ax = this.EnsureAxes()
+        let colorOpt = color |> Option.map (fun s -> ColorResolver.Default.Resolve s)
+        ax.Hist(x, ?bins = bins, ?range = range, ?density = density, ?color = colorOpt, ?label = label)
+
     /// <summary>Fill the area between two curves (Matplotlib's <c>plt.fill_between</c>).</summary>
     member this.FillBetween
         (x: float[], y1: float[], ?y2: float[], ?color: string, ?alpha: float, ?label: string)
@@ -145,6 +199,71 @@ type Pyplot() =
         let ax = this.EnsureAxes()
         let colorOpt = color |> Option.map (fun s -> ColorResolver.Default.Resolve s)
         ax.FillBetween(x, y1, ?y2 = y2, ?color = colorOpt, ?alpha = alpha, ?label = label)
+
+    /// <summary>Fill the area between two vertical curves (Matplotlib's <c>plt.fill_betweenx</c>).</summary>
+    member this.FillBetweenx
+        (y: float[], x1: float[], ?x2: float[], ?color: string, ?alpha: float, ?label: string)
+        : Polygon =
+        let ax = this.EnsureAxes()
+        let colorOpt = color |> Option.map (fun s -> ColorResolver.Default.Resolve s)
+        ax.FillBetweenx(y, x1, ?x2 = x2, ?color = colorOpt, ?alpha = alpha, ?label = label)
+
+    /// <summary>Draw stacked filled areas (Matplotlib's <c>plt.stackplot</c>).</summary>
+    member this.Stackplot(x: float[], ys: float[][], ?labels: string[]) : Polygon[] =
+        this.EnsureAxes().Stackplot(x, ys, ?labels = labels)
+
+    /// <summary>Draw vertical line segments (Matplotlib's <c>plt.vlines</c>).</summary>
+    member this.Vlines(x: float[], ymin: float[], ymax: float[], ?color: string, ?label: string) =
+        let ax = this.EnsureAxes()
+        let colorOpt = color |> Option.map (fun s -> ColorResolver.Default.Resolve s)
+        ax.Vlines(x, ymin, ymax, ?color = colorOpt, ?label = label)
+
+    /// <summary>Draw horizontal line segments (Matplotlib's <c>plt.hlines</c>).</summary>
+    member this.Hlines(y: float[], xmin: float[], xmax: float[], ?color: string, ?label: string) =
+        let ax = this.EnsureAxes()
+        let colorOpt = color |> Option.map (fun s -> ColorResolver.Default.Resolve s)
+        ax.Hlines(y, xmin, xmax, ?color = colorOpt, ?label = label)
+
+    /// <summary>Draw a pie chart (Matplotlib's <c>plt.pie</c>). Use a square figure for a round pie.</summary>
+    member this.Pie(values: float[], ?labels: string[], ?startAngle: float) : Polygon[] =
+        this.EnsureAxes().Pie(values, ?labels = labels, ?startAngle = startAngle)
+
+    /// <summary>Configure the axis (Matplotlib's <c>plt.axis</c>): "off", "equal", "auto", or "on".</summary>
+    member this.Axis(mode: string) =
+        let ax = this.EnsureAxes()
+
+        match mode with
+        | "off" -> ax.SetAxisOff()
+        | "equal" -> ax.SetAspect "equal"
+        | "auto" -> ax.SetAspect "auto"
+        | "on" ->
+            ax.XTicksVisible <- true
+            ax.YTicksVisible <- true
+        | other -> failwith $"Unknown axis mode '{other}'."
+
+    /// <summary>Horizontal reference line at <paramref name="y"/> (Matplotlib's <c>plt.axhline</c>).</summary>
+    member this.AxHLine(y: float, ?xmin: float, ?xmax: float, ?color: string) =
+        let ax = this.EnsureAxes()
+        let c = color |> Option.map (fun s -> ColorResolver.Default.Resolve s)
+        ax.AxHLine(y, ?xmin = xmin, ?xmax = xmax, ?color = c)
+
+    /// <summary>Vertical reference line at <paramref name="x"/> (Matplotlib's <c>plt.axvline</c>).</summary>
+    member this.AxVLine(x: float, ?ymin: float, ?ymax: float, ?color: string) =
+        let ax = this.EnsureAxes()
+        let c = color |> Option.map (fun s -> ColorResolver.Default.Resolve s)
+        ax.AxVLine(x, ?ymin = ymin, ?ymax = ymax, ?color = c)
+
+    /// <summary>Shade a horizontal band between <paramref name="ymin"/>/<paramref name="ymax"/> (Matplotlib's <c>plt.axhspan</c>).</summary>
+    member this.AxHSpan(ymin: float, ymax: float, ?color: string, ?alpha: float) =
+        let ax = this.EnsureAxes()
+        let c = color |> Option.map (fun s -> ColorResolver.Default.Resolve s)
+        ax.AxHSpan(ymin, ymax, ?color = c, ?alpha = alpha)
+
+    /// <summary>Shade a vertical band between <paramref name="xmin"/>/<paramref name="xmax"/> (Matplotlib's <c>plt.axvspan</c>).</summary>
+    member this.AxVSpan(xmin: float, xmax: float, ?color: string, ?alpha: float) =
+        let ax = this.EnsureAxes()
+        let c = color |> Option.map (fun s -> ColorResolver.Default.Resolve s)
+        ax.AxVSpan(xmin, xmax, ?color = c, ?alpha = alpha)
 
     /// <summary>Draw a step plot (Matplotlib's <c>plt.step</c>).</summary>
     member this.Step
@@ -158,12 +277,30 @@ type Pyplot() =
 
     /// <summary>Draw a line with error bars (Matplotlib's <c>plt.errorbar</c>).</summary>
     member this.Errorbar
-        (x: float[], y: float[], ?yerr: float[], ?xerr: float[], ?color: string, ?marker: string, ?label: string)
-        : Line2D =
+        (
+            x: float[],
+            y: float[],
+            ?yerr: float[],
+            ?xerr: float[],
+            ?color: string,
+            ?marker: string,
+            ?capsize: float,
+            ?label: string
+        ) : Line2D =
         let ax = this.EnsureAxes()
         let colorOpt = color |> Option.map (fun s -> ColorResolver.Default.Resolve s)
         let markerOpt = marker |> Option.map Styles.parseMarker
-        ax.Errorbar(x, y, ?yerr = yerr, ?xerr = xerr, ?color = colorOpt, ?marker = markerOpt, ?label = label)
+
+        ax.Errorbar(
+            x,
+            y,
+            ?yerr = yerr,
+            ?xerr = xerr,
+            ?color = colorOpt,
+            ?marker = markerOpt,
+            ?capsize = capsize,
+            ?label = label
+        )
 
     /// <summary>Draw a stem plot (Matplotlib's <c>plt.stem</c>).</summary>
     member this.Stem(x: float[], y: float[], ?bottom: float, ?color: string, ?label: string) : Line2D =
@@ -214,6 +351,16 @@ type Pyplot() =
 
     /// <summary>Add a colorbar for an image (Matplotlib's <c>plt.colorbar</c>).</summary>
     member this.Colorbar(image: AxesImage, ?ax: Axes) = this.CurrentFigure().Colorbar(image, ?ax = ax)
+
+    /// <summary>Add a colorbar for a colormapped artist such as a <c>scatter</c> (Matplotlib's <c>plt.colorbar</c>).</summary>
+    member this.Colorbar(mappable: Line2D, ?ax: Axes) = this.CurrentFigure().Colorbar(mappable, ?ax = ax)
+
+    /// <summary>Create a twin axes sharing the x-axis (Matplotlib's <c>plt.twinx</c>); it becomes the current axes.</summary>
+    member this.TwinX() : Axes =
+        let parent = this.EnsureAxes()
+        let twin = this.CurrentFigure().AddTwinX parent
+        currentAxes <- Some twin
+        twin
 
     /// <summary>Draw a quad mesh of a 2D array (Matplotlib's <c>plt.pcolormesh</c>).</summary>
     member this.Pcolormesh(data: float[,], ?cmap: string, ?vmin: float, ?vmax: float) : AxesImage =
@@ -289,6 +436,22 @@ type Pyplot() =
 
     /// <summary>Label the x axis with categories at integer positions.</summary>
     member this.XCategories(categories: string[]) = this.EnsureAxes().SetXCategories categories
+
+    /// <summary>Set the x tick positions, optionally with labels (Matplotlib's <c>plt.xticks</c>).</summary>
+    member this.XTicks(positions: float[], ?labels: string[]) =
+        let ax = this.EnsureAxes()
+
+        match labels with
+        | Some l -> ax.SetXTickLabels(positions, l)
+        | None -> ax.SetXTicks positions
+
+    /// <summary>Set the y tick positions, optionally with labels (Matplotlib's <c>plt.yticks</c>).</summary>
+    member this.YTicks(positions: float[], ?labels: string[]) =
+        let ax = this.EnsureAxes()
+
+        match labels with
+        | Some l -> ax.SetYTickLabels(positions, l)
+        | None -> ax.SetYTicks positions
 
     /// <summary>Set the x-axis scale (<c>"linear"</c> / <c>"log"</c>).</summary>
     member this.XScale(name: string) = this.EnsureAxes().SetXScale name

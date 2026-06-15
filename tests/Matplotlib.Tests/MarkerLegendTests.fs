@@ -31,6 +31,25 @@ module MarkerLegendTests =
         Assert.Contains("#1f77b4", svg)
 
     [<Fact>]
+    let ``Scatter s is a points-squared area (diameter = sqrt s)`` () =
+        let plt = Pyplot()
+        // default s = 36 -> marker diameter 6 points
+        let def = plt.Scatter([| 0.0 |], [| 0.0 |])
+        assertClose 6.0 def.MarkerSize
+        // s = 144 -> diameter sqrt(144) = 12 points
+        let big = plt.Scatter([| 0.0 |], [| 0.0 |], s = 144.0)
+        assertClose 12.0 big.MarkerSize
+
+    [<Fact>]
+    let ``Scatter sizes gives per-point diameters (sqrt of the area)`` () =
+        let plt = Pyplot()
+        let line = plt.Scatter([| 0.0; 1.0 |], [| 0.0; 1.0 |], sizes = [| 36.0; 144.0 |])
+        Assert.True line.MarkerSizes.IsSome
+        let ds = line.MarkerSizes.Value
+        assertClose 6.0 ds[0]
+        assertClose 12.0 ds[1]
+
+    [<Fact>]
     let ``parseLegendLoc covers the standard locations`` () =
         Assert.Equal(Best, Styles.parseLegendLoc "best")
         Assert.Equal(UpperRight, Styles.parseLegendLoc "upper right")

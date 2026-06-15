@@ -82,8 +82,9 @@ AI agents create line / scatter / bar / heatmap plots saved as PNG / SVG / PDF.
 
 ## Features
 
-- Plots: `plot`, `scatter`, `bar`/`barh`, `fill_between`, `step`, `errorbar`, `stem`
+- Plots: `plot`, `scatter` (colormapped `c`, per-point `s`), `bar`/`barh`, `hist`, `pie`, `stackplot`, `fill_between`/`fill_betweenx`, `step`, `stem`, `errorbar` (with `capsize`), `vlines`/`hlines`
 - Statistics & fields: `hist2d`, `boxplot`, `violinplot`, `quiver`, `streamplot`
+- Axis control: `set_aspect('equal')`, `axis('off')`
 - Images: `imshow`, `pcolormesh` with colormaps (`viridis`, `gray`, `jet`, `hot`) and `colorbar`
 - Contours: `contour` (marching squares), `contourf`
 - Patches & line/poly collections, hatching, the full marker set
