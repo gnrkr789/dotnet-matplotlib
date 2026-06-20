@@ -61,7 +61,7 @@ module CollectionLayoutTests =
 
     [<Fact>]
     let ``Best legend still renders the label`` () =
-        let plt = Pyplot()
+        let plt = Plt()
 
         plt.Plot([| 0.0; 1.0; 2.0 |], [| 0.0; 1.0; 2.0 |], color = "C0", label = "series")
         |> ignore
@@ -71,7 +71,7 @@ module CollectionLayoutTests =
 
     [<Fact>]
     let ``Tight layout expands the axes to use more of the figure`` () =
-        let plt = Pyplot()
+        let plt = Plt()
         plt.Plot([| 0.0; 1.0 |], [| 0.0; 1.0 |], color = "C0") |> ignore
         plt.XLabel "x"
         plt.YLabel "y"
@@ -98,7 +98,7 @@ module CollectionLayoutTests =
 
     [<Fact>]
     let ``Constrained layout fits a single axes with decorations`` () =
-        let plt = Pyplot()
+        let plt = Plt()
         plt.Plot([| 0.0; 1.0 |], [| 0.0; 1.0 |], color = "C0") |> ignore
         plt.XLabel "x"
         plt.YLabel "y"

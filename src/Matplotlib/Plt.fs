@@ -16,7 +16,7 @@ open Matplotlib.Backends
 /// Ported from <c>matplotlib.pyplot</c>. The object-oriented API
 /// (<c>Figure</c>, <c>Axes</c>) remains fully usable without this facade.
 /// </remarks>
-type Pyplot() =
+type Plt() =
 
     let mutable currentFigure: Figure option = None
     let mutable currentAxes: Axes option = None
@@ -555,5 +555,5 @@ type Pyplot() =
     member _.SaveGif(path: string, frameCount: int, factory: int -> Figure, ?fps: int, ?scale: int) =
         Animation(frameCount, factory).SaveGif(path, ?fps = fps, ?scale = scale)
 
-    /// <summary>A fresh, independent pyplot state.</summary>
-    static member Instance = Pyplot()
+    /// <summary>A fresh, independent Plt state.</summary>
+    static member Instance = Plt()

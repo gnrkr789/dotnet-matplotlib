@@ -8,7 +8,7 @@ module Axes3DTests =
 
     [<Fact>]
     let ``plot3D renders a projected line into the SVG`` () =
-        let plt = Pyplot()
+        let plt = Plt()
         let t = [| for i in 0..100 -> float i / 100.0 * 4.0 * Math.PI |]
         let xs = t |> Array.map cos
         let ys = t |> Array.map sin
@@ -24,7 +24,7 @@ module Axes3DTests =
 
     [<Fact>]
     let ``scatter3D and wireframe render`` () =
-        let plt = Pyplot()
+        let plt = Plt()
 
         plt.Scatter3D([| 0.0; 1.0; 2.0 |], [| 0.0; 1.0; 0.0 |], [| 0.0; 1.0; 2.0 |], color = "C1")
         |> ignore
@@ -32,7 +32,7 @@ module Axes3DTests =
         let svg = plt.ToSvg()
         Assert.Contains("<path", svg)
 
-        let plt2 = Pyplot()
+        let plt2 = Plt()
         let x = [| 0.0; 1.0; 2.0 |]
         let y = [| 0.0; 1.0; 2.0 |]
         let z = Array2D.init 3 3 (fun r c -> float (r + c))
@@ -41,7 +41,7 @@ module Axes3DTests =
 
     [<Fact>]
     let ``a fresh figure resets the 3D axes`` () =
-        let plt = Pyplot()
+        let plt = Plt()
         plt.Plot3D([| 0.0; 1.0 |], [| 0.0; 1.0 |], [| 0.0; 1.0 |]) |> ignore
         let a1 = plt.Axes3D()
         plt.Figure() |> ignore

@@ -8,9 +8,9 @@ open Microsoft.DotNet.Interactive.Formatting
 module NotebookTests =
 
     [<Fact>]
-    let ``register makes Pyplot format as inline SVG html`` () =
+    let ``register makes Plt format as inline SVG html`` () =
         Notebook.register ()
-        let plt = Pyplot()
+        let plt = Plt()
         plt.Plot([| 0.0; 1.0; 2.0 |], [| 0.0; 1.0; 4.0 |], color = "C0") |> ignore
         let html = Formatter.ToDisplayString(plt, "text/html")
         Assert.Contains("<svg", html)

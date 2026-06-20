@@ -7,13 +7,13 @@ module Phase5PlotsTests =
 
     [<Fact>]
     let ``quiver renders arrows`` () =
-        let plt = Pyplot()
+        let plt = Plt()
         plt.Quiver([| 0.0; 1.0 |], [| 0.0; 0.0 |], [| 1.0; 0.0 |], [| 0.0; 1.0 |])
         Assert.Contains("<path", plt.ToSvg())
 
     [<Fact>]
     let ``hist2d produces an image covering the data range`` () =
-        let plt = Pyplot()
+        let plt = Plt()
         let xs = [| 0.0; 1.0; 2.0; 3.0; 1.0; 2.0 |]
         let ys = [| 0.0; 1.0; 2.0; 3.0; 2.0; 1.0 |]
         plt.Hist2d(xs, ys, bins = 4) |> ignore
@@ -24,20 +24,20 @@ module Phase5PlotsTests =
 
     [<Fact>]
     let ``boxplot autoscale includes an outlier`` () =
-        let plt = Pyplot()
+        let plt = Plt()
         plt.Boxplot([| [| 1.0; 2.0; 3.0; 4.0; 5.0; 100.0 |]; [| 2.0; 3.0; 4.0 |] |])
         Assert.Contains("<path", plt.ToSvg())
         Assert.True(plt.CurrentAxes().YLim.Upper >= 100.0)
 
     [<Fact>]
     let ``violinplot renders a density polygon`` () =
-        let plt = Pyplot()
+        let plt = Plt()
         plt.Violinplot([| [| 1.0; 2.0; 2.0; 3.0; 3.0; 3.0; 4.0; 5.0 |] |])
         Assert.Contains("<path", plt.ToSvg())
 
     [<Fact>]
     let ``streamplot traces streamlines through a uniform field`` () =
-        let plt = Pyplot()
+        let plt = Plt()
         let x = [| 0.0; 1.0; 2.0; 3.0 |]
         let y = [| 0.0; 1.0; 2.0; 3.0 |]
         let u = Array2D.init 4 4 (fun _ _ -> 1.0)
@@ -47,7 +47,7 @@ module Phase5PlotsTests =
 
     [<Fact>]
     let ``hist bins values into counts with edge-aligned bars`` () =
-        let plt = Pyplot()
+        let plt = Plt()
         let heights, edges = plt.Hist([| 0.0; 0.0; 1.0; 2.0; 2.0; 2.0 |], bins = 3, range = (0.0, 3.0))
         Assert.Equal<float[]>([| 2.0; 1.0; 3.0 |], heights)
         Assert.Equal(4, edges.Length)
@@ -57,7 +57,7 @@ module Phase5PlotsTests =
 
     [<Fact>]
     let ``hist density normalizes to unit area`` () =
-        let plt = Pyplot()
+        let plt = Plt()
 
         let heights, edges = plt.Hist([| 0.0; 1.0; 2.0; 3.0 |], bins = 2, range = (0.0, 4.0), density = true)
 
@@ -66,7 +66,7 @@ module Phase5PlotsTests =
 
     [<Fact>]
     let ``stackplot stacks areas cumulatively`` () =
-        let plt = Pyplot()
+        let plt = Plt()
         let x = [| 0.0; 1.0; 2.0 |]
         let ys = [| [| 1.0; 1.0; 1.0 |]; [| 2.0; 2.0; 2.0 |] |]
         let polys = plt.Stackplot(x, ys)
@@ -76,14 +76,14 @@ module Phase5PlotsTests =
 
     [<Fact>]
     let ``vlines and hlines add one segment each`` () =
-        let plt = Pyplot()
+        let plt = Plt()
         plt.Vlines([| 0.0; 1.0 |], [| 0.0; 0.0 |], [| 1.0; 2.0 |], color = "C0")
         plt.Hlines([| 0.5 |], [| 0.0 |], [| 2.0 |], color = "C1")
         Assert.Equal(3, plt.CurrentAxes().Lines.Count)
 
     [<Fact>]
     let ``pie creates one wedge per value and hides the axis frame`` () =
-        let plt = Pyplot()
+        let plt = Plt()
         let wedges = plt.Pie([| 1.0; 2.0; 3.0 |], labels = [| "a"; "b"; "c" |])
         Assert.Equal(3, wedges.Length)
         let ax = plt.CurrentAxes()
@@ -93,7 +93,7 @@ module Phase5PlotsTests =
 
     [<Fact>]
     let ``Equal aspect is honored and still renders`` () =
-        let plt = Pyplot()
+        let plt = Plt()
         plt.Plot([| 0.0; 1.0; 2.0 |], [| 0.0; 1.0; 0.0 |]) |> ignore
         plt.CurrentAxes().SetAspect "equal"
         Assert.Equal("equal", plt.CurrentAxes().Aspect)
@@ -101,7 +101,7 @@ module Phase5PlotsTests =
 
     [<Fact>]
     let ``streamplot RK4 conserves radius on a circular field`` () =
-        let plt = Pyplot()
+        let plt = Plt()
         let n = 21
         let xs = Array.init n (fun i -> -2.0 + 4.0 * float i / float (n - 1))
         let ys = xs
@@ -122,7 +122,7 @@ module Phase5PlotsTests =
 
     [<Fact>]
     let ``streamplot density mask spaces non-overlapping streamlines`` () =
-        let plt = Pyplot()
+        let plt = Plt()
         let n = 20
         let xs = Array.init n (fun i -> float i)
         let ys = xs

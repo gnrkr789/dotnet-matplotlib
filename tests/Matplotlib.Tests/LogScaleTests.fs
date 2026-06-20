@@ -40,8 +40,8 @@ module LogScaleTests =
         Assert.True(ax.YLim.Upper > 1000.0)
 
     [<Fact>]
-    let ``Pyplot log-log plot renders with decade labels`` () =
-        let plt = Pyplot()
+    let ``Plt log-log plot renders with decade labels`` () =
+        let plt = Plt()
 
         plt.Plot([| 1.0; 10.0; 100.0; 1000.0 |], [| 1.0; 100.0; 10.0; 1000.0 |])
         |> ignore
@@ -76,7 +76,7 @@ module LogScaleTests =
 
     [<Fact>]
     let ``Symlog axis renders across zero`` () =
-        let plt = Pyplot()
+        let plt = Plt()
 
         plt.Plot([| -100.0; -1.0; 0.0; 1.0; 100.0 |], [| -100.0; -1.0; 0.0; 1.0; 100.0 |])
         |> ignore

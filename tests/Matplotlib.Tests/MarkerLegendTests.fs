@@ -21,7 +21,7 @@ module MarkerLegendTests =
 
     [<Fact>]
     let ``Scatter with a star marker renders filled paths`` () =
-        let plt = Pyplot()
+        let plt = Plt()
 
         plt.Scatter([| 0.0; 1.0; 2.0 |], [| 0.0; 1.0; 0.5 |], color = "C0", marker = "*")
         |> ignore
@@ -32,7 +32,7 @@ module MarkerLegendTests =
 
     [<Fact>]
     let ``Scatter s is a points-squared area (diameter = sqrt s)`` () =
-        let plt = Pyplot()
+        let plt = Plt()
         // default s = 36 -> marker diameter 6 points
         let def = plt.Scatter([| 0.0 |], [| 0.0 |])
         assertClose 6.0 def.MarkerSize
@@ -42,7 +42,7 @@ module MarkerLegendTests =
 
     [<Fact>]
     let ``Scatter sizes gives per-point diameters (sqrt of the area)`` () =
-        let plt = Pyplot()
+        let plt = Plt()
         let line = plt.Scatter([| 0.0; 1.0 |], [| 0.0; 1.0 |], sizes = [| 36.0; 144.0 |])
         Assert.True line.MarkerSizes.IsSome
         let ds = line.MarkerSizes.Value
@@ -59,7 +59,7 @@ module MarkerLegendTests =
 
     [<Fact>]
     let ``Legend loc is applied to the current axes and still renders`` () =
-        let plt = Pyplot()
+        let plt = Plt()
         plt.Plot([| 0.0; 1.0 |], [| 0.0; 1.0 |], color = "C0", label = "a") |> ignore
         plt.Legend "lower left"
         Assert.Equal(LowerLeft, plt.CurrentAxes().LegendLoc)

@@ -9,7 +9,7 @@ open Matplotlib
 /// <summary>
 /// Plotting extension methods for <see cref="Microsoft.Data.Analysis.DataFrame"/>,
 /// in the spirit of pandas' <c>DataFrame.plot</c>. Each method plots the named
-/// column(s) and returns the <see cref="Pyplot"/> so the caller can add a title,
+/// column(s) and returns the <see cref="Plt"/> so the caller can add a title,
 /// save the figure, etc. Usable from C# (extension methods) and F#.
 /// </summary>
 [<Extension>]
@@ -37,8 +37,8 @@ type DataFrameExtensions =
     [<Extension>]
     static member PlotLine
         (df: DataFrame, x: string, y: string, [<Optional; DefaultParameterValue("")>] color: string)
-        : Pyplot =
-        let plt = Pyplot()
+        : Plt =
+        let plt = Plt()
         let xs = DataFrameExtensions.floats df x
         let ys = DataFrameExtensions.floats df y
 
@@ -55,8 +55,8 @@ type DataFrameExtensions =
     [<Extension>]
     static member PlotScatter
         (df: DataFrame, x: string, y: string, [<Optional; DefaultParameterValue("")>] color: string)
-        : Pyplot =
-        let plt = Pyplot()
+        : Plt =
+        let plt = Plt()
         let xs = DataFrameExtensions.floats df x
         let ys = DataFrameExtensions.floats df y
 
@@ -72,8 +72,8 @@ type DataFrameExtensions =
     /// <summary>Bar chart of a value column over a (string) category column.</summary>
     [<Extension>]
     static member PlotBar
-        (df: DataFrame, category: string, value: string, [<Optional; DefaultParameterValue("")>] color: string) : Pyplot =
-        let plt = Pyplot()
+        (df: DataFrame, category: string, value: string, [<Optional; DefaultParameterValue("")>] color: string) : Plt =
+        let plt = Plt()
         let cats = DataFrameExtensions.strings df category
         let vals = DataFrameExtensions.floats df value
 
@@ -87,8 +87,8 @@ type DataFrameExtensions =
 
     /// <summary>Histogram of a numeric column using <paramref name="bins"/> equal-width bins.</summary>
     [<Extension>]
-    static member PlotHist(df: DataFrame, column: string, [<Optional; DefaultParameterValue(10)>] bins: int) : Pyplot =
-        let plt = Pyplot()
+    static member PlotHist(df: DataFrame, column: string, [<Optional; DefaultParameterValue(10)>] bins: int) : Plt =
+        let plt = Plt()
         let data = DataFrameExtensions.floats df column |> Array.filter Double.IsFinite
 
         if data.Length > 0 && bins > 0 then

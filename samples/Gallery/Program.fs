@@ -8,7 +8,7 @@ open Matplotlib.Domain.Style
 open Matplotlib.Domain.Artists
 
 let private renderSine (outDir: string) =
-    let plt = Pyplot()
+    let plt = Plt()
     let xs = [| for i in 0..60 -> float i / 6.0 |]
     let ys = xs |> Array.map sin
     plt.Plot(xs, ys, color = "C0", label = "sin(x)") |> ignore
@@ -22,7 +22,7 @@ let private renderSine (outDir: string) =
     printfn "wrote %s" path
 
 let private renderScatter (outDir: string) =
-    let plt = Pyplot()
+    let plt = Plt()
     let rng = Random 42
     let xs = [| for _ in 1..40 -> rng.NextDouble() * 10.0 |]
     let ys = xs |> Array.map (fun x -> 2.0 * x + 3.0 + (rng.NextDouble() - 0.5) * 6.0)
@@ -39,7 +39,7 @@ let private renderScatter (outDir: string) =
     printfn "wrote %s" path
 
 let private renderBar (outDir: string) =
-    let plt = Pyplot()
+    let plt = Plt()
     let categories = [| 0.0; 1.0; 2.0; 3.0; 4.0 |]
     let values = [| 5.0; 9.0; 3.0; 7.0; 6.0 |]
     let errors = [| 0.8; 1.2; 0.5; 0.9; 0.7 |]
@@ -56,7 +56,7 @@ let private renderBar (outDir: string) =
     printfn "wrote %s" path
 
 let private renderFillBetween (outDir: string) =
-    let plt = Pyplot()
+    let plt = Plt()
     let xs = [| for i in 0..60 -> float i / 6.0 |]
     let ys = xs |> Array.map sin
     plt.FillBetween(xs, ys, color = "C1", alpha = 0.4, label = "sin(x)") |> ignore
@@ -69,7 +69,7 @@ let private renderFillBetween (outDir: string) =
     printfn "wrote %s" path
 
 let private renderStep (outDir: string) =
-    let plt = Pyplot()
+    let plt = Plt()
     let xs = [| 0.0; 1.0; 2.0; 3.0; 4.0; 5.0 |]
     let ys = [| 1.0; 3.0; 2.0; 4.0; 3.0; 5.0 |]
     plt.Step(xs, ys, where = "mid", color = "C2", label = "level") |> ignore
@@ -81,7 +81,7 @@ let private renderStep (outDir: string) =
     printfn "wrote %s" path
 
 let private renderErrorbar (outDir: string) =
-    let plt = Pyplot()
+    let plt = Plt()
     let xs = [| 1.0; 2.0; 3.0; 4.0; 5.0 |]
     let ys = xs |> Array.map (fun x -> x * 1.5 + 1.0)
     let yerr = [| 0.5; 0.8; 0.4; 0.9; 0.6 |]
@@ -98,7 +98,7 @@ let private renderErrorbar (outDir: string) =
     printfn "wrote %s" path
 
 let private renderStem (outDir: string) =
-    let plt = Pyplot()
+    let plt = Plt()
     let xs = [| for i in 0..20 -> float i / 2.0 |]
     let ys = xs |> Array.map (fun x -> exp (-x / 4.0) * cos x)
     plt.Stem(xs, ys, color = "C4", label = "damped") |> ignore
@@ -114,7 +114,7 @@ let private renderStem (outDir: string) =
     printfn "wrote %s" path
 
 let private renderMarkers (outDir: string) =
-    let plt = Pyplot()
+    let plt = Plt()
     let xs = [| for i in 0..9 -> float i |]
     let series = [ "o", "C0"; "s", "C1"; "^", "C2"; "*", "C3"; "D", "C4"; "p", "C5" ]
 
@@ -131,7 +131,7 @@ let private renderMarkers (outDir: string) =
     printfn "wrote %s" path
 
 let private renderAnnotate (outDir: string) =
-    let plt = Pyplot()
+    let plt = Plt()
     let xs = [| for i in 0..60 -> float i / 6.0 |]
     let ys = xs |> Array.map sin
     plt.Plot(xs, ys, color = "C0", label = "sin(x)") |> ignore
@@ -148,7 +148,7 @@ let private renderAnnotate (outDir: string) =
     printfn "wrote %s" path
 
 let private renderCollections (outDir: string) =
-    let plt = Pyplot()
+    let plt = Plt()
     let ax = plt.CurrentAxes()
     let xs = [| for i in 0..60 -> float i / 6.0 |]
 
@@ -167,7 +167,7 @@ let private renderCollections (outDir: string) =
     printfn "wrote %s" path
 
 let private renderSubplots (outDir: string) =
-    let plt = Pyplot()
+    let plt = Plt()
     let fig, axes = plt.Subplots(nrows = 2, ncols = 2)
     let xs = [| for i in 0..40 -> float i / 4.0 |]
     axes[0, 0].Plot(xs, xs |> Array.map sin) |> ignore
@@ -189,7 +189,7 @@ let private renderSubplots (outDir: string) =
     printfn "wrote %s" path
 
 let private renderLogScale (outDir: string) =
-    let plt = Pyplot()
+    let plt = Plt()
     let xs = [| for i in 0..40 -> 10.0 ** (float i / 10.0) |]
     let ys = xs |> Array.map (fun x -> x ** 1.5)
     plt.Plot(xs, ys, color = "C0", marker = "o", label = "y = x^1.5") |> ignore
@@ -206,7 +206,7 @@ let private renderLogScale (outDir: string) =
     printfn "wrote %s" path
 
 let private renderImshow (outDir: string) =
-    let plt = Pyplot()
+    let plt = Plt()
     let n = 40
 
     let data =
@@ -225,7 +225,7 @@ let private renderImshow (outDir: string) =
     printfn "wrote %s" path
 
 let private renderContour (outDir: string) =
-    let plt = Pyplot()
+    let plt = Plt()
     let n = 60
 
     let data =
@@ -245,7 +245,7 @@ let private renderContour (outDir: string) =
     printfn "wrote %s" path
 
 let private renderContourf (outDir: string) =
-    let plt = Pyplot()
+    let plt = Plt()
     let n = 40
 
     let data =
@@ -265,7 +265,7 @@ let private renderContourf (outDir: string) =
     printfn "wrote %s" path
 
 let private renderCategoricalBar (outDir: string) =
-    let plt = Pyplot()
+    let plt = Plt()
 
     plt.Bar([| "alpha"; "beta"; "gamma"; "delta" |], [| 4.0; 7.0; 3.0; 6.0 |], color = "C0")
     |> ignore
@@ -277,7 +277,7 @@ let private renderCategoricalBar (outDir: string) =
     printfn "wrote %s" path
 
 let private renderDates (outDir: string) =
-    let plt = Pyplot()
+    let plt = Plt()
     let dates = [| for d in 0..36 -> DateTime(2024, 1, 1).AddDays(float d * 10.0) |]
     let ys = dates |> Array.mapi (fun i _ -> sin (float i / 3.0) + float i * 0.1)
     plt.PlotDate(dates, ys, color = "C1", label = "series") |> ignore
@@ -290,7 +290,7 @@ let private renderDates (outDir: string) =
     printfn "wrote %s" path
 
 let private renderScatterColormap (outDir: string) =
-    let plt = Pyplot()
+    let plt = Plt()
     let rng = Random 7
     let n = 70
     let xs = [| for _ in 1..n -> rng.NextDouble() * 10.0 |]
@@ -308,7 +308,7 @@ let private renderScatterColormap (outDir: string) =
     printfn "wrote %s" path
 
 let private renderHist (outDir: string) =
-    let plt = Pyplot()
+    let plt = Plt()
     let rng = Random 11
     // sum of 12 uniforms ~ N(0,1) (central limit), shifted/scaled
     let sample () = (Array.init 12 (fun _ -> rng.NextDouble()) |> Array.sum) - 6.0
@@ -323,7 +323,7 @@ let private renderHist (outDir: string) =
     printfn "wrote %s" path
 
 let private renderFillBetweenx (outDir: string) =
-    let plt = Pyplot()
+    let plt = Plt()
     let ys = [| for i in 0..60 -> float i / 6.0 |]
     let x1 = ys |> Array.map sin
     let x2 = ys |> Array.map (fun y -> sin y - 1.0)
@@ -341,7 +341,7 @@ let private renderFillBetweenx (outDir: string) =
     printfn "wrote %s" path
 
 let private renderColormaps (outDir: string) =
-    let plt = Pyplot()
+    let plt = Plt()
     let fig, axes = plt.Subplots(nrows = 3, ncols = 1)
     let gradient = Array2D.init 16 256 (fun _ j -> float j)
 
@@ -356,7 +356,7 @@ let private renderColormaps (outDir: string) =
     printfn "wrote %s" path
 
 let private renderStackplot (outDir: string) =
-    let plt = Pyplot()
+    let plt = Plt()
     let x = [| for i in 0..40 -> float i / 4.0 |]
 
     let ys =
@@ -376,7 +376,7 @@ let private renderStackplot (outDir: string) =
     printfn "wrote %s" path
 
 let private renderVlines (outDir: string) =
-    let plt = Pyplot()
+    let plt = Plt()
     let xs = [| for i in 0..30 -> float i / 3.0 |]
     let ys = xs |> Array.map (fun x -> exp (-x / 5.0) * cos x)
     plt.Vlines(xs, Array.zeroCreate xs.Length, ys, color = "C0", label = "vlines")
@@ -390,7 +390,7 @@ let private renderVlines (outDir: string) =
     printfn "wrote %s" path
 
 let private renderPie (outDir: string) =
-    let plt = Pyplot()
+    let plt = Plt()
     plt.Figure(width = 5.0, height = 5.0) |> ignore // square figure -> round pie
 
     plt.Pie([| 35.0; 25.0; 20.0; 15.0; 5.0 |], labels = [| "A"; "B"; "C"; "D"; "E" |])
@@ -403,7 +403,7 @@ let private renderPie (outDir: string) =
     printfn "wrote %s" path
 
 let private renderCustomTicks (outDir: string) =
-    let plt = Pyplot()
+    let plt = Plt()
     let xs = [| for i in 0..100 -> float i / 100.0 * 2.0 * Math.PI |]
     let ys = xs |> Array.map sin
     plt.Plot(xs, ys, color = "C0", label = "sin(x)") |> ignore
@@ -422,7 +422,7 @@ let private renderCustomTicks (outDir: string) =
     printfn "wrote %s" path
 
 let private renderRefLines (outDir: string) =
-    let plt = Pyplot()
+    let plt = Plt()
     let xs = [| for i in 0..120 -> float i / 120.0 * 10.0 |]
     let ys = xs |> Array.map (fun x -> sin x + 0.1 * x)
     plt.AxHSpan(0.5, 1.5, color = "C1", alpha = 0.2) // highlighted band (backdrop)
@@ -438,7 +438,7 @@ let private renderRefLines (outDir: string) =
     printfn "wrote %s" path
 
 let private renderTwinx (outDir: string) =
-    let plt = Pyplot()
+    let plt = Plt()
     let xs = [| for i in 0..50 -> float i / 5.0 |]
     plt.Plot(xs, xs |> Array.map sin, color = "C0") |> ignore
     plt.XLabel "x"
@@ -455,7 +455,7 @@ let private renderTwinx (outDir: string) =
     printfn "wrote %s" path
 
 let private renderStreamplot (outDir: string) =
-    let plt = Pyplot()
+    let plt = Plt()
     let n = 25
     let xs = Array.init n (fun i -> -3.0 + 6.0 * float i / float (n - 1))
     let ys = xs
@@ -471,7 +471,7 @@ let private renderStreamplot (outDir: string) =
     printfn "wrote %s" path
 
 let private renderTable (outDir: string) =
-    let plt = Pyplot()
+    let plt = Plt()
     let headers = [| "Region"; "Q3"; "Q4"; "YoY" |]
 
     let rows =

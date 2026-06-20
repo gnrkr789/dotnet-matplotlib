@@ -89,7 +89,7 @@ module ColormapImageTests =
 
     [<Fact>]
     let ``Imshow renders viridis-colored cells to SVG`` () =
-        let plt = Pyplot()
+        let plt = Plt()
         let data = array2D [ for i in 0..7 -> [ for j in 0..7 -> float (i + j) ] ]
         plt.Imshow(data, cmap = "viridis") |> ignore
         let svg = plt.ToSvg()
@@ -114,8 +114,8 @@ module ColormapImageTests =
         Assert.Contains("#440154", FigureCanvas(fig).RenderToSvg())
 
     [<Fact>]
-    let ``Pyplot colorbar renders value ticks`` () =
-        let plt = Pyplot()
+    let ``Plt colorbar renders value ticks`` () =
+        let plt = Plt()
         let data = array2D [ for i in 0..3 -> [ for j in 0..3 -> float (i + j) ] ]
         let img = plt.Imshow data
         plt.Colorbar img |> ignore
@@ -123,7 +123,7 @@ module ColormapImageTests =
 
     [<Fact>]
     let ``Colorbar works for a colormapped scatter`` () =
-        let plt = Pyplot()
+        let plt = Plt()
 
         let sc = plt.Scatter([| 0.0; 1.0; 2.0 |], [| 0.0; 1.0; 2.0 |], c = [| 0.0; 5.0; 10.0 |], cmap = "viridis")
 

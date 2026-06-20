@@ -6,7 +6,7 @@
     <p>
         Rendered entirely in the browser with .NET WebAssembly &mdash; no JavaScript
         charting library, no native dependencies. The plot below is an SVG produced
-        by the pure-managed <code>Pyplot</code> API.
+        by the pure-managed <code>Plt</code> API.
     </p>
 
     <label>
@@ -33,7 +33,7 @@
 
     private void Render(string kind)
     {
-        var plt = new Pyplot();
+        var plt = new Plt();
 
         switch (kind)
         {

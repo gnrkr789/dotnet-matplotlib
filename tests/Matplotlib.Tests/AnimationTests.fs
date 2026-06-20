@@ -34,8 +34,8 @@ module AnimationTests =
         Assert.True(gif.Length > 2000)
 
     [<Fact>]
-    let ``Pyplot SaveGif writes a gif file`` () =
-        let plt = Pyplot()
+    let ``Plt SaveGif writes a gif file`` () =
+        let plt = Plt()
         let path = Path.Combine(Path.GetTempPath(), "mpltest_anim.gif")
 
         plt.SaveGif(

@@ -10,7 +10,7 @@ open Matplotlib.Gui
 /// </summary>
 [<EntryPoint; STAThread>]
 let main argv =
-    let plt = Pyplot()
+    let plt = Plt()
 
     // Set the default font to Malgun Gothic so Korean labels render correctly.
     // (Must be set before the figure/axes are created, like matplotlib's rcParams.)

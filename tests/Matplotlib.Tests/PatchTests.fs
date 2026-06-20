@@ -39,8 +39,8 @@ module PatchTests =
         Assert.True(ax.YLim.Upper > 3.0)
 
     [<Fact>]
-    let ``Pyplot bar renders filled rectangles to SVG`` () =
-        let plt = Pyplot()
+    let ``Plt bar renders filled rectangles to SVG`` () =
+        let plt = Plt()
 
         plt.Bar([| 0.0; 1.0; 2.0 |], [| 1.0; 2.0; 3.0 |], color = "C0", label = "values")
         |> ignore
@@ -77,7 +77,7 @@ module PatchTests =
 
     [<Fact>]
     let ``axhline includes its y in the y view and renders`` () =
-        let plt = Pyplot()
+        let plt = Plt()
         plt.Plot([| 0.0; 1.0 |], [| 0.0; 1.0 |]) |> ignore
         plt.AxHLine(5.0, color = "C3")
         Assert.True(plt.CurrentAxes().YLim.Upper >= 5.0)
@@ -85,14 +85,14 @@ module PatchTests =
 
     [<Fact>]
     let ``axvline includes its x in the x view`` () =
-        let plt = Pyplot()
+        let plt = Plt()
         plt.Plot([| 0.0; 1.0 |], [| 0.0; 1.0 |]) |> ignore
         plt.AxVLine 5.0
         Assert.True(plt.CurrentAxes().XLim.Upper >= 5.0)
 
     [<Fact>]
     let ``axhspan shades a band and widens the y view`` () =
-        let plt = Pyplot()
+        let plt = Plt()
         plt.Plot([| 0.0; 1.0 |], [| 0.0; 1.0 |]) |> ignore
         plt.AxHSpan(2.0, 4.0, color = "C2", alpha = 0.3)
         Assert.True(plt.CurrentAxes().YLim.Upper >= 4.0)
@@ -100,7 +100,7 @@ module PatchTests =
 
     [<Fact>]
     let ``twinx shares x and gives an independent right-side y axis`` () =
-        let plt = Pyplot()
+        let plt = Plt()
         plt.Plot([| 0.0; 10.0 |], [| 0.0; 1.0 |], color = "C0") |> ignore
         let parent = plt.CurrentAxes()
         let ax2 = plt.TwinX()

@@ -64,7 +64,7 @@ module TickStyleTests =
 
     [<Fact>]
     let ``Enabling minor ticks adds tick marks to the SVG`` () =
-        let plt = Pyplot()
+        let plt = Plt()
         plt.Plot([| 0.0; 1.0; 2.0; 3.0 |], [| 0.0; 1.0; 4.0; 9.0 |]) |> ignore
         let before = countPaths (plt.ToSvg())
         plt.MinorTicks()
@@ -72,8 +72,8 @@ module TickStyleTests =
         Assert.True(after > before, $"expected more paths after enabling minor ticks ({before} -> {after})")
 
     [<Fact>]
-    let ``Pyplot stem renders markers to SVG`` () =
-        let plt = Pyplot()
+    let ``Plt stem renders markers to SVG`` () =
+        let plt = Plt()
 
         plt.Stem([| 0.0; 1.0; 2.0; 3.0 |], [| 1.0; 3.0; 2.0; 4.0 |], color = "C0", label = "stem")
         |> ignore

@@ -28,8 +28,8 @@ module SubplotTests =
         Assert.True(axes[0, 0].Position.Y1 > axes[1, 0].Position.Y1)
 
     [<Fact>]
-    let ``Pyplot subplots sets the first cell as current axes and renders`` () =
-        let plt = Pyplot()
+    let ``Plt subplots sets the first cell as current axes and renders`` () =
+        let plt = Plt()
         let _, axes = plt.Subplots(nrows = 1, ncols = 2)
         Assert.Equal(2, Array2D.length2 axes)
         axes[0, 0].Plot([| 0.0; 1.0 |], [| 0.0; 1.0 |]) |> ignore

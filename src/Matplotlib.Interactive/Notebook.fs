@@ -8,7 +8,7 @@ open Matplotlib.Backends
 
 /// <summary>
 /// .NET Interactive / Polyglot / Jupyter notebook integration: registers HTML
-/// formatters so a <see cref="Figure"/> or <see cref="Pyplot"/> returned from a
+/// formatters so a <see cref="Figure"/> or <see cref="Plt"/> returned from a
 /// cell renders inline as SVG.
 /// </summary>
 /// <remarks>
@@ -23,7 +23,7 @@ module Notebook =
 
     /// <summary>
     /// Register inline SVG formatters for <see cref="Figure"/> and
-    /// <see cref="Pyplot"/> with .NET Interactive. Idempotent.
+    /// <see cref="Plt"/> with .NET Interactive. Idempotent.
     /// </summary>
     let register () : unit =
         if not registered then
@@ -34,8 +34,8 @@ module Notebook =
             )
 
             Formatter.Register(
-                typeof<Pyplot>,
-                (fun (value: obj) (writer: TextWriter) -> writer.Write((value :?> Pyplot).ToSvg())),
+                typeof<Plt>,
+                (fun (value: obj) (writer: TextWriter) -> writer.Write((value :?> Plt).ToSvg())),
                 htmlMime
             )
 

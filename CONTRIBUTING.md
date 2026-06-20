@@ -28,7 +28,7 @@ strictly inward:
   `Figure` / `Axes` / `Axes3D`, and the `IRenderer` port.
 - `src/Matplotlib.Backends` — concrete `IRenderer` implementations (SVG, the
   pure-managed PNG/raster backend, PDF), font loading and the GIF/animation writer.
-- `src/Matplotlib` — the stateful `Pyplot` facade.
+- `src/Matplotlib` — the stateful `Plt` facade.
 - `src/Matplotlib.Gui` — an opt-in, Windows-only interactive window + GDI backend.
 - `tests/Matplotlib.Tests` — xUnit tests.
 

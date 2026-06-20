@@ -4,8 +4,8 @@
     <RootNamespace>Matplotlib</RootNamespace>
     <AssemblyName>Matplotlib</AssemblyName>
     <PackageId>DotnetMatplotlib</PackageId>
-    <Description>A native .NET 10 port of Matplotlib in F#: a pyplot-style 2D plotting API (lines, scatter, bars, images/colormaps, contours, log/symlog/logit/date/categorical axes) rendering to SVG with zero native dependencies.</Description>
-    <PackageTags>matplotlib;plotting;chart;graph;visualization;fsharp;svg;pyplot;dataviz</PackageTags>
+    <Description>A native .NET 10 port of Matplotlib in F#: a familiar plt-style 2D plotting API (lines, scatter, bars, images/colormaps, contours, log/symlog/logit/date/categorical axes) rendering to SVG with zero native dependencies.</Description>
+    <PackageTags>matplotlib;plotting;chart;graph;visualization;fsharp;svg;dataviz</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageProjectUrl>https://github.com/gnrkr789/dotnet-matplotlib</PackageProjectUrl>
     <!-- Ship this facade plus its referenced domain/backend assemblies as one package. -->
@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Pyplot.fs" />
+    <Compile Include="Plt.fs" />
   </ItemGroup>
 
   <ItemGroup>

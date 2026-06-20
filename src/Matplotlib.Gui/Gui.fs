@@ -32,11 +32,11 @@ module Gui =
         use form = new PlotWindow(figure)
         Application.Run form
 
-/// <summary>Adds an interactive <c>Show</c> to the <see cref="Pyplot"/> facade.</summary>
+/// <summary>Adds an interactive <c>Show</c> to the <see cref="Plt"/> facade.</summary>
 [<AutoOpen>]
-module PyplotGuiExtensions =
+module PltGuiExtensions =
 
-    type Pyplot with
+    type Plt with
 
         /// <summary>
         /// Display the current figure in an interactive window and block until it

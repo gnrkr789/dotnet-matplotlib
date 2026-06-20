@@ -10,7 +10,7 @@ A **native .NET 10** port of [Matplotlib](https://matplotlib.org/) — the de-fa
 
 > A faithful port of Matplotlib's plotting model
 > (`Figure` / `Axes` / `Artist` / `Transform` / `Backend`) with a familiar
-> `pyplot`-style facade, producing publication-quality output with **zero native
+> `plt`-style facade, producing publication-quality output with **zero native
 > dependencies** — pure-managed SVG, PNG and PDF backends.
 
 ## Gallery
@@ -47,7 +47,7 @@ dotnet add package DotnetMatplotlib
 ```fsharp
 open Matplotlib
 
-let plt = Pyplot()
+let plt = Plt()
 plt.Plot([| 1.0; 2.0; 3.0; 4.0 |], [| 1.0; 4.0; 9.0; 16.0 |], color = "C0", label = "y = x^2")
 |> ignore
 plt.Title "Hello, dotnet-matplotlib"
@@ -93,7 +93,7 @@ lives in `Matplotlib.Gui`, so the default path stays free of any UI dependency:
 open Matplotlib
 open Matplotlib.Gui   // adds plt.Show()
 
-let plt = Pyplot()
+let plt = Plt()
 plt.Plot([| 0.0; 1.0; 2.0; 3.0 |], [| 0.0; 1.0; 4.0; 9.0 |], color = "C0") |> ignore
 plt.Title "Hello, window"
 plt.Show()            // opens a window and blocks until it is closed; resizes re-layout
@@ -108,7 +108,7 @@ In a .NET Interactive / Polyglot / Jupyter notebook, figures render inline as SV
 open Matplotlib
 Matplotlib.Interactive.Notebook.register ()   // once per session
 
-let plt = Pyplot()
+let plt = Plt()
 plt.Plot([| 0.0; 1.0; 2.0 |], [| 0.0; 1.0; 4.0 |], color = "C0") |> ignore
 plt   // the cell value renders as an inline SVG plot
 ```
@@ -138,7 +138,7 @@ df.PlotLine("x", "y").Savefig "line.png"
 df.PlotHist("value", 20).Savefig "hist.svg"
 ```
 
-Each method plots the named column(s) and returns the `Pyplot`, so you can add a
+Each method plots the named column(s) and returns the `Plt`, so you can add a
 title or choose the output format. The same extension methods work from C#.
 
 ## Reports (server-side, deterministic)

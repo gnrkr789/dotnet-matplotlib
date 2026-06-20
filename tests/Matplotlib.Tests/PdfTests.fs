@@ -9,7 +9,7 @@ module PdfTests =
 
     [<Fact>]
     let ``FigureCanvas renders a figure to a structurally valid PDF`` () =
-        let plt = Pyplot()
+        let plt = Plt()
 
         plt.Plot([| 0.0; 1.0; 2.0; 3.0 |], [| 0.0; 1.0; 4.0; 9.0 |], color = "C0", label = "y")
         |> ignore

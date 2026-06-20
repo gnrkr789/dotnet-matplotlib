@@ -109,7 +109,7 @@ module RasterTests =
 
     [<Fact>]
     let ``FigureCanvas renders a figure to a valid PNG`` () =
-        let plt = Pyplot()
+        let plt = Plt()
 
         plt.Plot([| 0.0; 1.0; 2.0; 3.0 |], [| 0.0; 1.0; 4.0; 9.0 |], color = "C0")
         |> ignore

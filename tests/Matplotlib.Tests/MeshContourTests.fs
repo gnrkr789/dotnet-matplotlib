@@ -35,7 +35,7 @@ module MeshContourTests =
 
     [<Fact>]
     let ``Pcolormesh uses origin-lower integer cell edges`` () =
-        let plt = Pyplot()
+        let plt = Plt()
         let data = array2D [ for i in 0..3 -> [ for j in 0..3 -> float (i + j) ] ]
         plt.Pcolormesh data |> ignore
         assertClose 0.0 (plt.CurrentAxes().XLim.Lower)
@@ -44,7 +44,7 @@ module MeshContourTests =
 
     [<Fact>]
     let ``Contour produces line collections that render`` () =
-        let plt = Pyplot()
+        let plt = Plt()
         let n = 24
 
         let data =
@@ -59,7 +59,7 @@ module MeshContourTests =
 
     [<Fact>]
     let ``Contourf fills the field with banded colors`` () =
-        let plt = Pyplot()
+        let plt = Plt()
         let data = array2D [ for i in 0..9 -> [ for j in 0..9 -> float (i + j) ] ]
         let levels = plt.Contourf(data, cmap = "viridis")
         Assert.True(levels.Length > 2)

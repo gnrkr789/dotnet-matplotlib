@@ -37,8 +37,8 @@ module StyleSheetTests =
         Assert.Equal(RcParams.Default.FigureFaceColor, rc.FigureFaceColor)
 
     [<Fact>]
-    let ``Pyplot UseStyle affects the created figure`` () =
-        let plt = Pyplot()
+    let ``Plt UseStyle affects the created figure`` () =
+        let plt = Plt()
         plt.UseStyle "dark_background"
         let fig = plt.Figure()
         Assert.True(fig.FaceColor.R < 0.1)

@@ -9,8 +9,8 @@ open Matplotlib.Backends
 module RenderingTests =
 
     [<Fact>]
-    let ``Pyplot renders a line plot to SVG`` () =
-        let plt = Pyplot()
+    let ``Plt renders a line plot to SVG`` () =
+        let plt = Plt()
 
         plt.Plot([| 1.0; 2.0; 3.0; 4.0 |], [| 1.0; 4.0; 9.0; 16.0 |], color = "C0", label = "y = x^2")
         |> ignore
@@ -31,7 +31,7 @@ module RenderingTests =
 
     [<Fact>]
     let ``FontFamily setting flows into rendered text`` () =
-        let plt = Pyplot()
+        let plt = Plt()
         plt.FontFamily <- "맑은 고딕"
         plt.Plot([| 0.0; 1.0 |], [| 0.0; 1.0 |]) |> ignore
         plt.Title "제목"
@@ -42,7 +42,7 @@ module RenderingTests =
 
     [<Fact>]
     let ``Default font family is sans-serif`` () =
-        let plt = Pyplot()
+        let plt = Plt()
         plt.Plot([| 0.0; 1.0 |], [| 0.0; 1.0 |]) |> ignore
         plt.Title "demo"
         Assert.Contains("font-family=\"sans-serif\"", plt.ToSvg())

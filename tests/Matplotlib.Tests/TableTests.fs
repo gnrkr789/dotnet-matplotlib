@@ -8,7 +8,7 @@ module TableTests =
 
     [<Fact>]
     let ``table renders header and cell text into SVG`` () =
-        let plt = Pyplot()
+        let plt = Plt()
         plt.Table([| [| "a"; "1" |]; [| "b"; "2" |] |], colLabels = [| "name"; "val" |])
         let svg = plt.ToSvg()
         Assert.Contains("name", svg) // header label

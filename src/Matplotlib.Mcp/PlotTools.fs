@@ -14,7 +14,7 @@ open Matplotlib
 type PlotTools() =
 
     static member private save
-        (plt: Pyplot)
+        (plt: Plt)
         (title: string)
         (xlabel: string)
         (ylabel: string)
@@ -50,7 +50,7 @@ type PlotTools() =
             [<Description("Y axis label (empty for none)")>] ylabel: string,
             [<Description("Line color such as C0, red or #1f77b4 (empty for default)")>] color: string
         ) : string =
-        let plt = Pyplot()
+        let plt = Plt()
 
         if String.IsNullOrWhiteSpace color then
             plt.Plot(x, y) |> ignore
@@ -69,7 +69,7 @@ type PlotTools() =
             [<Description("Chart title (empty for none)")>] title: string,
             [<Description("Marker color such as C1 or blue (empty for default)")>] color: string
         ) : string =
-        let plt = Pyplot()
+        let plt = Plt()
 
         if String.IsNullOrWhiteSpace color then
             plt.Scatter(x, y) |> ignore
@@ -87,7 +87,7 @@ type PlotTools() =
             [<Description("Output file path, e.g. bars.png")>] output: string,
             [<Description("Chart title (empty for none)")>] title: string
         ) : string =
-        let plt = Pyplot()
+        let plt = Plt()
         plt.Bar(labels, values) |> ignore
         PlotTools.save plt title "" "" output
 
@@ -103,7 +103,7 @@ type PlotTools() =
         let rows = if isNull data then 0 else data.Length
         let cols = if rows = 0 then 0 else data[0].Length
         let grid = Array2D.init rows cols (fun i j -> data[i][j])
-        let plt = Pyplot()
+        let plt = Plt()
 
         let image =
             if String.IsNullOrWhiteSpace cmap then

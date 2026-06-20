@@ -72,8 +72,8 @@ module StepErrorbarTests =
         Assert.True(ax.YLim.Upper >= 3.5)
 
     [<Fact>]
-    let ``Pyplot step and errorbar render to SVG`` () =
-        let plt = Pyplot()
+    let ``Plt step and errorbar render to SVG`` () =
+        let plt = Plt()
 
         plt.Step([| 0.0; 1.0; 2.0; 3.0 |], [| 1.0; 3.0; 2.0; 4.0 |], where = "mid", color = "C0")
         |> ignore
@@ -81,7 +81,7 @@ module StepErrorbarTests =
         let svg = plt.ToSvg()
         Assert.Contains("<path", svg)
 
-        let plt2 = Pyplot()
+        let plt2 = Plt()
 
         plt2.Errorbar([| 0.0; 1.0; 2.0 |], [| 1.0; 2.0; 1.5 |], yerr = [| 0.2; 0.3; 0.25 |], color = "C1")
         |> ignore

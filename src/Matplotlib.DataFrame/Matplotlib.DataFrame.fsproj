@@ -4,7 +4,7 @@
     <RootNamespace>Matplotlib.DataFrame</RootNamespace>
     <AssemblyName>Matplotlib.DataFrame</AssemblyName>
     <PackageId>DotnetMatplotlib.DataFrame</PackageId>
-    <Description>Microsoft.Data.Analysis DataFrame plotting extensions for DotnetMatplotlib: df.PlotLine / PlotScatter / PlotBar / PlotHist, returning a Pyplot (pandas .plot() style).</Description>
+    <Description>Microsoft.Data.Analysis DataFrame plotting extensions for DotnetMatplotlib: df.PlotLine / PlotScatter / PlotBar / PlotHist, returning a Plt (pandas .plot() style).</Description>
     <PackageTags>matplotlib;dataframe;plotting;data-analysis;dataviz;fsharp</PackageTags>
   </PropertyGroup>
 

@@ -10,7 +10,7 @@ A **native .NET 10** port of [Matplotlib](https://matplotlib.org/) — the de-fa
 
 > A faithful port of Matplotlib's plotting model
 > (`Figure` / `Axes` / `Artist` / `Transform` / `Backend`) with a familiar
-> `pyplot`-style facade, producing publication-quality output with **zero native
+> `plt`-style facade, producing publication-quality output with **zero native
 > dependencies** — pure-managed SVG, PNG and PDF backends.
 
 A screenshot gallery is available on the
@@ -25,7 +25,7 @@ dotnet add package DotnetMatplotlib
 ```fsharp
 open Matplotlib
 
-let plt = Pyplot()
+let plt = Plt()
 plt.Plot([| 1.0; 2.0; 3.0; 4.0 |], [| 1.0; 4.0; 9.0; 16.0 |], color = "C0", label = "y = x^2")
 |> ignore
 plt.Title "Hello, dotnet-matplotlib"
@@ -72,7 +72,7 @@ as SVG.
 
 `DotnetMatplotlib.DataFrame` adds pandas-style plotting extensions to
 `Microsoft.Data.Analysis.DataFrame`: `df.PlotLine("x","y")`, `PlotScatter`,
-`PlotBar`, `PlotHist` — each returns a `Pyplot`.
+`PlotBar`, `PlotHist` — each returns a `Plt`.
 
 ## Reports (server-side, deterministic)
 

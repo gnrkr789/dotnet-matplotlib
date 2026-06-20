@@ -47,7 +47,7 @@ module HatchClipTests =
     [<Fact>]
     let ``A hatched bar renders extra strokes into the SVG`` () =
         let svg (hatch: string option) =
-            let plt = Pyplot()
+            let plt = Plt()
             plt.Bar([| 0.0; 1.0; 2.0 |], [| 3.0; 5.0; 2.0 |], ?hatch = hatch) |> ignore
             plt.ToSvg()
 

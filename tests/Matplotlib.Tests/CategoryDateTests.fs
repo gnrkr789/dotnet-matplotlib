@@ -43,16 +43,16 @@ module CategoryDateTests =
         Assert.True(ax.XAxis.MajorFormatter.IsSome)
 
     [<Fact>]
-    let ``Pyplot categorical bar renders category labels`` () =
-        let plt = Pyplot()
+    let ``Plt categorical bar renders category labels`` () =
+        let plt = Plt()
         plt.Bar([| "red"; "green"; "blue" |], [| 3.0; 7.0; 5.0 |]) |> ignore
         let svg = plt.ToSvg()
         Assert.Contains("green", svg)
         Assert.Contains("<path", svg)
 
     [<Fact>]
-    let ``Pyplot plot_date renders a date axis`` () =
-        let plt = Pyplot()
+    let ``Plt plot_date renders a date axis`` () =
+        let plt = Plt()
         let dates = [| DateTime(2020, 1, 1); DateTime(2020, 6, 1); DateTime(2021, 1, 1) |]
         plt.PlotDate(dates, [| 1.0; 3.0; 2.0 |]) |> ignore
         let svg = plt.ToSvg()
