@@ -39,6 +39,7 @@
     <Compile Include="DataFrameTests.fs" />
     <Compile Include="ReportTests.fs" />
     <Compile Include="TableTests.fs" />
+    <Compile Include="VersoTests.fs" />
   </ItemGroup>
 
   <ItemGroup>

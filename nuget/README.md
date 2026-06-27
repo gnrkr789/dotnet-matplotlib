@@ -63,10 +63,12 @@ plt.SaveGif("wave.gif", 30, (fun i -> buildFrame i), fps = 20)
 
 ## Notebooks
 
-In a .NET Interactive / Polyglot / Jupyter notebook, add
+`DotnetMatplotlib.Interactive` renders figures inline as SVG in **Verso** and **.NET
+Interactive** notebooks. In [Verso](https://versonotebooks.com/) (the actively-developed
+successor to .NET Interactive) the formatter is discovered automatically — just add the
+package as an extension. For legacy .NET Interactive / Polyglot, add
 `#r "nuget: DotnetMatplotlib.Interactive"` and call
-`Matplotlib.Interactive.Notebook.register ()` once — figures then render inline
-as SVG.
+`Matplotlib.Interactive.Notebook.register ()` once.
 
 ## DataFrames
 
