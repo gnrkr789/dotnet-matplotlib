@@ -78,10 +78,11 @@ package as an extension. For legacy .NET Interactive / Polyglot, add
 
 ## Reports (server-side, deterministic)
 
-`DotnetMatplotlib.Reports` composes multi-panel SVG/PNG/PDF reports for
-server-side use: pure-managed with zero native dependencies (builds and tests on
-Linux; SVG and PDF need no system fonts) and **byte-reproducible** output that can
-be checksummed (`report.Sha256()`) for audit and compliance.
+The core package includes a `Report` type (`open Matplotlib.Reports`) that composes
+multi-panel SVG/PNG/PDF reports for server-side use: pure-managed with zero native
+dependencies (builds and tests on Linux; SVG and PDF need no system fonts) and
+**byte-reproducible** output that can be checksummed (`report.Sha256()`) for audit and
+compliance.
 
 ## AI agents (MCP)
 

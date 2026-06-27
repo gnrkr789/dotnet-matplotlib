@@ -15,6 +15,14 @@ may contain breaking changes.
   actively-developed successor to the now-deprecated .NET Interactive / Polyglot
   Notebooks ([#1](https://github.com/gnrkr789/dotnet-matplotlib/issues/1)).
 
+### Changed
+
+- **Folded `DotnetMatplotlib.Reports` into the core `DotnetMatplotlib` package.** The
+  `Report` type (namespace `Matplotlib.Reports`) needs nothing beyond the core library,
+  so it no longer ships as a separate package — trimming the published set to four.
+  **Migration:** drop the `DotnetMatplotlib.Reports` package reference; `Report` now
+  comes from `DotnetMatplotlib`, and `open Matplotlib.Reports` is unchanged.
+
 ## [0.0.9] — 2026-06-20
 
 ### Changed — ⚠️ BREAKING
