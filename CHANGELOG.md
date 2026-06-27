@@ -6,6 +6,15 @@ may contain breaking changes.
 
 ## [Unreleased]
 
+### Added
+
+- **Verso notebook support**, shipped inside the existing `DotnetMatplotlib.Interactive`
+  package. A `[VersoExtension]`-marked `IDataFormatter` renders a `Figure` or `Plt`
+  returned from a cell as inline SVG (`image/svg+xml`), discovered automatically by the
+  Verso host (no registration call). [Verso](https://versonotebooks.com/) is the
+  actively-developed successor to the now-deprecated .NET Interactive / Polyglot
+  Notebooks ([#1](https://github.com/gnrkr789/dotnet-matplotlib/issues/1)).
+
 ### Changed
 
 - **Folded `DotnetMatplotlib.Reports` into the core `DotnetMatplotlib` package.** The

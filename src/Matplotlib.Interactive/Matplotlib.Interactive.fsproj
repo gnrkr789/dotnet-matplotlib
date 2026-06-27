@@ -4,14 +4,15 @@
     <RootNamespace>Matplotlib.Interactive</RootNamespace>
     <AssemblyName>Matplotlib.Interactive</AssemblyName>
     <PackageId>DotnetMatplotlib.Interactive</PackageId>
-    <Description>.NET Interactive / Polyglot / Jupyter notebook integration for DotnetMatplotlib: inline SVG rendering of figures in notebook cells.</Description>
-    <PackageTags>matplotlib;plotting;notebook;dotnet-interactive;polyglot;jupyter;fsharp</PackageTags>
+    <Description>Notebook integration for DotnetMatplotlib: inline SVG rendering of figures in .NET Interactive / Polyglot / Jupyter and Verso notebook cells. The Verso formatter is auto-discovered; .NET Interactive needs a one-time register().</Description>
+    <PackageTags>matplotlib;plotting;notebook;dotnet-interactive;polyglot;jupyter;verso;fsharp</PackageTags>
     <!-- Microsoft.DotNet.Interactive.Formatting only ships prerelease builds. -->
     <NoWarn>$(NoWarn);NU5104</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="Notebook.fs" />
+    <Compile Include="Verso.fs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,6 +25,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.DotNet.Interactive.Formatting" Version="1.0.0-beta.26120.1" />
+    <PackageReference Include="Verso.Abstractions" Version="1.0.22" />
   </ItemGroup>
 
 </Project>
