@@ -16,9 +16,15 @@ module VersoTests =
     let private ctx = StubFormatterContext() :> IFormatterContext
 
     [<Fact>]
-    let ``formatter advertises Figure and Plt as supported types`` () =
-        Assert.Contains(typeof<Figure>, formatter.SupportedTypes)
-        Assert.Contains(typeof<Plt>, formatter.SupportedTypes)
+    let ``formatter claims Plt and Figure via CanFormat (object catch-all + name gate)`` () =
+        // Across Verso's load-context boundary only System.Object matches the host's
+        // IsInstanceOfType pre-filter, so SupportedTypes is the catch-all and CanFormat
+        // does the real, name-based gating.
+        Assert.Contains(typeof<obj>, formatter.SupportedTypes)
+        let plt = Plt()
+        plt.Plot([| 0.0; 1.0 |], [| 0.0; 1.0 |]) |> ignore
+        Assert.True(formatter.CanFormat(plt, ctx))
+        Assert.True(formatter.CanFormat(plt.CurrentFigure(), ctx))
 
     [<Fact>]
     let ``FormatAsync renders a Figure as image/svg+xml`` () =
