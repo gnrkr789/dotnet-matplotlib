@@ -4,6 +4,16 @@ All notable changes to **dotnet-matplotlib** are recorded here. The project foll
 [Semantic Versioning](https://semver.org/). While on `0.x` (pre-1.0), minor releases
 may contain breaking changes.
 
+## [Unreleased]
+
+### Changed
+
+- **Folded `DotnetMatplotlib.Reports` into the core `DotnetMatplotlib` package.** The
+  `Report` type (namespace `Matplotlib.Reports`) needs nothing beyond the core library,
+  so it no longer ships as a separate package — trimming the published set to four.
+  **Migration:** drop the `DotnetMatplotlib.Reports` package reference; `Report` now
+  comes from `DotnetMatplotlib`, and `open Matplotlib.Reports` is unchanged.
+
 ## [0.0.9] — 2026-06-20
 
 ### Changed — ⚠️ BREAKING
