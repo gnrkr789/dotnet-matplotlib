@@ -46,6 +46,8 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="xunit" Version="2.9.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+    <!-- Verso's stub contexts / test doubles for verifying the IDataFormatter. -->
+    <PackageReference Include="Verso.Testing" Version="1.0.22" />
   </ItemGroup>
 
   <ItemGroup>
