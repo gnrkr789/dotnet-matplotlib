@@ -101,7 +101,30 @@ plt.Show()            // opens a window and blocks until it is closed; resizes r
 
 ## Notebooks
 
-In a .NET Interactive / Polyglot / Jupyter notebook, figures render inline as SVG:
+The `DotnetMatplotlib.Interactive` package renders a returned `Figure` / `Plt` inline as
+SVG in both **Verso** and **.NET Interactive** notebooks.
+
+### Verso
+
+[Verso](https://versonotebooks.com/) is the actively-developed successor to .NET
+Interactive. Add `DotnetMatplotlib.Interactive` as a Verso extension — the formatter is
+discovered automatically, with no registration call:
+
+```fsharp
+open Matplotlib
+
+let plt = Plt()
+plt.Plot([| 0.0; 1.0; 2.0 |], [| 0.0; 1.0; 4.0 |], color = "C0") |> ignore
+plt   // the cell value renders as an inline SVG plot
+```
+
+See the [Verso extension docs](https://github.com/DataficationSDK/Verso/tree/main/docs/extensions)
+for adding an extension package to your environment.
+
+### .NET Interactive (legacy)
+
+> .NET Interactive / Polyglot Notebooks is being retired — prefer Verso above. The same
+> package still supports it with a one-time `register()`:
 
 ```fsharp
 #r "nuget: DotnetMatplotlib.Interactive"

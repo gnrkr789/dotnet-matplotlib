@@ -4,6 +4,17 @@ All notable changes to **dotnet-matplotlib** are recorded here. The project foll
 [Semantic Versioning](https://semver.org/). While on `0.x` (pre-1.0), minor releases
 may contain breaking changes.
 
+## [Unreleased]
+
+### Added
+
+- **Verso notebook support**, shipped inside the existing `DotnetMatplotlib.Interactive`
+  package. A `[VersoExtension]`-marked `IDataFormatter` renders a `Figure` or `Plt`
+  returned from a cell as inline SVG (`image/svg+xml`), discovered automatically by the
+  Verso host (no registration call). [Verso](https://versonotebooks.com/) is the
+  actively-developed successor to the now-deprecated .NET Interactive / Polyglot
+  Notebooks ([#1](https://github.com/gnrkr789/dotnet-matplotlib/issues/1)).
+
 ## [0.0.9] — 2026-06-20
 
 ### Changed — ⚠️ BREAKING
