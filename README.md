@@ -228,24 +228,8 @@ PNG / SVG / PDF file (chosen by the output extension) and return the saved path.
 - Backends: SVG, PNG and PDF (pure-managed), an interactive window (Windows), and animated GIF
 - Integrations: a deterministic server-side **reporting engine**, `Microsoft.Data.Analysis` DataFrames, .NET Interactive / Jupyter notebooks, an MCP server for AI agents, and Blazor WebAssembly (runs in the browser)
 
-See [PORTING.md](PORTING.md) for the parity log.
-
-## Roadmap
-
-A few areas are still being refined toward fuller Matplotlib parity (tracked in
-[PORTING.md](PORTING.md) under *Known deviations / TODO*, and marked with `TODO`
-comments in the source):
-
-- **`ScalarFormatter` scientific notation / shared offset** — very large or small
-  tick values currently render in full; the common `×10ⁿ` offset label is planned.
-- **Real glyph-advance text metrics** — text sizing in layout (`tight_layout`,
-  label / legend placement) uses a fixed-width approximation; switching to measured
-  TrueType advances is in progress.
-- **Non-zero winding raster fill** — the software rasterizer fills with the even-odd
-  rule, whereas Matplotlib/Agg use non-zero winding (affects self-intersecting and
-  holey fills).
-
-Contributions welcome.
+See [PORTING.md](PORTING.md) for the parity log and the known deviations from
+Matplotlib. Contributions welcome.
 
 ## Building
 

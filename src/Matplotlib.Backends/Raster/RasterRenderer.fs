@@ -169,7 +169,8 @@ type RasterRenderer(image: RasterImage, sizePx: Size, dpi: float, scale: int) =
         member _.MeasureText(text: string, font: FontProperties) : Size =
             // Same heuristic as the SVG backend so layout matches across backends.
             // TODO(roadmap): measure real TrueType glyph advances (DrawText already
-            // resolves the font) instead of this fixed 0.6-em width. See README Roadmap.
+            // resolves the font) instead of this fixed 0.6-em width. See PORTING.md
+            // (Known deviations / TODO).
             let emPx = font.Size * dpi / 72.0
 
             {
