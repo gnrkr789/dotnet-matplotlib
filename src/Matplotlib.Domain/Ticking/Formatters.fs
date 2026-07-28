@@ -25,29 +25,58 @@ type ITickFormatter =
 /// </remarks>
 // TODO(roadmap): scientific notation + a shared "×10ⁿ" offset label for very
 // large/small values (matplotlib's axes.formatter.limits powerlimits). Needs an
-// OffsetText surface on the formatter + axis rendering. See README Roadmap.
+// OffsetText surface on the formatter + axis rendering. See PORTING.md
+// (Known deviations / TODO).
 type ScalarFormatter() =
 
-    let decimalsFor (v: float) : int =
+    /// <summary>Math.Round's maximum supported decimal count.</summary>
+    let maxDecimals = 15
+
+    /// <summary>
+    /// Smallest number of decimals that keeps <paramref name="v"/> distinguishable
+    /// at a scale of <paramref name="tol"/>.
+    /// </summary>
+    let decimalsFor (tol: float) (v: float) : int =
         let mutable d = 0
         let mutable searching = true
 
-        while searching && d < 12 do
-            let scaled = v * (10.0 ** float d)
-
-            if abs (scaled - Math.Round scaled) <= 1e-6 * max 1.0 (abs scaled) then
+        while searching && d < maxDecimals do
+            if abs (v - Math.Round(v, d)) <= tol then
                 searching <- false
             else
                 d <- d + 1
 
         d
 
+    /// <summary>
+    /// The scale the precision is judged against: the tick span, falling back to
+    /// the largest magnitude for a single (or constant) tick.
+    /// </summary>
+    let toleranceScale (locs: float[]) : float =
+        let finite = locs |> Array.filter Double.IsFinite
+
+        if finite.Length = 0 then
+            1.0
+        else
+            let span = Array.max finite - Array.min finite
+
+            if span > 0.0 then
+                span
+            else
+                let magnitude = finite |> Array.map abs |> Array.max
+                if magnitude > 0.0 then magnitude else 1.0
+
     interface ITickFormatter with
         member _.FormatTicks(locs: float[]) : string[] =
             if locs.Length = 0 then
                 [||]
             else
-                let decimals = locs |> Array.map decimalsFor |> Array.max
+                // Precision follows the tick *span*, like matplotlib's sigfig search.
+                // An absolute tolerance floor instead collapses every value below it
+                // to "0" (a whole 1e-7 axis) and drops the decimals that separate
+                // closely-spaced ticks at a large offset (1000000.5 -> "1000000").
+                let tol = 1e-6 * toleranceScale locs
+                let decimals = locs |> Array.map (decimalsFor tol) |> Array.max
 
                 locs
                 |> Array.map (fun v ->

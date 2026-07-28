@@ -88,16 +88,22 @@ and is not part of this repository (it is git-ignored).
 | 2026-06-15 | 37 | `streamplot` rewritten: Euler → RK4 + density occupancy mask | `Domain/Axes` (`Streamplot`), `samples/Gallery` | streamlines integrate the unit-speed field with classic 4th-order Runge–Kutta (forward + backward from each seed), so trajectories stay on curved/closed field lines (a circular field keeps constant radius, verified). A density occupancy mask claims the cells each line passes through and stops a line that enters another's territory or closes a loop; too-short trajectories release their cells — giving evenly spaced, non-overlapping lines (verified on a uniform field). Gallery `streamplot` PNG |
 | 2026-06-15 | 38 | `contourf` filled bands (cell quantization → iso-band polygons) | `Domain/Axes` (`Contourf`), `samples/Gallery` | each grid cell is clipped to every band it overlaps with Sutherland–Hodgman against the two band-edge levels, emitting filled polygons whose boundaries follow the contour lines (verified: a band edge lands on the interpolated contour, not a grid line). Replaces the blocky per-cell image; now uses node coordinates `[0,cols-1]×[0,rows-1]` matching `contour`; Gallery `contourf` PNG |
 | 2026-06-28 | 39 | Verso notebook formatters (`IDataFormatter`) | `Matplotlib.Interactive/Verso` (`MatplotlibFormatter`, package `DotnetMatplotlib.Interactive`) | inline SVG rendering of `Figure`/`Plt` in [Verso](https://versonotebooks.com/) notebooks: a `[VersoExtension]`-marked `IDataFormatter` returns `image/svg+xml`, auto-discovered by the host (no registration call). Ships in the existing `DotnetMatplotlib.Interactive` package alongside the .NET Interactive formatters, since Verso is its successor ([#1](https://github.com/gnrkr789/dotnet-matplotlib/issues/1)) |
+| 2026-07-28 | 40 | tick-label correctness (`ticker.ScalarFormatter` sigfig search, `figure.tight_layout`/`constrained_layout` decoration sizing) | `Ticking/Formatters` (`ScalarFormatter`), `Domain/Axes` (`MajorTicksFor`, `LeftTickLabels`, `AxesLayout.tickLabelWidth`), `Domain/Figure` (`TightLayout`, `ConstrainedLayout`) | **fix:** the decimal-count search compared against a tolerance floored at an absolute `1e-6`, so every tick below that rounded to `"0"` (a whole `1e-7` axis read `0 0 0 0 0 0`) and close ticks on a large offset lost their decimals; precision now derives from the tick *span*, like matplotlib's `sigfigs` loop. **fix:** both layout estimators reserved room for a hard-coded 4-character tick label, so a wider one overflowed the canvas and calling them left *less* room than the default margins (a `1e9` axis went from −7px to −36px of overhang); they now size the margin from the labels the axes will actually draw, via a renderer-free locator/formatter pass (`MajorTicksFor`), skipping right-side y labels (colorbar / `twinx`). Width still uses the font-independent `0.6·em` per character so vector output stays byte-reproducible |
 
-Known deviations / TODO (in progress — see the README *Roadmap*; marked with
-`TODO` comments in the source):
+Known deviations / TODO (in progress; marked with `TODO` comments in the source):
 - **`ScalarFormatter` scientific notation / shared offset** — very large or small
-  tick values render in full (e.g. `10000000.000`); Matplotlib factors out a
-  common `×10ⁿ` offset and labels the scaled values. *(TODO: `Ticking/Formatters`.)*
-- **Real glyph-advance text metrics** — `MeasureText` and the layout estimators
-  (`tight_layout`/`constrained_layout`) use a fixed `0.6·em` per-character width;
-  Matplotlib measures exact TrueType advances. *(TODO: `Backends/.../MeasureText`,
-  `Domain/Figure` layout.)*
+  tick values render in full (e.g. `1000000000`); Matplotlib factors out a
+  common `×10ⁿ` offset and labels the scaled values. Decimal notation runs out
+  below `1e-15`, where distinct ticks start sharing a label — the offset form is
+  what fixes that. *(TODO: `Ticking/Formatters`.)*
+- **Real glyph-advance text metrics** — `MeasureText` uses a fixed `0.6·em` per
+  character; Matplotlib measures exact TrueType advances. The figure layout
+  estimators (`tight_layout`/`constrained_layout`) measure the real tick-label
+  *text* but deliberately keep the same font-independent per-character width, so
+  vector output stays byte-reproducible across machines (`Report.Sha256`).
+  Switching `MeasureText` itself to measured advances therefore needs a decision
+  about which of the two the layout should follow.
+  *(TODO: `Backends/.../MeasureText`.)*
 - **Non-zero winding raster fill** — the software rasterizer fills with the
   even-odd rule per sub-path; Matplotlib/Agg use non-zero winding across the whole
   path (affects self-intersecting and holey fills). *(TODO: `Backends/Raster/RasterImage`.)*

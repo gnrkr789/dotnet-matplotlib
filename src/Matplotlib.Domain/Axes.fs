@@ -248,6 +248,20 @@ module internal AxesLayout =
         | "inout" -> baseline - length, baseline + length
         | _ -> baseline, baseline - length
 
+    /// <summary>
+    /// Width in pixels of the widest of <paramref name="labels"/>, for reserving
+    /// margin space.
+    /// </summary>
+    /// <remarks>
+    /// Uses the same fixed <c>0.6 em</c> per character as every backend's
+    /// <c>MeasureText</c> rather than measured glyph advances: the figure layout
+    /// must not depend on which fonts a machine has installed, or the vector
+    /// output would stop being byte-reproducible (see <c>Report.Sha256</c>).
+    /// </remarks>
+    let tickLabelWidth (labelSizePts: float) (pt2px: float) (labels: string seq) : float =
+        let longest = labels |> Seq.fold (fun acc (s: string) -> max acc s.Length) 0
+        float longest * 0.6 * labelSizePts * pt2px
+
     /// <summary>Number of tick bins for an axis of the given pixel length.</summary>
     let tickBins (lengthPx: float) (labelSizePts: float) (factor: float) (pt2px: float) : int =
         let sizePx = labelSizePts * factor * pt2px
@@ -1557,8 +1571,16 @@ type Axes(rc: RcParams) =
                 else
                     AxesLayout.marginExpandSticky stickyY (Array.min ys) (Array.max ys)
 
-    member private this.BuildContext(renderer: IRenderer) : AxesDrawContext =
-        let canvas = renderer.CanvasSizePx
+    /// <summary>The scales and clamped view intervals this Axes draws with.</summary>
+    member private this.ScaleView() : IScale * IScale * Interval * Interval =
+        // a twinx overlay borrows the source axes' x range and scale (shared x).
+        let xSource = defaultArg this.SharedXFrom this
+        let xScale = xSource.XAxis.Scale
+        let yScale = this.YAxis.Scale
+        xScale, yScale, xScale.ClampLimits xSource.XLim, yScale.ClampLimits this.YLim
+
+    /// <summary>The pixel box this Axes occupies on a canvas of the given size.</summary>
+    member private this.DrawBox(canvas: Size) : BBox =
         let pos = this.Position
 
         let fullBox =
@@ -1568,30 +1590,59 @@ type Axes(rc: RcParams) =
                 (pos.X1 * canvas.Width)
                 (pos.Y1 * canvas.Height)
 
-        // a twinx overlay borrows the source axes' x range and scale (shared x).
-        let xSource = defaultArg this.SharedXFrom this
-        let xScale = xSource.XAxis.Scale
-        let yScale = this.YAxis.Scale
-        let xView = xScale.ClampLimits xSource.XLim
-        let yView = yScale.ClampLimits this.YLim
-        let sxLo, sxHi = xScale.TransformValue xView.Lower, xScale.TransformValue xView.Upper
-        let syLo, syHi = yScale.TransformValue yView.Lower, yScale.TransformValue yView.Upper
+        let xScale, yScale, xView, yView = this.ScaleView()
+        let xr = abs (xScale.TransformValue xView.Upper - xScale.TransformValue xView.Lower)
+        let yr = abs (yScale.TransformValue yView.Upper - yScale.TransformValue yView.Lower)
 
         // aspect='equal': shrink the axes box so one (scaled) data unit spans the
         // same number of pixels on both axes (adjustable='box'), centred in place.
-        let box =
-            let xr = abs (sxHi - sxLo)
-            let yr = abs (syHi - syLo)
+        if this.Aspect = "equal" && xr > 0.0 && yr > 0.0 then
+            let s = min (abs fullBox.Width / xr) (abs fullBox.Height / yr)
+            let w = s * xr
+            let h = s * yr
+            let cx = (fullBox.X0 + fullBox.X1) / 2.0
+            let cy = (fullBox.Y0 + fullBox.Y1) / 2.0
+            BBox.fromExtents (cx - w / 2.0) (cy - h / 2.0) (cx + w / 2.0) (cy + h / 2.0)
+        else
+            fullBox
 
-            if this.Aspect = "equal" && xr > 0.0 && yr > 0.0 then
-                let s = min (abs fullBox.Width / xr) (abs fullBox.Height / yr)
-                let w = s * xr
-                let h = s * yr
-                let cx = (fullBox.X0 + fullBox.X1) / 2.0
-                let cy = (fullBox.Y0 + fullBox.Y1) / 2.0
-                BBox.fromExtents (cx - w / 2.0) (cy - h / 2.0) (cx + w / 2.0) (cy + h / 2.0)
-            else
-                fullBox
+    /// <summary>
+    /// The major tick values and labels this Axes would draw on a canvas of the
+    /// given size: the locator + formatter pass, without needing a renderer, so
+    /// the figure layout can size its margins before anything is drawn.
+    /// </summary>
+    member internal this.MajorTicksFor(canvas: Size, dpi: float) : float[] * string[] * float[] * string[] =
+        let box = this.DrawBox canvas
+        let xScale, yScale, xView, yView = this.ScaleView()
+        let pt2px = dpi / 72.0
+        let nbinsX = AxesLayout.tickBins (abs box.Width) rc.TickLabelSize 3.0 pt2px
+        let nbinsY = AxesLayout.tickBins (abs box.Height) rc.TickLabelSize 2.0 pt2px
+        let xLocator = defaultArg this.XAxis.MajorLocator (xScale.CreateLocator nbinsX)
+        let yLocator = defaultArg this.YAxis.MajorLocator (yScale.CreateLocator nbinsY)
+        let xFormatter = defaultArg this.XAxis.MajorFormatter (xScale.CreateFormatter())
+        let yFormatter = defaultArg this.YAxis.MajorFormatter (yScale.CreateFormatter())
+        let xTicks = xLocator.TickValues xView |> Array.filter (AxesLayout.inView xView)
+        let yTicks = yLocator.TickValues yView |> Array.filter (AxesLayout.inView yView)
+        xTicks, xFormatter.FormatTicks xTicks, yTicks, yFormatter.FormatTicks yTicks
+
+    /// <summary>
+    /// The Y tick labels drawn to the *left* of this Axes — what the outer margin
+    /// has to accommodate. Empty when the ticks are hidden or sit on the right
+    /// (a colorbar or twinx overlay).
+    /// </summary>
+    member internal this.LeftTickLabels(canvas: Size, dpi: float) : string[] =
+        if this.YTicksVisible && this.YTickSide <> "right" then
+            let _, _, _, yLabels = this.MajorTicksFor(canvas, dpi)
+            yLabels
+        else
+            [||]
+
+    member private this.BuildContext(renderer: IRenderer) : AxesDrawContext =
+        let canvas = renderer.CanvasSizePx
+        let box = this.DrawBox canvas
+        let xScale, yScale, xView, yView = this.ScaleView()
+        let sxLo, sxHi = xScale.TransformValue xView.Lower, xScale.TransformValue xView.Upper
+        let syLo, syHi = yScale.TransformValue yView.Lower, yScale.TransformValue yView.Upper
 
         let transAxes = BBoxTransform(BBox.unit, box) :> ITransform
 
@@ -1604,15 +1655,7 @@ type Axes(rc: RcParams) =
         let transLimits = BBoxTransform(scaledBox, BBox.unit) :> ITransform
         let transData = Transforms.compose (Transforms.compose transScale transLimits) transAxes
         let pt2px = renderer.Dpi / 72.0
-        let nbinsX = AxesLayout.tickBins (abs box.Width) rc.TickLabelSize 3.0 pt2px
-        let nbinsY = AxesLayout.tickBins (abs box.Height) rc.TickLabelSize 2.0 pt2px
-
-        let xLocator = defaultArg this.XAxis.MajorLocator (xScale.CreateLocator nbinsX)
-        let yLocator = defaultArg this.YAxis.MajorLocator (yScale.CreateLocator nbinsY)
-        let xFormatter = defaultArg this.XAxis.MajorFormatter (xScale.CreateFormatter())
-        let yFormatter = defaultArg this.YAxis.MajorFormatter (yScale.CreateFormatter())
-        let xTicks = xLocator.TickValues xView |> Array.filter (AxesLayout.inView xView)
-        let yTicks = yLocator.TickValues yView |> Array.filter (AxesLayout.inView yView)
+        let xTicks, xLabels, yTicks, yLabels = this.MajorTicksFor(canvas, renderer.Dpi)
 
         let minorOf (scale: IScale) (ticks: float[]) (view: Interval) =
             if not this.MinorTicksEnabled then [||]
@@ -1628,9 +1671,9 @@ type Axes(rc: RcParams) =
             XView = xView
             YView = yView
             XTicks = xTicks
-            XLabels = xFormatter.FormatTicks xTicks
+            XLabels = xLabels
             YTicks = yTicks
-            YLabels = yFormatter.FormatTicks yTicks
+            YLabels = yLabels
             XMinor = minorOf xScale xTicks xView
             YMinor = minorOf yScale yTicks yView
         }

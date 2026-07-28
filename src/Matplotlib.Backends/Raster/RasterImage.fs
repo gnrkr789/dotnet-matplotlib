@@ -69,7 +69,8 @@ type RasterImage(width: int, height: int) =
 
     /// <summary>Fill a polygon (even-odd rule) with a solid colour.</summary>
     // TODO(roadmap): matplotlib/Agg fill with the non-zero winding rule across the
-    // whole path; even-odd differs for self-intersecting / holey fills. See README Roadmap.
+    // whole path; even-odd differs for self-intersecting / holey fills.
+    // See PORTING.md (Known deviations / TODO).
     member this.FillPolygon(pts: (float * float)[], color: Color) =
         if pts.Length >= 3 then
             let r, g, b, a = byte color.R255, byte color.G255, byte color.B255, byte color.A255

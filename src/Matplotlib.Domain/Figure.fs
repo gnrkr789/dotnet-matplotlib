@@ -118,8 +118,16 @@ type Figure(rc: RcParams) =
             else
                 0.0
 
+        // Reserve room for the widest tick label actually drawn. This used to assume
+        // a fixed 4-character label, so a wide one (e.g. "1000000000") overflowed the
+        // canvas — and this call left *less* room than the default margins.
+        let yTickRoom =
+            axesList
+            |> Seq.collect (fun ax -> ax.LeftTickLabels(figPx, this.Dpi))
+            |> AxesLayout.tickLabelWidth rc.TickLabelSize pt2px
+
         let bottomPx = tickRoom + rc.TickLabelSize * pt2px + xlabelRoom + padPx
-        let leftPx = tickRoom + 4.0 * 0.6 * rc.TickLabelSize * pt2px + ylabelRoom + padPx
+        let leftPx = tickRoom + yTickRoom + ylabelRoom + padPx
 
         let newL = leftPx / figPx.Width
         let newR = 1.0 - padPx / figPx.Width
@@ -164,7 +172,9 @@ type Figure(rc: RcParams) =
 
             let l =
                 tickRoom
-                + 4.0 * 0.6 * rc.TickLabelSize * pt2px
+                // this axes' own widest tick label, not a fixed character count
+                + (ax.LeftTickLabels(figPx, this.Dpi)
+                   |> AxesLayout.tickLabelWidth rc.TickLabelSize pt2px)
                 + (if ax.YAxis.Label <> "" then
                        rc.AxesLabelPad * pt2px + labelH
                    else

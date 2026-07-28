@@ -4,7 +4,30 @@ All notable changes to **dotnet-matplotlib** are recorded here. The project foll
 [Semantic Versioning](https://semver.org/). While on `0.x` (pre-1.0), minor releases
 may contain breaking changes.
 
-## [Unreleased]
+## [0.1.0] — 2026-07-28
+
+> **Upgrade note for `Report.Sha256()` users:** this release's tick-label and layout fixes
+> change rendered output, so report fingerprints produced by `0.0.9` will not all match
+> those from `0.1.0`. Re-baseline stored hashes when upgrading. Only figures with
+> sub-`1e-6` ticks or a `TightLayout` / `ConstrainedLayout` call are affected — of the 29
+> sample gallery outputs, 24 are byte-identical across the upgrade and 5 changed.
+
+### Fixed
+
+- **Tick labels below `1e-6` no longer all render as `0`.** `ScalarFormatter` picked its
+  decimal count with a tolerance floored at an absolute `1e-6`, so every tick on, say, a
+  `1e-7` axis rounded to a bare `"0"` and the axis became unreadable. Precision now
+  follows the tick *span* (as matplotlib's significant-figure search does), which also
+  restores the decimals that separate closely-spaced ticks sitting on a large offset
+  (`1000000.0 / 1000000.5 / 1000001.0` used to collapse to `1000000 / 1000000 / 1000001`).
+  Labels stay distinct down to `1e-15`; below that, decimal notation runs out and the
+  planned `×10ⁿ` offset label is still needed.
+- **`TightLayout` / `ConstrainedLayout` no longer push wide tick labels off the canvas.**
+  Both reserved room for a fixed four-character tick label, so a wider one (e.g.
+  `1000000000`) overflowed — and calling either left *less* room than the untouched
+  default margins, making the clipping worse rather than better. They now measure the
+  tick labels the axes will actually draw, and ignore labels on a right-side y axis (a
+  colorbar or `twinx` overlay) that the left margin does not have to accommodate.
 
 ### Added
 
